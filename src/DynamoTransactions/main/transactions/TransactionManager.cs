@@ -100,7 +100,7 @@ using com.amazonaws.services.dynamodbv2.util;
 
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> createKeyMap(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-		protected internal virtual IDictionary<string, AttributeValue> createKeyMap(string tableName, IDictionary<string, AttributeValue> item)
+		protected internal virtual Dictionary<string, AttributeValue> createKeyMap(string tableName, IDictionary<string, AttributeValue> item)
 		{
 			if (string.ReferenceEquals(tableName, null))
 			{
@@ -188,7 +188,7 @@ using com.amazonaws.services.dynamodbv2.util;
 			}
 		}
 
-		public virtual GetItemResult getItem(GetItemRequest request, Transaction.IsolationLevel isolationLevel)
+		public virtual GetItemResponse getItem(GetItemRequest request, Transaction.IsolationLevel isolationLevel)
 		{
 			if (request.AttributesToGet != null)
 			{
@@ -196,7 +196,7 @@ using com.amazonaws.services.dynamodbv2.util;
 				attributesToGet.addAll(Transaction.SPECIAL_ATTR_NAMES);
 				request.AttributesToGet = attributesToGet;
 			}
-			GetItemResult result = Client.getItem(request);
+			GetItemResponse result = Client.getItem(request);
 			IDictionary<string, AttributeValue> item = getReadIsolationHandler(isolationLevel).handleItem(result.Item, request.AttributesToGet, request.TableName);
 			Transaction.stripSpecialAttributes(item);
 			result.Item = item;

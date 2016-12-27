@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
+using static com.amazonaws.services.dynamodbv2.transactions.Transaction;
+using static com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
 
 /// <summary>
 /// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -102,7 +104,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			Request lockingRequest = lockingTx.TxItem.getRequestForKey(tableName, key);
 			txAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
-			IDictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImage(lockingRequest.Rid);
+			IDictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImage(lockingRequest.Rid.Value);
 			if (oldItem == null)
 			{
 				if (LOG.DebugEnabled)
@@ -123,13 +125,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: protected com.amazonaws.services.dynamodbv2.model.GetItemRequest createGetItemRequest(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
 		protected internal virtual GetItemRequest createGetItemRequest(string tableName, IDictionary<string, AttributeValue> item)
 		{
-			IDictionary<string, AttributeValue> key = txManager.createKeyMap(tableName, item);
+			Dictionary<string, AttributeValue> key = txManager.createKeyMap(tableName, item);
 
 			/*
 			 * Set the request to consistent read the next time around, since we may have read while locking tx
 			 * was cleaning up or read a stale item that is no longer locked
 			 */
-			GetItemRequest request = (new GetItemRequest()).withTableName(tableName).withKey(key).withConsistentRead(true);
+		    GetItemRequest request = new GetItemRequest
+		    {
+		        TableName = tableName,
+		        Key = key,
+		        ConsistentRead = true
+		    };
 			return request;
 		}
 
@@ -164,7 +171,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					{
 						request = createGetItemRequest(tableName, item);
 					}
-					currentItem = txManager.Client.getItem(request).Item;
+					currentItem = txManager.Client.GetItemAsync(request).Result.Item;
 				}
 
 				// 1. Return the item if it isn't locked (or if it's locked, but not applied yet)
@@ -183,7 +190,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 						 * 3. See if the locking transaction has been committed. If so, return the item. This is valid because you cannot
 						 * write to an item multiple times in the same transaction. Otherwise it would expose intermediate state.
 						 */
-						if (TransactionItem.State.COMMITTED.Equals(lockingTx.TxItem.State))
+						if (TransactionItem.State.COMMITTED.Equals(lockingTx.TxItem.getState()))
 						{
 							return currentItem;
 						}

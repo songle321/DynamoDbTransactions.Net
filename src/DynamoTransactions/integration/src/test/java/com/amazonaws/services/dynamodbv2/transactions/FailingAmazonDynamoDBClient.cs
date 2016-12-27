@@ -21,9 +21,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 	using AWSCredentials = com.amazonaws.auth.AWSCredentials;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using UpdateItemResult = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
+	using UpdateItemResponse = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
 
 	/// <summary>
 	/// A very primitive fault-injection client.
@@ -63,8 +63,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResult getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest getItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override GetItemResult getItem(GetItemRequest getItemRequest)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest getItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override GetItemResponse getItem(GetItemRequest getItemRequest)
 		{
 			if (requestsToFail.Contains(getItemRequest))
 			{
@@ -83,8 +83,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResult updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest updateItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateItemResult updateItem(UpdateItemRequest updateItemRequest)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest updateItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override UpdateItemResponse updateItem(UpdateItemRequest updateItemRequest)
 		{
 			if (requestsToFail.Contains(updateItemRequest))
 			{

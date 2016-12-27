@@ -29,7 +29,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using CreateTableRequest = com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 	using KeyType = com.amazonaws.services.dynamodbv2.model.KeyType;
 	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
@@ -344,7 +344,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		protected internal virtual IDictionary<string, AttributeValue> getItem(string tableName, IDictionary<string, AttributeValue> key)
 		{
-			GetItemResult result = dynamodb.getItem(new GetItemRequest()
+			GetItemResponse result = dynamodb.getItem(new GetItemRequest()
 				.withTableName(tableName).withKey(key).withReturnConsumedCapacity(ReturnConsumedCapacity.TOTAL).withConsistentRead(true));
 			return result.Item;
 		}

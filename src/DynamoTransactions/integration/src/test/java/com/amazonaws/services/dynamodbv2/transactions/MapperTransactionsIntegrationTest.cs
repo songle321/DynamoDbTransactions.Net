@@ -152,7 +152,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			item0 = new Dictionary<string, AttributeValue>(key0);
 			item0["s_someattr"] = new AttributeValue("val");
 			item0["ss_otherattr"] = (new AttributeValue()).withSS("one", "two");
-			IDictionary<string, AttributeValue> putResult = t.putItem(new PutItemRequest()
+			IDictionary<string, AttributeValue> putResponse = t.putItem(new PutItemRequest()
 				.withTableName(INTEG_HASH_TABLE_NAME).withItem(item0).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 			assertNull(putResult);
 			t.commit();

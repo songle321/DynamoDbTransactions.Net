@@ -25,13 +25,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using ComparisonOperator = com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using KeysAndAttributes = com.amazonaws.services.dynamodbv2.model.KeysAndAttributes;
 	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 	using QueryRequest = com.amazonaws.services.dynamodbv2.model.QueryRequest;
-	using QueryResult = com.amazonaws.services.dynamodbv2.model.QueryResult;
+	using QueryResponse = com.amazonaws.services.dynamodbv2.model.QueryResult;
 	using ScanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest;
-	using ScanResult = com.amazonaws.services.dynamodbv2.model.ScanResult;
+	using ScanResponse = com.amazonaws.services.dynamodbv2.model.ScanResult;
 	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
 	using After = org.junit.After;
 	using Before = org.junit.Before;
@@ -167,7 +167,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				request.AttributesToGet = attributesToGet;
 			}
-			GetItemResult result = facade.getItem(request);
+			GetItemResponse result = facade.getItem(request);
 			assertContainsNoTransactionAttributes(result.Item);
 			assertEquals(item, result.Item);
 		}
@@ -181,7 +181,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				scanRequest.AttributesToGet = attributesToGet;
 			}
-			ScanResult scanResult = facade.scan(scanRequest);
+			ScanResponse scanResponse = facade.scan(scanRequest);
 			assertEquals(1, scanResult.Items.size());
 			assertContainsNoTransactionAttributes(scanResult.Items.get(0));
 			assertEquals(item, scanResult.Items.get(0));
@@ -191,7 +191,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: private void testScanIsEmpty(final TransactionManagerDynamoDBFacade facade)
 		private void testScanIsEmpty(TransactionManagerDynamoDBFacade facade)
 		{
-			ScanResult scanResult = facade.scan(new ScanRequest()
+			ScanResponse scanResponse = facade.scan(new ScanRequest()
 					.withTableName(INTEG_HASH_TABLE_NAME));
 			assertNotNull(scanResult.Items);
 			assertEquals(0, scanResult.Items.size());
@@ -202,7 +202,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testQueryContainsItem(TransactionManagerDynamoDBFacade facade, IDictionary<string, AttributeValue> item, bool filterAttributes)
 		{
 			QueryRequest queryRequest = createQueryRequest(filterAttributes);
-			QueryResult queryResult = facade.query(queryRequest);
+			QueryResponse queryResponse = facade.query(queryRequest);
 			assertEquals(1, queryResult.Items.size());
 			assertContainsNoTransactionAttributes(queryResult.Items.get(0));
 			assertEquals(item, queryResult.Items.get(0));
@@ -213,7 +213,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testQueryIsEmpty(TransactionManagerDynamoDBFacade facade)
 		{
 			QueryRequest queryRequest = createQueryRequest(false);
-			QueryResult queryResult = facade.query(queryRequest);
+			QueryResponse queryResponse = facade.query(queryRequest);
 			assertNotNull(queryResult.Items);
 			assertEquals(0, queryResult.Items.size());
 		}
@@ -223,7 +223,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testBatchGetItemsContainsItem(TransactionManagerDynamoDBFacade facade, IDictionary<string, AttributeValue> item, bool filterAttributes)
 		{
 			BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(filterAttributes);
-			BatchGetItemResponse batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
+			BatchGetItemResponse batchGetItemResponse = facade.batchGetItem(batchGetItemRequest);
 			IList<IDictionary<string, AttributeValue>> items = batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME);
 			assertEquals(1, items.Count);
 			assertContainsNoTransactionAttributes(items[0]);
@@ -235,7 +235,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testBatchGetItemsIsEmpty(TransactionManagerDynamoDBFacade facade)
 		{
 			BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(false);
-			BatchGetItemResponse batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
+			BatchGetItemResponse batchGetItemResponse = facade.batchGetItem(batchGetItemRequest);
 			assertNotNull(batchGetItemResult.Responses);
 			assertEquals(1, batchGetItemResult.Responses.size());
 			assertNotNull(batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME));

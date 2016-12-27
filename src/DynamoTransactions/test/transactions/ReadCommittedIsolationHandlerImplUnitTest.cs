@@ -19,7 +19,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using State = com.amazonaws.services.dynamodbv2.transactions.TransactionItem.State;
 	using TransactionAssertionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
 	using TransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException;

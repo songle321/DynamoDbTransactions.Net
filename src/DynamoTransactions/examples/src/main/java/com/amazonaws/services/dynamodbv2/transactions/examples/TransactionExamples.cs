@@ -30,7 +30,7 @@ using System.Collections.Generic;
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 	using KeyType = com.amazonaws.services.dynamodbv2.model.KeyType;
 	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
@@ -38,7 +38,7 @@ using System.Collections.Generic;
 	using ReturnValue = com.amazonaws.services.dynamodbv2.model.ReturnValue;
 	using ScalarAttributeType = com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 	using ScanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest;
-	using ScanResult = com.amazonaws.services.dynamodbv2.model.ScanResult;
+	using ScanResponse = com.amazonaws.services.dynamodbv2.model.ScanResult;
 	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
 	using IsolationLevel = com.amazonaws.services.dynamodbv2.transactions.Transaction.IsolationLevel;
 	using DuplicateRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException;
@@ -257,7 +257,7 @@ using System.Collections.Generic;
 
 			// Now to verify, get the items Item1, Item2, and Item3.
 			// More on read operations later. 
-			GetItemResult result = txManager.getItem((new GetItemRequest()).withTableName(EXAMPLE_TABLE_NAME).withKey(item1Key), Transaction.IsolationLevel.UNCOMMITTED);
+			GetItemResponse result = txManager.getItem((new GetItemRequest()).withTableName(EXAMPLE_TABLE_NAME).withKey(item1Key), Transaction.IsolationLevel.UNCOMMITTED);
 			print("Notice that t2's write to Item1 won: " + result.Item);
 
 			result = txManager.getItem((new GetItemRequest()).withTableName(EXAMPLE_TABLE_NAME).withKey(item3T2), Transaction.IsolationLevel.UNCOMMITTED);
@@ -653,7 +653,7 @@ using System.Collections.Generic;
 			// This includes sleeping between pages, using Limit to limit the throughput of each operation to avoid hotspots,
 			// and using parallel scan.
 			print("Scanning one full page of the transactions table");
-			ScanResult result = dynamodb.scan(new ScanRequest()
+			ScanResponse result = dynamodb.scan(new ScanRequest()
 				.withTableName(TX_TABLE_NAME));
 
 			// Pick some duration where transactions should be rolled back if they were sitting there PENDING.

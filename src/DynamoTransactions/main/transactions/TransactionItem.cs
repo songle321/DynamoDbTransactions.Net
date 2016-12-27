@@ -1,5 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
+using com.amazonaws.services.dynamodbv2.transactions.exceptions;
+using com.amazonaws.services.dynamodbv2.util;
 
 /// <summary>
 /// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -23,33 +28,13 @@ using System.Collections.Generic;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException.txAssert;
 
-
-	using AttributeAction = com.amazonaws.services.dynamodbv2.model.AttributeAction;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using ConditionalCheckFailedException = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
-	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-	using ExpectedAttributeValue = com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using ReturnValue = com.amazonaws.services.dynamodbv2.model.ReturnValue;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using UpdateItemResult = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
-	using GetItem = com.amazonaws.services.dynamodbv2.transactions.Request.GetItem;
-	using DuplicateRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException;
-	using InvalidRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.InvalidRequestException;
-	using TransactionAssertionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
-	using TransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException;
-	using TransactionNotFoundException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException;
-	using ImmutableKey = com.amazonaws.services.dynamodbv2.util.ImmutableKey;
-
 	/// <summary>
 	/// Contains an image of the transaction item in DynamoDB, and methods to change that item.
 	/// 
 	/// If any of those attempts to change the transaction fail, the item needs to be thrown away, re-fetched,
 	/// and the change applied via the new item.
 	/// </summary>
-	internal class TransactionItem
+	public class TransactionItem
 	{
 
 		/* Transaction states */
@@ -111,7 +96,7 @@ using System.Collections.Generic;
 				}
 				this.txId = txId;
 				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
-				txKeyMap[AttributeName.TXID.ToString()] = new AttributeValue(txId);
+				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
 				this.txKey = Collections.unmodifiableMap(txKeyMap);
 				if (insert)
 				{
@@ -138,9 +123,9 @@ using System.Collections.Generic;
 				{
 					throw new TransactionException(txId, "txItem is not a transaction item");
 				}
-				this.txId = txItem[AttributeName.TXID.ToString()].S;
+				this.txId = txItem[Transaction.AttributeName.TXID.ToString()].S;
 				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
-				txKeyMap[AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
+				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
 				this.txKey = Collections.unmodifiableMap(txKeyMap);
 			}
 			else
@@ -149,7 +134,7 @@ using System.Collections.Generic;
 			}
 
 			// Initialize the version
-			AttributeValue txVersionVal = this.txItem[AttributeName.VERSION.ToString()];
+			AttributeValue txVersionVal = this.txItem[Transaction.AttributeName.VERSION.ToString()];
 			if (txVersionVal == null || txVersionVal.N == null)
 			{
 				throw new TransactionException(this.txId, "Version number is not present in TX record");
@@ -167,15 +152,15 @@ using System.Collections.Generic;
 		private IDictionary<string, AttributeValue> insert()
 		{
 			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-			item[AttributeName.STATE.ToString()] = new AttributeValue(STATE_PENDING);
-			item[AttributeName.VERSION.ToString()] = (new AttributeValue()).withN(Convert.ToString(1));
-			item[AttributeName.DATE.ToString()] = txManager.CurrentTimeAttribute;
+			item[Transaction.AttributeName.STATE.ToString()] = new AttributeValue(STATE_PENDING);
+			item[Transaction.AttributeName.VERSION.ToString()] = (new AttributeValue()).withN(Convert.ToString(1));
+			item[Transaction.AttributeName.DATE.ToString()] = txManager.CurrentTimeAttribute;
 //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
 			item.putAll(txKey);
 
 			IDictionary<string, ExpectedAttributeValue> expectNotExists = new Dictionary<string, ExpectedAttributeValue>(2);
-			expectNotExists[AttributeName.TXID.ToString()] = new ExpectedAttributeValue(false);
-			expectNotExists[AttributeName.STATE.ToString()] = new ExpectedAttributeValue(false);
+			expectNotExists[Transaction.AttributeName.TXID.ToString()] = new ExpectedAttributeValue(false);
+			expectNotExists[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(false);
 
 			PutItemRequest request = (new PutItemRequest()).withTableName(txManager.TransactionTableName).withItem(item).withExpected(expectNotExists);
 
@@ -224,12 +209,12 @@ using System.Collections.Generic;
 				throw new TransactionException(null, "txItem must not be null");
 			}
 
-			if (!txItem.ContainsKey(AttributeName.TXID.ToString()))
+			if (!txItem.ContainsKey(Transaction.AttributeName.TXID.ToString()))
 			{
 				return false;
 			}
 
-			if (txItem[AttributeName.TXID.ToString()].S == null)
+			if (txItem[Transaction.AttributeName.TXID.ToString()].S == null)
 			{
 				return false;
 			}
@@ -241,7 +226,7 @@ using System.Collections.Generic;
 		{
 			get
 			{
-				AttributeValue requestsVal = txItem[AttributeName.DATE.ToString()];
+				AttributeValue requestsVal = txItem[Transaction.AttributeName.DATE.ToString()];
 				if (requestsVal == null || requestsVal.N == null)
 				{
 					throw new TransactionAssertionException(txId, "Expected date attribute to be defined");
@@ -333,20 +318,20 @@ using System.Collections.Generic;
 				AttributeValueUpdate txItemUpdate = (new AttributeValueUpdate()).withAction(AttributeAction.ADD).withValue((new AttributeValue()).withBS(Arrays.asList(requestBytes)));
         
 				IDictionary<string, AttributeValueUpdate> txItemUpdates = new Dictionary<string, AttributeValueUpdate>();
-				txItemUpdates[AttributeName.REQUESTS.ToString()] = txItemUpdate;
-				txItemUpdates[AttributeName.VERSION.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.ADD).withValue((new AttributeValue()).withN("1"));
-				txItemUpdates[AttributeName.DATE.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute);
+				txItemUpdates[Transaction.AttributeName.REQUESTS.ToString()] = txItemUpdate;
+				txItemUpdates[Transaction.AttributeName.VERSION.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.ADD).withValue((new AttributeValue()).withN("1"));
+				txItemUpdates[Transaction.AttributeName.DATE.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute);
         
 				IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-				expected[AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_PENDING));
-				expected[AttributeName.VERSION.ToString()] = new ExpectedAttributeValue((new AttributeValue()).withN(Convert.ToString(version)));
+				expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_PENDING));
+				expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue((new AttributeValue()).withN(Convert.ToString(version)));
         
 				UpdateItemRequest txItemUpdateRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withExpected(expected).withReturnValues(ReturnValue.ALL_NEW).withAttributeUpdates(txItemUpdates);
         
 				try
 				{
 					txItem = txManager.Client.updateItem(txItemUpdateRequest).Attributes;
-					int newVersion = int.Parse(txItem[AttributeName.VERSION.ToString()].N);
+					int newVersion = int.Parse(txItem[Transaction.AttributeName.VERSION.ToString()].N);
 					txAssert(newVersion == version + 1, txId, "Unexpected version number from update result");
 					version = newVersion;
 				}
@@ -371,7 +356,7 @@ using System.Collections.Generic;
 		/// </summary>
 		private void loadRequests()
 		{
-			AttributeValue requestsVal = txItem[AttributeName.REQUESTS.ToString()];
+			AttributeValue requestsVal = txItem[Transaction.AttributeName.REQUESTS.ToString()];
 			IList<ByteBuffer> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<ByteBuffer>(0);
 
 			foreach (ByteBuffer rawRequest in rawRequests)
@@ -407,12 +392,12 @@ using System.Collections.Generic;
 			Request existingRequest = pkToRequestMap[immutableKey];
 			if (existingRequest != null)
 			{
-				if (request is GetItem)
+				if (request is Request.GetItem)
 				{
 					return false;
 				}
 
-				if (existingRequest is GetItem)
+				if (existingRequest is Request.GetItem)
 				{
 					// ok to overwrite a lock with a write
 				}
@@ -448,24 +433,24 @@ using System.Collections.Generic;
 		/// <param name="rid"> </param>
 		public virtual void saveItemImage(IDictionary<string, AttributeValue> item, int rid)
 		{
-			txAssert(!item.ContainsKey(AttributeName.APPLIED.ToString()), txId, "The transaction has already applied this item image, it should not be saving over the item image with it");
+			txAssert(!item.ContainsKey(Transaction.AttributeName.APPLIED.ToString()), txId, "The transaction has already applied this item image, it should not be saving over the item image with it");
 
-			AttributeValue existingTxId = item[AttributeName.TXID.ToString()] = new AttributeValue(txId);
+			AttributeValue existingTxId = item[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
 			if (existingTxId != null && !txId.Equals(existingTxId.S))
 			{
-				throw new TransactionException(txId, "Items in transactions may not contain the attribute named " + AttributeName.TXID.ToString());
+				throw new TransactionException(txId, "Items in transactions may not contain the attribute named " + Transaction.AttributeName.TXID.ToString());
 			}
 
 			// Don't save over the already saved item.  Prevents us from saving the applied image instead of the previous image in the case
 			// of a re-drive.
 			// If we want to be extremely paranoid, we could expect every attribute to be set exactly already in a second write step, and assert
 			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
-			expected[AttributeName.IMAGE_ID.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+			expected[Transaction.AttributeName.IMAGE_ID.ToString()] = (new ExpectedAttributeValue()).withExists(false);
 
-			AttributeValue existingImageId = item[AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
+			AttributeValue existingImageId = item[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 			if (existingImageId != null)
 			{
-				throw new TransactionException(txId, "Items in transactions may not contain the attribute named " + AttributeName.IMAGE_ID.ToString() + ", value was already " + existingImageId);
+				throw new TransactionException(txId, "Items in transactions may not contain the attribute named " + Transaction.AttributeName.IMAGE_ID.ToString() + ", value was already " + existingImageId);
 			}
 
 			// TODO failures?  Size validation?
@@ -480,7 +465,7 @@ using System.Collections.Generic;
 			}
 
 			// do not mutate the item for the customer unless if there aren't exceptions
-			item.Remove(AttributeName.IMAGE_ID.ToString());
+			item.Remove(Transaction.AttributeName.IMAGE_ID.ToString());
 		}
 
 		/// <summary>
@@ -493,14 +478,14 @@ using System.Collections.Generic;
 			txAssert(rid > 0, txId, "Expected rid > 0");
 
 			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
-			key[AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
+			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
 			IDictionary<string, AttributeValue> item = txManager.Client.getItem(new GetItemRequest()
 				.withTableName(txManager.ItemImageTableName).withKey(key).withConsistentRead(true)).Item;
 
 			if (item != null)
 			{
-				item.Remove(AttributeName.IMAGE_ID.ToString());
+				item.Remove(Transaction.AttributeName.IMAGE_ID.ToString());
 			}
 
 			return item;
@@ -516,7 +501,7 @@ using System.Collections.Generic;
 			txAssert(rid > 0, txId, "Expected rid > 0");
 
 			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
-			key[AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
+			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
 			txManager.Client.deleteItem(new DeleteItemRequest()
 				.withTableName(txManager.ItemImageTableName).withKey(key));
@@ -541,19 +526,19 @@ using System.Collections.Generic;
 		{
 			txAssert(State.COMMITTED.Equals(targetState) || State.ROLLED_BACK.Equals(targetState),"Illegal state in finish(): " + targetState, "txItem", txItem);
 			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
-			expected[AttributeName.STATE.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withS(STATE_PENDING));
-			expected[AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withExists(false);
-			expected[AttributeName.VERSION.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withN(Convert.ToString(expectedVersion)));
+			expected[Transaction.AttributeName.STATE.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withS(STATE_PENDING));
+			expected[Transaction.AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+			expected[Transaction.AttributeName.VERSION.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withN(Convert.ToString(expectedVersion)));
 
 			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates.put(AttributeName.STATE.ToString(), new AttributeValueUpdate()
+			updates.put(Transaction.AttributeName.STATE.ToString(), new AttributeValueUpdate()
 				.withAction(AttributeAction.PUT).withValue(new AttributeValue(stateToString(targetState))));
-			updates.put(AttributeName.DATE.ToString(), new AttributeValueUpdate()
+			updates.put(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate()
 				.withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute));
 
 			UpdateItemRequest finishRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withAttributeUpdates(updates).withReturnValues(ReturnValue.ALL_NEW).withExpected(expected);
 
-			UpdateItemResult finishResult = txManager.Client.updateItem(finishRequest);
+			UpdateItemResponse finishResponse = txManager.Client.updateItem(finishRequest);
 			txItem = finishResult.Attributes;
 			if (txItem == null)
 			{
@@ -578,11 +563,11 @@ using System.Collections.Generic;
 
 			if (State.COMMITTED.Equals(expectedCurrentState))
 			{
-				expected[AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_COMMITTED));
+				expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_COMMITTED));
 			}
 			else if (State.ROLLED_BACK.Equals(expectedCurrentState))
 			{
-				expected[AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_ROLLED_BACK));
+				expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_ROLLED_BACK));
 			}
 			else
 			{
@@ -590,9 +575,9 @@ using System.Collections.Generic;
 			}
 
 			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates.put(AttributeName.FINALIZED.ToString(), new AttributeValueUpdate()
+			updates.put(Transaction.AttributeName.FINALIZED.ToString(), new AttributeValueUpdate()
 				.withAction(AttributeAction.PUT).withValue(new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL)));
-			updates.put(AttributeName.DATE.ToString(), new AttributeValueUpdate()
+			updates.put(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate()
 				.withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute));
 
 			UpdateItemRequest completeRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withAttributeUpdates(updates).withReturnValues(ReturnValue.ALL_NEW).withExpected(expected);
@@ -609,7 +594,7 @@ using System.Collections.Generic;
 		public virtual void delete()
 		{
 			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
-			expected[AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL));
+			expected[Transaction.AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL));
 
 			DeleteItemRequest completeRequest = (new DeleteItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withExpected(expected);
 			txManager.Client.deleteItem(completeRequest);
@@ -619,7 +604,7 @@ using System.Collections.Generic;
 		{
 			get
 			{
-				bool isCompleted = txItem.ContainsKey(AttributeName.FINALIZED.ToString());
+				bool isCompleted = txItem.ContainsKey(Transaction.AttributeName.FINALIZED.ToString());
 				if (isCompleted)
 				{
 					txAssert(State.COMMITTED.Equals(getState()) || State.ROLLED_BACK.Equals(getState()), txId, "Unexpected terminal state for completed transaction", "state", getState());
@@ -655,7 +640,7 @@ using System.Collections.Generic;
 		/// </summary>
 		public virtual State getState()
 		{
-			AttributeValue stateVal = txItem[AttributeName.STATE.ToString()];
+			AttributeValue stateVal = txItem[Transaction.AttributeName.STATE.ToString()];
 			string txState = (stateVal != null) ? stateVal.S : null;
 
 			if (STATE_COMMITTED.Equals(txState))

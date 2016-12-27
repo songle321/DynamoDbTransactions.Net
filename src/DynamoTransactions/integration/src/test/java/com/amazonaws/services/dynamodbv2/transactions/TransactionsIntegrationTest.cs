@@ -32,7 +32,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
+	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 	using ReturnValue = com.amazonaws.services.dynamodbv2.model.ReturnValue;
 	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
@@ -89,7 +89,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			item0 = new Dictionary<string, AttributeValue>(key0);
 			item0.put("s_someattr", new AttributeValue("val"));
 			item0.put("ss_otherattr", (new AttributeValue()).withSS("one", "two"));
-			IDictionary<string, AttributeValue> putResult = t.putItem(new PutItemRequest()
+			IDictionary<string, AttributeValue> putResponse = t.putItem(new PutItemRequest()
 				.withTableName(INTEG_HASH_TABLE_NAME).withItem(item0).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 			assertNull(putResult);
 			t.commit();
@@ -137,12 +137,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			GetItemRequest lockRequest = (new GetItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key1);
 
-			IDictionary<string, AttributeValue> getResult = t1.getItem(lockRequest).Item;
+			IDictionary<string, AttributeValue> getResponse = t1.getItem(lockRequest).Item;
 
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false); // we're not applying locks
 			assertNull(getResult);
 
-			IDictionary<string, AttributeValue> deleteResult = t2.deleteItem(deleteRequest).Attributes;
+			IDictionary<string, AttributeValue> deleteResponse = t2.deleteItem(deleteRequest).Attributes;
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t2.Id, true, false); // we're not applying deletes either
 			assertNull(deleteResult); // return values is null in the request
 
@@ -173,7 +173,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t0 = manager.newTransaction();
 			IDictionary<string, AttributeValue> item1 = new Dictionary<string, AttributeValue>(key1);
 			item1["something"] = new AttributeValue("val");
-			IDictionary<string, AttributeValue> putResult = t0.putItem(new PutItemRequest()
+			IDictionary<string, AttributeValue> putResponse = t0.putItem(new PutItemRequest()
 				.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 			assertNull(putResult);
 
@@ -429,11 +429,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			IDictionary<string, AttributeValueUpdate> updates1 = new Dictionary<string, AttributeValueUpdate>();
 			updates1["asdf"] = new AttributeValueUpdate(new AttributeValue("didn't exist"), AttributeAction.PUT);
 
-			IDictionary<string, AttributeValue> getResult = t1.getItem((new GetItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key1)).Item;
+			IDictionary<string, AttributeValue> getResponse = t1.getItem((new GetItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key1)).Item;
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
 			assertNull(getResult);
 
-			IDictionary<string, AttributeValue> updateResult = t1.updateItem((new UpdateItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key1).withAttributeUpdates(updates1).withReturnValues(ReturnValue.ALL_NEW)).Attributes;
+			IDictionary<string, AttributeValue> updateResponse = t1.updateItem((new UpdateItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key1).withAttributeUpdates(updates1).withReturnValues(ReturnValue.ALL_NEW)).Attributes;
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 			assertEquals(item1, updateResult);
 
@@ -454,11 +454,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			IDictionary<string, AttributeValueUpdate> updates1 = new Dictionary<string, AttributeValueUpdate>();
 			updates1["wef"] = new AttributeValueUpdate(new AttributeValue("new attr"), AttributeAction.PUT);
 
-			IDictionary<string, AttributeValue> getResult = t1.getItem((new GetItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key0)).Item;
+			IDictionary<string, AttributeValue> getResponse = t1.getItem((new GetItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key0)).Item;
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 			assertEquals(item0, getResult);
 
-			IDictionary<string, AttributeValue> updateResult = t1.updateItem((new UpdateItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key0).withAttributeUpdates(updates1).withReturnValues(ReturnValue.ALL_NEW)).Attributes;
+			IDictionary<string, AttributeValue> updateResponse = t1.updateItem((new UpdateItemRequest()).withTableName(INTEG_HASH_TABLE_NAME).withKey(key0).withAttributeUpdates(updates1).withReturnValues(ReturnValue.ALL_NEW)).Attributes;
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0a, t1.Id, false, true);
 			assertEquals(item0a, updateResult);
 
@@ -677,7 +677,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			GetItemRequest txItemRequest = (new GetItemRequest()).withTableName(manager.TransactionTableName).addKeyEntry(AttributeName.TXID.ToString(), new AttributeValue(t1.TxItem.txId)).withConsistentRead(true);
 
 			//Save the copy of the transaction before commit. 
-			GetItemResult uncommittedTransaction = dynamodb.getItem(txItemRequest);
+			GetItemResponse uncommittedTransaction = dynamodb.getItem(txItemRequest);
 
 			t1.commit();
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
