@@ -22,7 +22,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 	using BatchGetItemRequest = com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
-	using BatchGetItemResult = com.amazonaws.services.dynamodbv2.model.BatchGetItemResult;
+	using BatchGetItemResponse = com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse;
 	using BatchWriteItemRequest = com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
 	using BatchWriteItemResult = com.amazonaws.services.dynamodbv2.model.BatchWriteItemResult;
 	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
@@ -33,7 +33,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using DeleteTableRequest = com.amazonaws.services.dynamodbv2.model.DeleteTableRequest;
 	using DeleteTableResult = com.amazonaws.services.dynamodbv2.model.DeleteTableResult;
 	using DescribeTableRequest = com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
-	using DescribeTableResult = com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
+	using DescribeTableResponse = com.amazonaws.services.dynamodbv2.model.DescribeTableResponse;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
@@ -137,15 +137,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResult batchGetItem(com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResult batchGetItem(BatchGetItemRequest request)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override BatchGetItemResponse batchGetItem(BatchGetItemRequest request)
 		{
 			foreach (KeysAndAttributes keysAndAttributes in request.RequestItems.values())
 			{
 				ICollection<string> attributesToGet = keysAndAttributes.AttributesToGet;
 				keysAndAttributes.AttributesToGet = addSpecialAttributes(attributesToGet);
 			}
-			BatchGetItemResult result = txManager.Client.batchGetItem(request);
+			BatchGetItemResponse result = txManager.Client.batchGetItem(request);
 			IDictionary<string, IList<IDictionary<string, AttributeValue>>> responses = new Dictionary<string, IList<IDictionary<string, AttributeValue>>>();
 			foreach (KeyValuePair<string, IList<IDictionary<string, AttributeValue>>> e in result.Responses.entrySet())
 			{
@@ -159,16 +159,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResult batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems, String returnConsumedCapacity) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResult batchGetItem(IDictionary<string, KeysAndAttributes> requestItems, string returnConsumedCapacity)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems, String returnConsumedCapacity) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override BatchGetItemResponse batchGetItem(IDictionary<string, KeysAndAttributes> requestItems, string returnConsumedCapacity)
 		{
 			BatchGetItemRequest request = (new BatchGetItemRequest()).withRequestItems(requestItems).withReturnConsumedCapacity(returnConsumedCapacity);
 			return batchGetItem(request);
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResult batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResult batchGetItem(IDictionary<string, KeysAndAttributes> requestItems)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override BatchGetItemResponse batchGetItem(IDictionary<string, KeysAndAttributes> requestItems)
 		{
 			BatchGetItemRequest request = (new BatchGetItemRequest()).withRequestItems(requestItems);
 			return batchGetItem(request);
@@ -265,8 +265,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResult describeTable(com.amazonaws.services.dynamodbv2.model.DescribeTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResult describeTable(DescribeTableRequest arg0)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(com.amazonaws.services.dynamodbv2.model.DescribeTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override DescribeTableResponse describeTable(DescribeTableRequest arg0)
 		{
 			throw new System.NotSupportedException("Use the underlying client instance instead");
 		}
@@ -344,8 +344,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResult describeTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResult describeTable(string tableName)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public override DescribeTableResponse describeTable(string tableName)
 		{
 			throw new System.NotSupportedException("Use the underlying client instance instead");
 		}

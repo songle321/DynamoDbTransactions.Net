@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2.Model;
 
 // <summary>
 // Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,11 +17,6 @@
 // </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-
-
 	/// <summary>
 	/// An isolation handler takes an item and returns a version
 	/// of the item that can be read at the implemented isolaction

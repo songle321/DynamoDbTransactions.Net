@@ -1,45 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using com.amazonaws.services.dynamodbv2.util;
 
-/// <summary>
-/// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions
  {
-
-	using AttributeTransformer = com.amazonaws.services.dynamodbv2.datamodeling.AttributeTransformer;
-	using DynamoDBMapper = com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-	using DynamoDBMapperConfig = com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
-	using AttributeDefinition = com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using DescribeTableRequest = com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
-	using DescribeTableResult = com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResult = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
-	using KeyType = com.amazonaws.services.dynamodbv2.model.KeyType;
-	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-	using ResourceInUseException = com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
-	using ResourceNotFoundException = com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
-	using ScalarAttributeType = com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
-	using AttributeName = com.amazonaws.services.dynamodbv2.transactions.Transaction.AttributeName;
-	using IsolationLevel = com.amazonaws.services.dynamodbv2.transactions.Transaction.IsolationLevel;
-	using TableHelper = com.amazonaws.services.dynamodbv2.util.TableHelper;
-	using Log = org.apache.commons.logging.Log;
-	using LogFactory = org.apache.commons.logging.LogFactory;
-
-
 	/// <summary>
 	/// A factory for client-side transactions on DynamoDB.  Thread-safe. 
 	/// </summary>
@@ -48,23 +28,23 @@ using System.Collections.Concurrent;
 
 		private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
 		private static readonly IList<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
-		private static readonly IList<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(AttributeName.TXID.ToString()).withKeyType(KeyType.HASH)));
+		private static readonly IList<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(Transaction.AttributeName.TXID.ToString()).withKeyType(KeyType.HASH)));
 
 		private static readonly IList<AttributeDefinition> TRANSACTION_IMAGES_TABLE_ATTRIBUTES;
-		private static readonly IList<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(AttributeName.IMAGE_ID.ToString()).withKeyType(KeyType.HASH)));
+		private static readonly IList<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(Transaction.AttributeName.IMAGE_ID.ToString()).withKeyType(KeyType.HASH)));
 
 		static TransactionManager()
 		{
-			IList<AttributeDefinition> definition = Arrays.asList((new AttributeDefinition()).withAttributeName(AttributeName.TXID.ToString()).withAttributeType(ScalarAttributeType.S));
+			IList<AttributeDefinition> definition = Arrays.asList((new AttributeDefinition()).withAttributeName(Transaction.AttributeName.TXID.ToString()).withAttributeType(ScalarAttributeType.S));
 			definition.Sort(new AttributeDefinitionComparator());
 			TRANSACTIONS_TABLE_ATTRIBUTES = Collections.unmodifiableList(definition);
 
-			definition = Arrays.asList((new AttributeDefinition()).withAttributeName(AttributeName.IMAGE_ID.ToString()).withAttributeType(ScalarAttributeType.S));
+			definition = Arrays.asList((new AttributeDefinition()).withAttributeName(Transaction.AttributeName.IMAGE_ID.ToString()).withAttributeType(ScalarAttributeType.S));
 			definition.Sort(new AttributeDefinitionComparator());
 			TRANSACTION_IMAGES_TABLE_ATTRIBUTES = Collections.unmodifiableList(definition);
 		}
 
-		private readonly AmazonDynamoDB client;
+		private readonly AmazonDynamoDBClient client;
 		private readonly string transactionTableName;
 		private readonly string itemImageTableName;
 		private readonly ConcurrentDictionary<string, IList<KeySchemaElement>> tableSchemaCache = new ConcurrentDictionary<string, IList<KeySchemaElement>>();
@@ -73,15 +53,15 @@ using System.Collections.Concurrent;
 		private readonly ReadUncommittedIsolationHandlerImpl readUncommittedIsolationHandler;
 		private readonly ReadCommittedIsolationHandlerImpl readCommittedIsolationHandler;
 
-		public TransactionManager(AmazonDynamoDB client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, DynamoDBMapperConfig.DEFAULT)
+		public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, DynamoDBMapperConfig.DEFAULT)
 		{
 		}
 
-		public TransactionManager(AmazonDynamoDB client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config) : this(client, transactionTableName, itemImageTableName, config, null)
+		public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config) : this(client, transactionTableName, itemImageTableName, config, null)
 		{
 		}
 
-		public TransactionManager(AmazonDynamoDB client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config, AttributeTransformer transformer)
+		public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config, AttributeTransformer transformer)
 		{
 			if (client == null)
 			{
@@ -111,7 +91,7 @@ using System.Collections.Concurrent;
 			IList<KeySchemaElement> schema = tableSchemaCache[tableName];
 			if (schema == null)
 			{
-				DescribeTableResult result = client.describeTable((new DescribeTableRequest()).withTableName(tableName));
+				DescribeTableResponse result = client.describeTable((new DescribeTableRequest()).withTableName(tableName));
 				schema = Collections.unmodifiableList(result.Table.KeySchema);
 				tableSchemaCache[tableName] = schema;
 			}
@@ -165,7 +145,7 @@ using System.Collections.Concurrent;
 			return TransactionItem.isTransactionItem(txItem);
 		}
 
-		public virtual AmazonDynamoDB Client
+		public virtual AmazonDynamoDBClient Client
 		{
 			get
 			{
@@ -189,7 +169,7 @@ using System.Collections.Concurrent;
 			}
 		}
 
-		protected internal virtual ReadIsolationHandler getReadIsolationHandler(IsolationLevel isolationLevel)
+		protected internal virtual ReadIsolationHandler getReadIsolationHandler(Transaction.IsolationLevel isolationLevel)
 		{
 			if (isolationLevel == null)
 			{
@@ -208,7 +188,7 @@ using System.Collections.Concurrent;
 			}
 		}
 
-		public virtual GetItemResult getItem(GetItemRequest request, IsolationLevel isolationLevel)
+		public virtual GetItemResult getItem(GetItemRequest request, Transaction.IsolationLevel isolationLevel)
 		{
 			if (request.AttributesToGet != null)
 			{
@@ -261,16 +241,16 @@ using System.Collections.Concurrent;
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public static void verifyOrCreateTransactionTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDB client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-		public static void verifyOrCreateTransactionTable(AmazonDynamoDB client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+//ORIGINAL LINE: public static void verifyOrCreateTransactionTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
+		public static void verifyOrCreateTransactionTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
 		{
 			(new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput()
 					.withReadCapacityUnits(readCapacityUnits).withWriteCapacityUnits(writeCapacityUnits), waitTimeSeconds);
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDB client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-		public static void verifyOrCreateTransactionImagesTable(AmazonDynamoDB client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+//ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
+		public static void verifyOrCreateTransactionImagesTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
 		{
 			(new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput()
 					.withReadCapacityUnits(readCapacityUnits).withWriteCapacityUnits(writeCapacityUnits), waitTimeSeconds);
@@ -284,7 +264,7 @@ using System.Collections.Concurrent;
 		/// <param name="transactionImagesTableName"> </param>
 		/// <exception cref="ResourceInUseException"> if the table exists but has the wrong schema </exception>
 		/// <exception cref="ResourceNotFoundException"> if the table does not exist </exception>
-		public static void verifyTransactionTablesExist(AmazonDynamoDB client, string transactionTableName, string transactionImagesTableName)
+		public static void verifyTransactionTablesExist(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
 		{
 			string state = (new TableHelper(client)).verifyTableExists(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
 			if (!"ACTIVE".Equals(state))
@@ -355,7 +335,7 @@ using System.Collections.Concurrent;
 		///            . </param>
 		/// <returns> An instance of the item class with all attributes populated from
 		///         the table, or null if the item does not exist. </returns>
-		public virtual T load<T>(T item, IsolationLevel isolationLevel)
+		public virtual T load<T>(T item, Transaction.IsolationLevel isolationLevel)
 		{
 			try
 			{

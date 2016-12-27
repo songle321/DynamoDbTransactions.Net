@@ -1,5 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
+using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
 /// <summary>
 /// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -40,25 +45,6 @@ using System.Collections.Generic;
 	using SerializationFeature = com.fasterxml.jackson.databind.SerializationFeature;
 	using SerializerProvider = com.fasterxml.jackson.databind.SerializerProvider;
 	using SimpleModule = com.fasterxml.jackson.databind.module.SimpleModule;
-
-	using AWSCredentials = com.amazonaws.auth.AWSCredentials;
-	using ProgressListener = com.amazonaws.@event.ProgressListener;
-	using AttributeAction = com.amazonaws.services.dynamodbv2.model.AttributeAction;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using ComparisonOperator = com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
-	using ConditionalOperator = com.amazonaws.services.dynamodbv2.model.ConditionalOperator;
-	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-	using ExpectedAttributeValue = com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using ReturnConsumedCapacity = com.amazonaws.services.dynamodbv2.model.ReturnConsumedCapacity;
-	using ReturnItemCollectionMetrics = com.amazonaws.services.dynamodbv2.model.ReturnItemCollectionMetrics;
-	using ReturnValue = com.amazonaws.services.dynamodbv2.model.ReturnValue;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using InvalidRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.InvalidRequestException;
-	using TransactionAssertionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
 
 	/// <summary>
 	/// Represents a write or lock request within a transaction - either a PutItem, UpdateItem, DeleteItem, or a LockItem request used for read locks

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2.Model;
 
 /// <summary>
 /// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,12 +17,6 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using Log = org.apache.commons.logging.Log;
-	using LogFactory = org.apache.commons.logging.LogFactory;
-
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static com.amazonaws.services.dynamodbv2.transactions.Transaction.isApplied;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:

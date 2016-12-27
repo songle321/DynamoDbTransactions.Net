@@ -164,7 +164,7 @@ using System.Collections.Generic;
 			// Create a new transaction from the transaction manager
 			Transaction t1 = txManager.newTransaction();
 
-			// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDB client)
+			// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
 			IDictionary<string, AttributeValue> item1 = new Dictionary<string, AttributeValue>();
 			item1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
 			print("Put item: " + item1);
@@ -203,7 +203,7 @@ using System.Collections.Generic;
 			item1Key[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("conflictingTransactions_Item1");
 			item1Key = Collections.unmodifiableMap(item1Key);
 
-			// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDB client)
+			// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
 			// This will eventually get rolled back when t2 tries to work on the same item
 			IDictionary<string, AttributeValue> item1T1 = new Dictionary<string, AttributeValue>(item1Key);
 			item1T1["WhichTransaction?"] = new AttributeValue("t1");
@@ -280,7 +280,7 @@ using System.Collections.Generic;
 			bool success = false;
 			try
 			{
-				// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDB client)
+				// Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
 				IDictionary<string, AttributeValue> item1 = new Dictionary<string, AttributeValue>();
 				item1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
 				print("Put item: " + item1);

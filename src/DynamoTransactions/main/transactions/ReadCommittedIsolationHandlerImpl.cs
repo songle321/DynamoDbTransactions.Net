@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2.Model;
+using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
 /// <summary>
 /// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,16 +18,6 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using TransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException;
-	using TransactionNotFoundException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException;
-	using UnknownCompletedTransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException;
-	using Log = org.apache.commons.logging.Log;
-	using LogFactory = org.apache.commons.logging.LogFactory;
-
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static com.amazonaws.services.dynamodbv2.transactions.Transaction.getOwner;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:

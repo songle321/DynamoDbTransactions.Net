@@ -21,7 +21,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 	using BatchGetItemRequest = com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
-	using BatchGetItemResult = com.amazonaws.services.dynamodbv2.model.BatchGetItemResult;
+	using BatchGetItemResponse = com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse;
 	using ComparisonOperator = com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
@@ -223,7 +223,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testBatchGetItemsContainsItem(TransactionManagerDynamoDBFacade facade, IDictionary<string, AttributeValue> item, bool filterAttributes)
 		{
 			BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(filterAttributes);
-			BatchGetItemResult batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
+			BatchGetItemResponse batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
 			IList<IDictionary<string, AttributeValue>> items = batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME);
 			assertEquals(1, items.Count);
 			assertContainsNoTransactionAttributes(items[0]);
@@ -235,7 +235,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testBatchGetItemsIsEmpty(TransactionManagerDynamoDBFacade facade)
 		{
 			BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(false);
-			BatchGetItemResult batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
+			BatchGetItemResponse batchGetItemResult = facade.batchGetItem(batchGetItemRequest);
 			assertNotNull(batchGetItemResult.Responses);
 			assertEquals(1, batchGetItemResult.Responses.size());
 			assertNotNull(batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME));

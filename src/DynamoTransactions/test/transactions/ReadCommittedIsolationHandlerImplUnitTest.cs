@@ -90,8 +90,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private Request mockRequest;
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Mock private com.amazonaws.services.dynamodbv2.AmazonDynamoDB mockClient;
-		private AmazonDynamoDB mockClient;
+//ORIGINAL LINE: @Mock private com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient mockClient;
+		private AmazonDynamoDBClient mockClient;
 
 		private ReadCommittedIsolationHandlerImpl isolationHandler;
 
