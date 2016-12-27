@@ -1,42 +1,31 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 
-/// <summary>
-/// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
  namespace com.amazonaws.services.dynamodbv2.util
  {
-
-
-	using AttributeDefinition = com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
-	using CreateTableRequest = com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-	using DescribeTableRequest = com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
-	using DescribeTableResult = com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
-	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
-	using LocalSecondaryIndex = com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex;
-	using LocalSecondaryIndexDescription = com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndexDescription;
-	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-	using ResourceInUseException = com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
-	using ResourceNotFoundException = com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
-	using TableStatus = com.amazonaws.services.dynamodbv2.model.TableStatus;
-
 	public class TableHelper
 	{
 
-		private readonly AmazonDynamoDB client;
+		private readonly AmazonDynamoDBClient client;
 
-		public TableHelper(AmazonDynamoDB client)
+		public TableHelper(AmazonDynamoDBClient client)
 		{
 			if (client == null)
 			{
@@ -47,8 +36,7 @@ using System.Threading;
 
 		public virtual string verifyTableExists(string tableName, IList<AttributeDefinition> definitions, IList<KeySchemaElement> keySchema, IList<LocalSecondaryIndex> localIndexes)
 		{
-
-			DescribeTableResult describe = client.describeTable((new DescribeTableRequest()).withTableName(tableName));
+			DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest(tableName)).Result;
 			if (!(new HashSet<AttributeDefinition>(definitions)).Equals(new HashSet<AttributeDefinition>(describe.Table.AttributeDefinitions)))
 			{
 				throw new ResourceInUseException("Table " + tableName + " had the wrong AttributesToGet." + " Expected: " + definitions + " " + " Was: " + describe.Table.AttributeDefinitions);
@@ -67,7 +55,12 @@ using System.Threading;
 				theirLSIs = new List<LocalSecondaryIndex>();
 				foreach (LocalSecondaryIndexDescription description in describe.Table.LocalSecondaryIndexes)
 				{
-					LocalSecondaryIndex lsi = (new LocalSecondaryIndex()).withIndexName(description.IndexName).withKeySchema(description.KeySchema).withProjection(description.Projection);
+					LocalSecondaryIndex lsi = new LocalSecondaryIndex
+                    {
+                        IndexName = description.IndexName,
+                        KeySchema = description.KeySchema,
+                        Projection = description.Projection
+                    };
 					theirLSIs.Add(lsi);
 				}
 			}
@@ -102,7 +95,7 @@ using System.Threading;
 		/// <exception cref="InterruptedException">  </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public void verifyOrCreateTable(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput, Nullable<long> waitTimeSeconds) throws InterruptedException
-		public virtual void verifyOrCreateTable(string tableName, IList<AttributeDefinition> definitions, IList<KeySchemaElement> keySchema, IList<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
+		public virtual void verifyOrCreateTable(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
 		{
 
 			if (waitTimeSeconds != null && waitTimeSeconds < 0)
@@ -117,8 +110,14 @@ using System.Threading;
 			}
 			catch (ResourceNotFoundException)
 			{
-				status = client.createTable(new CreateTableRequest()
-					.withTableName(tableName).withAttributeDefinitions(definitions).withKeySchema(keySchema).withLocalSecondaryIndexes(localIndexes).withProvisionedThroughput(provisionedThroughput)).TableDescription.TableStatus;
+				status = client.CreateTableAsync(new CreateTableRequest
+				{
+				    TableName = tableName,
+                    AttributeDefinitions = definitions,
+                    KeySchema = keySchema,
+                    LocalSecondaryIndexes = localIndexes,
+                    ProvisionedThroughput = provisionedThroughput
+				}).Result.TableDescription.TableStatus;
 			}
 
 			if (waitTimeSeconds != null && !TableStatus.ACTIVE.ToString().Equals(status))
@@ -140,7 +139,10 @@ using System.Threading;
 			long elapsedMs = 0;
 			do
 			{
-				DescribeTableResult describe = client.describeTable((new DescribeTableRequest()).withTableName(tableName));
+				DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
+				{
+				    TableName = tableName
+				}).Result;
 				string status = describe.Table.TableStatus;
 				if (TableStatus.ACTIVE.ToString().Equals(status))
 				{
@@ -203,7 +205,10 @@ using System.Threading;
 			{
 				try
 				{
-					DescribeTableResult describe = client.describeTable((new DescribeTableRequest()).withTableName(tableName));
+					DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
+					{
+					    TableName = tableName
+					}).Result;
 					string status = describe.Table.TableStatus;
 					if (!TableStatus.DELETING.ToString().Equals(status))
 					{

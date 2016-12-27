@@ -1,32 +1,30 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Amazon.DynamoDBv2.Model;
 
-/// <summary>
-/// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
  namespace com.amazonaws.services.dynamodbv2.util
  {
-
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-
 	/// <summary>
 	/// An immutable, write-only key map for storing DynamoDB a primary key value as a map key in other maps.  
 	/// </summary>
 	public class ImmutableKey
 	{
 
-		private readonly IDictionary<string, ImmutableAttributeValue> key;
+		private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 
 		public ImmutableKey(IDictionary<string, AttributeValue> mutableKey)
 		{
@@ -41,7 +39,7 @@
 				{
 					keyBuilder[e.Key] = new ImmutableAttributeValue(e.Value);
 				}
-				this.key = Collections.unmodifiableMap(keyBuilder);
+				this.key = new ReadOnlyDictionary<string, ImmutableAttributeValue>(keyBuilder);
 			}
 		}
 

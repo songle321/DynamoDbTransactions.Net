@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Amazon.DynamoDBv2.Model;
 
 /// <summary>
 /// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,10 +19,6 @@
 /// </summary>
  namespace com.amazonaws.services.dynamodbv2.util
  {
-
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-
 	/// <summary>
 	/// An immutable class that can be used in map keys.  Does a copy of the attribute value
 	/// to prevent any member from being mutated.
@@ -38,18 +37,18 @@
 		{
 			s = av.S;
 			n = av.N;
-			b = av.B != null ? av.B.array().clone() : null;
+			b = (sbyte[]) av.B?.ToArray().Clone();
 			ns = av.NS != null ? new List<string>(av.NS) : null;
 			ss = av.SS != null ? new List<string>(av.SS) : null;
-			bs = av.BS != null ? new List<sbyte[]>(av.BS.size()) : null;
+			bs = av.BS != null ? new List<sbyte[]>(av.BS.Count) : null;
 
 			if (av.BS != null)
 			{
-				foreach (ByteBuffer buf in av.BS)
+				foreach (var buf in av.BS)
 				{
 					if (buf != null)
 					{
-						bs.Add(buf.array().clone());
+						bs.Add((sbyte[]) buf.ToArray().Clone());
 					}
 					else
 					{
@@ -63,12 +62,12 @@
 		{
 			const int prime = 31;
 			int result = 1;
-			result = prime * result + Arrays.GetHashCode(b);
-			result = prime * result + ((bs == null) ? 0 : bs.GetHashCode());
+			result = prime * result + b.GetHashCode();
+			result = prime * result + (bs?.GetHashCode() ?? 0);
 			result = prime * result + ((string.ReferenceEquals(n, null)) ? 0 : n.GetHashCode());
-			result = prime * result + ((ns == null) ? 0 : ns.GetHashCode());
+			result = prime * result + (ns?.GetHashCode() ?? 0);
 			result = prime * result + ((string.ReferenceEquals(s, null)) ? 0 : s.GetHashCode());
-			result = prime * result + ((ss == null) ? 0 : ss.GetHashCode());
+			result = prime * result + (ss?.GetHashCode() ?? 0);
 			return result;
 		}
 
@@ -87,7 +86,7 @@
 				return false;
 			}
 			ImmutableAttributeValue other = (ImmutableAttributeValue) obj;
-			if (!Arrays.Equals(b, other.b))
+			if (!b.SequenceEqual(other.b))
 			{
 				return false;
 			}
@@ -100,7 +99,7 @@
 			}
 //JAVA TO C# CONVERTER WARNING: LINQ 'SequenceEqual' is not always identical to Java AbstractList 'equals':
 //ORIGINAL LINE: else if (!bs.equals(other.bs))
-			else if (!bs.SequenceEqual(other.bs))
+			else if (!bs.Zip(other.bs, (x, y) => x.SequenceEqual(y)).All(x => x))
 			{
 				// Note: this else if block is not auto-generated
 				if (other.bs == null)
@@ -113,7 +112,7 @@
 				}
 				for (int i = 0; i < bs.Count; i++)
 				{
-					if (!Arrays.Equals(bs[i], other.bs[i]))
+					if (bs[i].SequenceEqual(other.bs[i]))
 					{
 						return false;
 					}
