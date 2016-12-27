@@ -34,8 +34,12 @@ namespace com.amazonaws.services.dynamodbv2.util
 		{
 			sbyte[] b1 = new sbyte[] {(sbyte)0x01};
 			sbyte[] b2 = new sbyte[] {(sbyte)0x01};
-			AttributeValue av1 = (new AttributeValue()).withBS(ByteBuffer.wrap(b1));
-			AttributeValue av2 = (new AttributeValue()).withBS(ByteBuffer.wrap(b2));
+			AttributeValue av1 = new AttributeValue {
+.withBS(ByteBuffer.wrap(b1))
+};
+			AttributeValue av2 = new AttributeValue {
+.withBS(ByteBuffer.wrap(b2))
+};
 			ImmutableAttributeValue iav1 = new ImmutableAttributeValue(av1);
 			ImmutableAttributeValue iav2 = new ImmutableAttributeValue(av2);
 			assertEquals(iav1, iav2);
@@ -47,8 +51,12 @@ namespace com.amazonaws.services.dynamodbv2.util
 		{
 			sbyte[] b1 = new sbyte[] {(sbyte)0x01};
 			sbyte[] b2 = new sbyte[] {(sbyte)0x02};
-			AttributeValue av1 = (new AttributeValue()).withBS(ByteBuffer.wrap(b1));
-			AttributeValue av2 = (new AttributeValue()).withBS(ByteBuffer.wrap(b2));
+			AttributeValue av1 = new AttributeValue {
+.withBS(ByteBuffer.wrap(b1))
+};
+			AttributeValue av2 = new AttributeValue {
+.withBS(ByteBuffer.wrap(b2))
+};
 			ImmutableAttributeValue iav1 = new ImmutableAttributeValue(av1);
 			ImmutableAttributeValue iav2 = new ImmutableAttributeValue(av2);
 			assertFalse(iav1.Equals(iav2));
