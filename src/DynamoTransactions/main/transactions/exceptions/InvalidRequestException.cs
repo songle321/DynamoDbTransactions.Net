@@ -24,14 +24,14 @@ using Amazon.DynamoDBv2.Model;
 		private const long serialVersionUID = 4622315126910271817L;
 
 		private readonly string tableName;
-		private readonly IDictionary<string, AttributeValue> key;
+		private readonly Dictionary<string, AttributeValue> key;
 		private readonly Request request;
 
-		public InvalidRequestException(string message, string txId, string tableName, IDictionary<string, AttributeValue> key, Request request) : this(message, txId, tableName, key, request, null)
+		public InvalidRequestException(string message, string txId, string tableName, Dictionary<string, AttributeValue> key, Request request) : this(message, txId, tableName, key, request, null)
 		{
 		}
 
-		public InvalidRequestException(string message, string txId, string tableName, IDictionary<string, AttributeValue> key, Request request, Exception t) : base(((!string.ReferenceEquals(message, null)) ? ": " + message : "Invalid request") + " for transaction " + txId + " table " + tableName + " key " + key, t)
+		public InvalidRequestException(string message, string txId, string tableName, Dictionary<string, AttributeValue> key, Request request, Exception t) : base(((!string.ReferenceEquals(message, null)) ? ": " + message : "Invalid request") + " for transaction " + txId + " table " + tableName + " key " + key, t)
 		{
 			this.tableName = tableName;
 			this.key = key;
@@ -46,7 +46,7 @@ using Amazon.DynamoDBv2.Model;
 			}
 		}
 
-		public virtual IDictionary<string, AttributeValue> Key
+		public virtual Dictionary<string, AttributeValue> Key
 		{
 			get
 			{

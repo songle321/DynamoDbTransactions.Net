@@ -26,7 +26,7 @@ using Amazon.DynamoDBv2.Model;
 
 		private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 
-		public ImmutableKey(IDictionary<string, AttributeValue> mutableKey)
+		public ImmutableKey(Dictionary<string, AttributeValue> mutableKey)
 		{
 			if (mutableKey == null)
 			{
@@ -34,7 +34,7 @@ using Amazon.DynamoDBv2.Model;
 			}
 			else
 			{
-				IDictionary<string, ImmutableAttributeValue> keyBuilder = new Dictionary<string, ImmutableAttributeValue>(mutableKey.Count);
+				Dictionary<string, ImmutableAttributeValue> keyBuilder = new Dictionary<string, ImmutableAttributeValue>(mutableKey.Count);
 				foreach (KeyValuePair<string, AttributeValue> e in mutableKey.SetOfKeyValuePairs())
 				{
 					keyBuilder[e.Key] = new ImmutableAttributeValue(e.Value);

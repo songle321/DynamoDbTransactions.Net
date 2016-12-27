@@ -29,13 +29,13 @@ using Amazon.DynamoDBv2.Model;
 		private readonly string txId;
 		private readonly string lockOwnerTxId;
 		private readonly string tableName;
-		private readonly IDictionary<string, AttributeValue> item;
+		private readonly Dictionary<string, AttributeValue> item;
 
-		public ItemNotLockedException(string txId, string lockTxId, string tableName, IDictionary<string, AttributeValue> item) : this(txId, lockTxId, tableName, item, null)
+		public ItemNotLockedException(string txId, string lockTxId, string tableName, Dictionary<string, AttributeValue> item) : this(txId, lockTxId, tableName, item, null)
 		{
 		}
 
-		public ItemNotLockedException(string txId, string lockOwnerTxId, string tableName, IDictionary<string, AttributeValue> item, Exception t) : base(txId, "Item is not locked by our transaction, is locked by " + lockOwnerTxId + " for table " + tableName + ", item: " + item)
+		public ItemNotLockedException(string txId, string lockOwnerTxId, string tableName, Dictionary<string, AttributeValue> item, Exception t) : base(txId, "Item is not locked by our transaction, is locked by " + lockOwnerTxId + " for table " + tableName + ", item: " + item)
 		{
 			this.txId = txId;
 			this.lockOwnerTxId = lockOwnerTxId;
@@ -59,7 +59,7 @@ using Amazon.DynamoDBv2.Model;
 			}
 		}
 
-		public virtual IDictionary<string, AttributeValue> Item
+		public virtual Dictionary<string, AttributeValue> Item
 		{
 			get
 			{

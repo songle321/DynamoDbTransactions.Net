@@ -71,7 +71,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	{
 
 		protected internal const int RID = 1;
-		protected internal static GetItemRequest GET_ITEM_REQUEST = new GetItemRequest().withTableName(TABLE_NAME).withKey(KEY).withConsistentRead(true);
+		protected internal static GetItemRequest GET_ITEM_REQUEST = new GetItemRequest {
+
+TableName = TABLE_NAME,
+Key = KEY,
+ConsistentRead = true,
+};
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Mock private TransactionManager mockTxManager;
@@ -145,7 +150,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetIsNull()
 		public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetIsNull()
 		{
-			IDictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, null);
+			Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, null);
 			assertEquals(UNLOCKED_ITEM, result);
 		}
 
@@ -153,7 +158,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetIsEmpty()
 		public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetIsEmpty()
 		{
-			IDictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, new List<string>());
+			Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, new List<string>());
 			assertEquals(UNLOCKED_ITEM, result);
 		}
 
@@ -161,8 +166,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetContainsAllAttributes()
 		public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetContainsAllAttributes()
 		{
-			IList<string> attributesToGet = Arrays.asList("Id", "attr1"); // all attributes
-			IDictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
+			List<string> attributesToGet = Arrays.asList("Id", "attr1"); // all attributes
+			Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
 			assertEquals(UNLOCKED_ITEM, result);
 		}
 
@@ -170,8 +175,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsOnlySpecifiedAttributesWhenSpecified()
 		public virtual void filterAttributesToGetReturnsOnlySpecifiedAttributesWhenSpecified()
 		{
-			IList<string> attributesToGet = Arrays.asList("Id"); // only keep the key
-			IDictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
+			List<string> attributesToGet = Arrays.asList("Id"); // only keep the key
+			Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
 			assertEquals(KEY, result);
 		}
 
@@ -200,7 +205,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			when(mockRequest.Rid).thenReturn(RID);
 			when(mockTxItem.loadItemImage(RID)).thenReturn(UNLOCKED_ITEM);
-			IDictionary<string, AttributeValue> result = isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
+			Dictionary<string, AttributeValue> result = isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			assertEquals(UNLOCKED_ITEM, result);
 		}
 
@@ -286,7 +291,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
 			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn((new GetItemResult()).withItem(NON_TRANSIENT_APPLIED_ITEM));
+			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
+
+Item = NON_TRANSIENT_APPLIED_ITEM,)
+};
 			bool caughtException = false;
 			try
 			{
@@ -309,7 +317,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn((new GetItemResult()).withItem(NON_TRANSIENT_APPLIED_ITEM));
+			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
+
+Item = NON_TRANSIENT_APPLIED_ITEM,)
+};
 			bool caughtException = false;
 			try
 			{

@@ -95,7 +95,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             return new DeleteItemResponse { Attributes = item };
         }
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.GetItemResponse GetItemAsync(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         public virtual GetItemResponse getItem(GetItemRequest request)
         {
 
@@ -596,7 +596,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             // so a sweeper needs to deal with it.
 
             // Possible outcomes:
-            // 1) We know for sure from just the request (getItem) that we never back up the item. Release the lock (and delete if transient)
+            // 1) We know for sure from just the request (GetItemAsync) that we never back up the item. Release the lock (and delete if transient)
             // 2) We found a backup.  Apply the backup.
             // 3) We didn't find a backup. Try deleting the item with expected: 1) Transient, 2) Locked by us, return success
             // 4) Read the item. If we don't have the lock anymore, meaning it was already rolled back.  Return.
@@ -1297,7 +1297,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             public static readonly AttributeName FINALIZED = new AttributeName("FINALIZED", InnerEnum.FINALIZED, TX_ATTR_PREFIX + "F");
             public static readonly AttributeName IMAGE_ID = new AttributeName("IMAGE_ID", InnerEnum.IMAGE_ID, TX_ATTR_PREFIX + "I");
 
-            private static readonly IList<AttributeName> valueList = new List<AttributeName>();
+            private static readonly List<AttributeName> valueList = new List<AttributeName>();
 
             static AttributeName()
             {
@@ -1346,7 +1346,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 return value;
             }
 
-            public static IList<AttributeName> values()
+            public static List<AttributeName> values()
             {
                 return valueList;
             }

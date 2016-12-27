@@ -35,12 +35,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	{
 
 		protected internal const string TABLE_NAME = "TEST_TABLE";
-		protected internal static readonly IDictionary<string, AttributeValue> KEY = Collections.singletonMap("Id", new AttributeValue().withS("KeyValue"));
+		protected internal static readonly Dictionary<string, AttributeValue> KEY = Collections.singletonMap("Id", new AttributeValue {
+
+S = "KeyValue",)
+};
 		protected internal const string TX_ID = "e1b52a78-0187-4787-b1a3-27f63a78898b";
-		protected internal static readonly IDictionary<string, AttributeValue> UNLOCKED_ITEM = createItem(false, false, false);
-		protected internal static readonly IDictionary<string, AttributeValue> TRANSIENT_UNAPPLIED_ITEM = createItem(true, true, false);
-		protected internal static readonly IDictionary<string, AttributeValue> TRANSIENT_APPLIED_ITEM = createItem(true, true, true);
-		protected internal static readonly IDictionary<string, AttributeValue> NON_TRANSIENT_APPLIED_ITEM = createItem(true, false, true);
+		protected internal static readonly Dictionary<string, AttributeValue> UNLOCKED_ITEM = createItem(false, false, false);
+		protected internal static readonly Dictionary<string, AttributeValue> TRANSIENT_UNAPPLIED_ITEM = createItem(true, true, false);
+		protected internal static readonly Dictionary<string, AttributeValue> TRANSIENT_APPLIED_ITEM = createItem(true, true, true);
+		protected internal static readonly Dictionary<string, AttributeValue> NON_TRANSIENT_APPLIED_ITEM = createItem(true, false, true);
 
 		private ReadUncommittedIsolationHandlerImpl isolationHandler;
 
@@ -51,25 +54,37 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			isolationHandler = new ReadUncommittedIsolationHandlerImpl();
 		}
 
-		private static IDictionary<string, AttributeValue> createItem(bool isLocked, bool isTransient, bool isApplied)
+		private static Dictionary<string, AttributeValue> createItem(bool isLocked, bool isTransient, bool isApplied)
 		{
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			if (isLocked)
 			{
 				item[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(TX_ID);
-				item[Transaction.AttributeName.DATE.ToString()] = (new AttributeValue()).withS("");
+				item[Transaction.AttributeName.DATE.ToString()] = new AttributeValue {
+
+S = "",
+};
 				if (isTransient)
 				{
-					item[Transaction.AttributeName.TRANSIENT.ToString()] = (new AttributeValue()).withS("");
+					item[Transaction.AttributeName.TRANSIENT.ToString()] = new AttributeValue {
+
+S = "",
+};
 				}
 				if (isApplied)
 				{
-					item[Transaction.AttributeName.APPLIED.ToString()] = (new AttributeValue()).withS("");
+					item[Transaction.AttributeName.APPLIED.ToString()] = new AttributeValue {
+
+S = "",
+};
 				}
 			}
 			if (!isTransient)
 			{
-				item["attr1"] = (new AttributeValue()).withS("some value");
+				item["attr1"] = new AttributeValue {
+
+S = "some value",
+};
 			}
 //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
 			item.putAll(KEY);

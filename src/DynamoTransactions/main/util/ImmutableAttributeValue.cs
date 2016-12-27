@@ -29,9 +29,9 @@ using Amazon.DynamoDBv2.Model;
 		private readonly string n;
 		private readonly string s;
 		private readonly sbyte[] b;
-		private readonly IList<string> ns;
-		private readonly IList<string> ss;
-		private readonly IList<sbyte[]> bs;
+		private readonly List<string> ns;
+		private readonly List<string> ss;
+		private readonly List<sbyte[]> bs;
 
 		public ImmutableAttributeValue(AttributeValue av)
 		{

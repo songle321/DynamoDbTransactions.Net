@@ -347,7 +347,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 throw new InvalidRequestException("TableName must not be null", txId, null, null, this);
             }
-            IDictionary<string, AttributeValue> key = getKey(txManager);
+            Dictionary<string, AttributeValue> key = getKey(txManager);
             if (key == null || key.Count == 0)
             {
                 throw new InvalidRequestException("The request key cannot be empty", txId, TableName, key, this);
@@ -368,7 +368,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             throw new InvalidRequestException("Unsupported ReturnValues: " + returnValues, txId, request.TableName, null, request);
         }
 
-        private static void validateAttributes<T>(Request request, IDictionary<string, T> attributes, string txId, TransactionManager txManager)
+        private static void validateAttributes<T>(Request request, Dictionary<string, T> attributes, string txId, TransactionManager txManager)
         {
             //JAVA TO C# CONVERTER WARNING: Java wildcard generics have no direct equivalent in .NET:
             //ORIGINAL LINE: for(java.util.Map.Entry<String, ?> entry : attributes.entrySet())
@@ -381,7 +381,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        private static void validateAttributes(Request request, IList<string> attributes, string txId, TransactionManager txManager)
+        private static void validateAttributes(Request request, List<string> attributes, string txId, TransactionManager txManager)
         {
             if (attributes == null)
             {
@@ -396,14 +396,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        protected internal static Dictionary<string, AttributeValue> getKeyFromItem(string tableName, IDictionary<string, AttributeValue> item, TransactionManager txManager)
+        protected internal static Dictionary<string, AttributeValue> getKeyFromItem(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
         {
             if (item == null)
             {
                 throw new InvalidRequestException("PutItem must contain an Item", null, tableName, null, null);
             }
             Dictionary<string, AttributeValue> newKey = new Dictionary<string, AttributeValue>();
-            IList<KeySchemaElement> schema = txManager.getTableSchema(tableName);
+            List<KeySchemaElement> schema = txManager.getTableSchema(tableName);
             foreach (KeySchemaElement schemaElement in schema)
             {
                 AttributeValue val = item[schemaElement.AttributeName];
@@ -420,10 +420,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// Returns a new copy of Map that can be used in a write on the item to ensure it does not exist </summary>
         /// <param name="txManager"> </param>
         /// <returns> a map for use in an expected clause to ensure the item does not exist </returns>
-        protected internal virtual IDictionary<string, ExpectedAttributeValue> getExpectNotExists(TransactionManager txManager)
+        protected internal virtual Dictionary<string, ExpectedAttributeValue> getExpectNotExists(TransactionManager txManager)
         {
-            IDictionary<string, AttributeValue> key = getKey(txManager);
-            IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(key.Count);
+            Dictionary<string, AttributeValue> key = getKey(txManager);
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(key.Count);
             foreach (KeyValuePair<string, AttributeValue> entry in key.SetOfKeyValuePairs())
             {
                 expected[entry.Key] = new ExpectedAttributeValue { Exists = false };

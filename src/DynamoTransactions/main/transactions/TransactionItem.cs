@@ -50,10 +50,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		protected internal readonly string txId;
 		private readonly TransactionManager txManager;
-		private IDictionary<string, AttributeValue> txItem;
+		private Dictionary<string, AttributeValue> txItem;
 		private int version;
 		private readonly Dictionary<string, AttributeValue> txKey;
-		private readonly IDictionary<string, Dictionary<ImmutableKey, Request>> requestsMap = new Dictionary<string, Dictionary<ImmutableKey, Request>>();
+		private readonly Dictionary<string, Dictionary<ImmutableKey, Request>> requestsMap = new Dictionary<string, Dictionary<ImmutableKey, Request>>();
 
 		/*
 		 * Constructors and initializers
@@ -74,7 +74,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public TransactionItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> txItem, TransactionManager txManager) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
-		public TransactionItem(IDictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
+		public TransactionItem(Dictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
 		{
 		}
 
@@ -88,7 +88,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <exception cref="TransactionNotFoundException"> </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: protected TransactionItem(String txId, TransactionManager txManager, boolean insert, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> txItem) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
-		protected internal TransactionItem(string txId, TransactionManager txManager, bool insert, IDictionary<string, AttributeValue> txItem)
+		protected internal TransactionItem(string txId, TransactionManager txManager, bool insert, Dictionary<string, AttributeValue> txItem)
 		{
 			this.txManager = txManager;
 
@@ -101,7 +101,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					throw new TransactionException(txId, "When providing txId, txItem must be null");
 				}
 				this.txId = txId;
-				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+				Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
 				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
 				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
 				if (insert)
@@ -130,7 +130,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					throw new TransactionException(txId, "txItem is not a transaction item");
 				}
 				this.txId = txItem[Transaction.AttributeName.TXID.ToString()].S;
-				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+				Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
 				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
 				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
 			}
@@ -155,7 +155,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// Inserts a new transaction item into the table.  Assumes txKey is already initialized. </summary>
 		/// <returns> the txItem </returns>
 		/// <exception cref="TransactionException"> if the transaction already exists </exception>
-		private IDictionary<string, AttributeValue> insert()
+		private Dictionary<string, AttributeValue> insert()
 		{
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[Transaction.AttributeName.STATE.ToString()] = new AttributeValue(STATE_PENDING);
@@ -189,7 +189,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// Fetches this transaction item from the tx table.  Uses consistent read.
 		/// </summary>
 		/// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
-		private IDictionary<string, AttributeValue> get()
+		private Dictionary<string, AttributeValue> get()
 		{
 			GetItemRequest getRequest = new GetItemRequest
 			{
@@ -217,7 +217,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// </summary>
 		/// <param name="txItem">
 		/// @return </param>
-		public static bool isTransactionItem(IDictionary<string, AttributeValue> txItem)
+		public static bool isTransactionItem(Dictionary<string, AttributeValue> txItem)
 		{
 			if (txItem == null)
 			{
@@ -291,7 +291,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="tableName"> </param>
 		/// <param name="key">
 		/// @return </param>
-		public virtual Request getRequestForKey(string tableName, IDictionary<string, AttributeValue> key)
+		public virtual Request getRequestForKey(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			Dictionary<ImmutableKey, Request> tableRequests = requestsMap[tableName];
 
@@ -400,7 +400,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void loadRequests()
 		{
 			AttributeValue requestsVal = txItem[Transaction.AttributeName.REQUESTS.ToString()];
-			IList<MemoryStream> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<MemoryStream>(0);
+			List<MemoryStream> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<MemoryStream>(0);
 
 			foreach (MemoryStream rawRequest in rawRequests)
 			{
@@ -421,7 +421,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: private boolean addRequestToMap(Request request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException
 		private bool addRequestToMap(Request request)
 		{
-			IDictionary<string, AttributeValue> key = request.getKey(txManager);
+			Dictionary<string, AttributeValue> key = request.getKey(txManager);
 			ImmutableKey immutableKey = new ImmutableKey(key);
 
 			Dictionary<ImmutableKey, Request> pkToRequestMap = requestsMap[request.TableName];
@@ -530,7 +530,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
 			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
-			IDictionary<string, AttributeValue> item = txManager.Client.GetItemAsync(new GetItemRequest
+			Dictionary<string, AttributeValue> item = txManager.Client.GetItemAsync(new GetItemRequest
 			{
 			    TableName = txManager.ItemImageTableName,
                 Key = key,
@@ -714,7 +714,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// For unit testing only
 		/// @return
 		/// </summary>
-		protected internal virtual IDictionary<string, Dictionary<ImmutableKey, Request>> RequestMap
+		protected internal virtual Dictionary<string, Dictionary<ImmutableKey, Request>> RequestMap
 		{
 			get
 			{

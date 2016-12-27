@@ -34,7 +34,7 @@ using Amazon.DynamoDBv2.Model;
 			this.client = client;
 		}
 
-		public virtual string verifyTableExists(string tableName, IList<AttributeDefinition> definitions, IList<KeySchemaElement> keySchema, IList<LocalSecondaryIndex> localIndexes)
+		public virtual string verifyTableExists(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
 		{
 			DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest(tableName)).Result;
 			if (!(new HashSet<AttributeDefinition>(definitions)).Equals(new HashSet<AttributeDefinition>(describe.Table.AttributeDefinitions)))
@@ -49,7 +49,7 @@ using Amazon.DynamoDBv2.Model;
 				throw new ResourceInUseException("Table " + tableName + " had the wrong KeySchema." + " Expected: " + keySchema + " " + " Was: " + describe.Table.KeySchema);
 			}
 
-			IList<LocalSecondaryIndex> theirLSIs = null;
+			List<LocalSecondaryIndex> theirLSIs = null;
 			if (describe.Table.LocalSecondaryIndexes != null)
 			{
 				theirLSIs = new List<LocalSecondaryIndex>();
@@ -161,7 +161,7 @@ using Amazon.DynamoDBv2.Model;
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public void waitForTableActive(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, long waitTimeSeconds) throws InterruptedException
-		public virtual void waitForTableActive(string tableName, IList<AttributeDefinition> definitions, IList<KeySchemaElement> keySchema, IList<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
+		public virtual void waitForTableActive(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
 		{
 
 			if (waitTimeSeconds < 0)

@@ -31,8 +31,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void testCheckExpectedStringValueWithMatchingItem()
 		public virtual void testCheckExpectedStringValueWithMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("Bar")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("Bar")));
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 			// no exception expected
@@ -42,8 +42,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedStringValueWithNonMatchingItem()
 		public virtual void testCheckExpectedStringValueWithNonMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("NotBar")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("NotBar")));
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 		}
@@ -52,8 +52,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void testCheckExpectedBinaryValueWithMatchingItem()
 		public virtual void testCheckExpectedBinaryValueWithMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127}))));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127}))));
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 			// no exception expected
@@ -63,8 +63,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedBinaryValueWithNonMatchingItem()
 		public virtual void testCheckExpectedBinaryValueWithNonMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {0, 127, (sbyte)-127}))));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {0, 127, (sbyte)-127}))));
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 		}
@@ -73,8 +73,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingItem()
 		public virtual void testCheckExpectedNumericValueWithMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withN("3.14"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withN("3.14")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
+
+N = "3.14",)
+};
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
+
+N = "3.14",))
+};
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 			// no exception expected
@@ -84,8 +90,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
 		public virtual void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withN("3.140"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withN("3.14")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
+
+N = "3.140",)
+};
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
+
+N = "3.14",))
+};
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 			// no exception expected
@@ -95,8 +107,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithNonMatchingItem()
 		public virtual void testCheckExpectedNumericValueWithNonMatchingItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withN("3.14"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withN("12")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
+
+N = "3.14",)
+};
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
+
+N = "12",))
+};
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 		}
@@ -105,8 +123,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithStringTypedItem()
 		public virtual void testCheckExpectedNumericValueWithStringTypedItem()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("3.14"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withN("3.14")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("3.14"));
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
+
+N = "3.14",))
+};
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 		}
@@ -115,8 +136,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test(expected = IllegalArgumentException.class) public void testCheckExpectedInvalidNumericValue()
 		public virtual void testCheckExpectedInvalidNumericValue()
 		{
-			IDictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withN("1.1"));
-			IDictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withN("!!.!!")));
+			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
+
+N = "1.1",)
+};
+			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
+
+N = "!!.!!",))
+};
 
 			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
 		}

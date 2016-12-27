@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.util;
@@ -28,10 +31,27 @@ using com.amazonaws.services.dynamodbv2.util;
 
 		private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
 		private static readonly IList<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
-		private static readonly IList<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(Transaction.AttributeName.TXID.ToString()).withKeyType(KeyType.HASH)));
+
+	    private static readonly IList<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA =new []
+	    {
+	        new KeySchemaElement
+	        {
+	            AttributeName = Transaction.AttributeName.TXID.ToString(),
+	            KeyType = KeyType.HASH
+	        }
+	    };
 
 		private static readonly IList<AttributeDefinition> TRANSACTION_IMAGES_TABLE_ATTRIBUTES;
-		private static readonly IList<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = Collections.unmodifiableList(Arrays.asList(new KeySchemaElement().withAttributeName(Transaction.AttributeName.IMAGE_ID.ToString()).withKeyType(KeyType.HASH)));
+
+	    private static readonly IList<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = new[]
+	    {
+	        new KeySchemaElement
+	        {
+	            AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
+	            KeyType = KeyType.HASH
+	        }
+	    };
+
 
 		static TransactionManager()
 		{
@@ -182,22 +202,22 @@ using com.amazonaws.services.dynamodbv2.util;
 				case COMMITTED:
 					return readCommittedIsolationHandler;
 				case READ_LOCK:
-					throw new System.ArgumentException("Cannot call getItem at the READ_LOCK isolation level outside of a transaction. Call getItem on a transaction directly instead.");
+					throw new System.ArgumentException("Cannot call GetItemAsync at the READ_LOCK isolation level outside of a transaction. Call GetItemAsync on a transaction directly instead.");
 				default:
 					throw new System.ArgumentException("Unrecognized isolation level: " + isolationLevel);
 			}
 		}
 
-		public virtual GetItemResponse getItem(GetItemRequest request, Transaction.IsolationLevel isolationLevel)
+		public virtual async Task<GetItemResponse> GetItemAsync(GetItemRequest request, Transaction.IsolationLevel isolationLevel, CancellationToken cancellationToken)
 		{
 			if (request.AttributesToGet != null)
 			{
 				ISet<string> attributesToGet = new HashSet<string>(request.AttributesToGet);
-				attributesToGet.addAll(Transaction.SPECIAL_ATTR_NAMES);
-				request.AttributesToGet = attributesToGet;
+				attributesToGet.UnionWith(Transaction.SPECIAL_ATTR_NAMES);
+				request.AttributesToGet = attributesToGet.ToList();
 			}
-			GetItemResponse result = Client.getItem(request);
-			IDictionary<string, AttributeValue> item = getReadIsolationHandler(isolationLevel).handleItem(result.Item, request.AttributesToGet, request.TableName);
+			GetItemResponse result = await Client.GetItemAsync(request, cancellationToken);
+			Dictionary<string, AttributeValue> item = getReadIsolationHandler(isolationLevel).handleItem(result.Item, request.AttributesToGet, request.TableName);
 			Transaction.stripSpecialAttributes(item);
 			result.Item = item;
 			return result;
@@ -331,7 +351,7 @@ using com.amazonaws.services.dynamodbv2.util;
 		///            to retrieve the item. </param>
 		/// <param name="isolationLevel">
 		///            The isolation level to use; this has the same meaning as for
-		///            <seealso cref="TransactionManager#getItem(GetItemRequest, IsolationLevel)"/>
+		///            <seealso cref="TransactionManager#GetItemAsync(GetItemRequest, IsolationLevel)"/>
 		///            . </param>
 		/// <returns> An instance of the item class with all attributes populated from
 		///         the table, or null if the item does not exist. </returns>

@@ -50,25 +50,59 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		private const string TABLE_NAME = "Dummy";
 		private const string HASH_ATTR_NAME = "Foo";
-		private static readonly IList<KeySchemaElement> HASH_SCHEMA = Arrays.asList(new KeySchemaElement().withAttributeName(HASH_ATTR_NAME).withKeyType(KeyType.HASH));
+		private static readonly List<KeySchemaElement> HASH_SCHEMA = Arrays.asList(new KeySchemaElement {
 
-		internal static readonly IDictionary<string, AttributeValue> JSON_M_ATTR_VAL = new Dictionary<string, AttributeValue>();
-		private static readonly IDictionary<string, ExpectedAttributeValue> NONNULL_EXPECTED_ATTR_VALUES = new Dictionary<string, ExpectedAttributeValue>();
-		private static readonly IDictionary<string, string> NONNULL_EXP_ATTR_NAMES = new Dictionary<string, string>();
-		private static readonly IDictionary<string, AttributeValue> NONNULL_EXP_ATTR_VALUES = new Dictionary<string, AttributeValue>();
-		private static readonly IDictionary<string, AttributeValue> BASIC_ITEM = new Dictionary<string, AttributeValue>();
+AttributeName = HASH_ATTR_NAME,
+KeyType = KeyType.HASH,)
+};
+
+		internal static readonly Dictionary<string, AttributeValue> JSON_M_ATTR_VAL = new Dictionary<string, AttributeValue>();
+		private static readonly Dictionary<string, ExpectedAttributeValue> NONNULL_EXPECTED_ATTR_VALUES = new Dictionary<string, ExpectedAttributeValue>();
+		private static readonly Dictionary<string, string> NONNULL_EXP_ATTR_NAMES = new Dictionary<string, string>();
+		private static readonly Dictionary<string, AttributeValue> NONNULL_EXP_ATTR_VALUES = new Dictionary<string, AttributeValue>();
+		private static readonly Dictionary<string, AttributeValue> BASIC_ITEM = new Dictionary<string, AttributeValue>();
 
 		static RequestTest()
 		{
-			JSON_M_ATTR_VAL["attr_s"] = (new AttributeValue()).withS("s");
-			JSON_M_ATTR_VAL["attr_n"] = (new AttributeValue()).withN("1");
+			JSON_M_ATTR_VAL["attr_s"] = new AttributeValue {
+
+S = "s",
+};
+			JSON_M_ATTR_VAL["attr_n"] = new AttributeValue {
+
+N = "1",
+};
 			JSON_M_ATTR_VAL["attr_b"] = (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes()));
-			JSON_M_ATTR_VAL["attr_ss"] = (new AttributeValue()).withSS("a", "b");
-			JSON_M_ATTR_VAL["attr_ns"] = (new AttributeValue()).withNS("1", "2");
+			JSON_M_ATTR_VAL["attr_ss"] = new AttributeValue {
+
+SS = "a", "b",
+};
+			JSON_M_ATTR_VAL["attr_ns"] = new AttributeValue {
+
+NS = "1", "2",
+};
 			JSON_M_ATTR_VAL["attr_bs"] = (new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("ghjk").GetBytes()));
-			JSON_M_ATTR_VAL["attr_bool"] = (new AttributeValue()).withBOOL(true);
-			JSON_M_ATTR_VAL["attr_l"] = (new AttributeValue()).withL((new AttributeValue()).withS("s"), (new AttributeValue()).withN("1"), (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())), (new AttributeValue()).withBOOL(true), (new AttributeValue()).withNULL(true));
-			JSON_M_ATTR_VAL["attr_null"] = (new AttributeValue()).withNULL(true);
+			JSON_M_ATTR_VAL["attr_bool"] = new AttributeValue {
+
+BOOL = true,
+};
+			JSON_M_ATTR_VAL["attr_l"] = (new AttributeValue()).withL(new AttributeValue {
+
+S = "s",
+}, new AttributeValue {
+
+N = "1",
+}, (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())), new AttributeValue {
+
+BOOL = true,
+}, new AttributeValue {
+
+NULL = true,)
+};
+			JSON_M_ATTR_VAL["attr_null"] = new AttributeValue {
+
+NULL = true,
+};
 
 			BASIC_ITEM[HASH_ATTR_NAME] = new AttributeValue("a");
 		}
@@ -78,10 +112,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void validPut()
 		{
 			PutItem r = new PutItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			r.setRequest(new PutItemRequest()
-				.withTableName(TABLE_NAME).withItem(item));
+			r.setRequest(new PutItemRequest {
+
+TableName = TABLE_NAME,
+Item = item,)
+};
 			r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
@@ -89,37 +126,45 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void putNullTableName()
 		public virtual void putNullTableName()
 		{
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 
-			invalidRequestTest(new PutItemRequest()
-					.withItem(item), "TableName must not be null");
+			invalidRequestTest(new PutItemRequest {
+
+Item = item,, "TableName must not be null")
+};
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void putNullItem()
 		public virtual void putNullItem()
 		{
-			invalidRequestTest(new PutItemRequest()
-					.withTableName(TABLE_NAME), "PutItem must contain an Item");
+			invalidRequestTest(new PutItemRequest {
+
+TableName = TABLE_NAME,, "PutItem must contain an Item")
+};
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void putMissingKey()
 		public virtual void putMissingKey()
 		{
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item["other-attr"] = new AttributeValue("a");
 
-			invalidRequestTest(new PutItemRequest()
-					.withTableName(TABLE_NAME).withItem(item), "PutItem request must contain the key attribute");
+			invalidRequestTest(new PutItemRequest {
+
+TableName = TABLE_NAME,
+Item = item,, "PutItem request must contain the key attribute")
+};
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void putExpected()
 		public virtual void putExpected()
 		{
-			invalidRequestTest(BasicPutRequest.withExpected(NONNULL_EXPECTED_ATTR_VALUES), "Requests with conditions");
+			invalidRequestTest(BasicPutRequest
+Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -133,21 +178,24 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void putExpressionAttributeNames()
 		public virtual void putExpressionAttributeNames()
 		{
-			invalidRequestTest(BasicPutRequest.withExpressionAttributeNames(NONNULL_EXP_ATTR_NAMES), "Requests with expressions");
+			invalidRequestTest(BasicPutRequest
+ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void putExpressionAttributeValues()
 		public virtual void putExpressionAttributeValues()
 		{
-			invalidRequestTest(BasicPutRequest.withExpressionAttributeValues(NONNULL_EXP_ATTR_VALUES), "Requests with expressions");
+			invalidRequestTest(BasicPutRequest
+ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void updateExpected()
 		public virtual void updateExpected()
 		{
-			invalidRequestTest(BasicUpdateRequest.withExpected(NONNULL_EXPECTED_ATTR_VALUES), "Requests with conditions");
+			invalidRequestTest(BasicUpdateRequest
+Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -161,28 +209,32 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void updateUpdateExpression()
 		public virtual void updateUpdateExpression()
 		{
-			invalidRequestTest(BasicUpdateRequest.withUpdateExpression("REMOVE some_field"), "Requests with expressions");
+			invalidRequestTest(BasicUpdateRequest
+UpdateExpression = "REMOVE some_field",, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void updateExpressionAttributeNames()
 		public virtual void updateExpressionAttributeNames()
 		{
-			invalidRequestTest(BasicUpdateRequest.withExpressionAttributeNames(NONNULL_EXP_ATTR_NAMES), "Requests with expressions");
+			invalidRequestTest(BasicUpdateRequest
+ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void updateExpressionAttributeValues()
 		public virtual void updateExpressionAttributeValues()
 		{
-			invalidRequestTest(BasicUpdateRequest.withExpressionAttributeValues(NONNULL_EXP_ATTR_VALUES), "Requests with expressions");
+			invalidRequestTest(BasicUpdateRequest
+ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void deleteExpected()
 		public virtual void deleteExpected()
 		{
-			invalidRequestTest(BasicDeleteRequest.withExpected(NONNULL_EXPECTED_ATTR_VALUES), "Requests with conditions");
+			invalidRequestTest(BasicDeleteRequest
+Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -196,14 +248,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Test public void deleteExpressionAttributeNames()
 		public virtual void deleteExpressionAttributeNames()
 		{
-			invalidRequestTest(BasicDeleteRequest.withExpressionAttributeNames(NONNULL_EXP_ATTR_NAMES), "Requests with expressions");
+			invalidRequestTest(BasicDeleteRequest
+ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void deleteExpressionAttributeValues()
 		public virtual void deleteExpressionAttributeValues()
 		{
-			invalidRequestTest(BasicDeleteRequest.withExpressionAttributeValues(NONNULL_EXP_ATTR_VALUES), "Requests with expressions");
+			invalidRequestTest(BasicDeleteRequest
+ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -211,10 +265,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void validUpdate()
 		{
 			UpdateItem r = new UpdateItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			r.setRequest(new UpdateItemRequest()
-				.withTableName(TABLE_NAME).withKey(item));
+			r.setRequest(new UpdateItemRequest {
+
+TableName = TABLE_NAME,
+Key = item,)
+};
 			r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
@@ -223,10 +280,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void validDelete()
 		{
 			DeleteItem r = new DeleteItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			r.setRequest(new DeleteItemRequest()
-				.withTableName(TABLE_NAME).withKey(item));
+			r.setRequest(new DeleteItemRequest {
+
+TableName = TABLE_NAME,
+Key = item,)
+};
 			r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
@@ -235,10 +295,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void validLock()
 		{
 			GetItem r = new GetItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			r.setRequest(new GetItemRequest()
-				.withTableName(TABLE_NAME).withKey(item));
+			r.setRequest(new GetItemRequest {
+
+TableName = TABLE_NAME,
+Key = item,)
+};
 			r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
@@ -247,10 +310,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void roundTripGetString()
 		{
 			GetItem r1 = new GetItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			r1.setRequest(new GetItemRequest()
-				.withTableName(TABLE_NAME).withKey(item));
+			r1.setRequest(new GetItemRequest {
+
+TableName = TABLE_NAME,
+Key = item,)
+};
 			sbyte[] r1Bytes = Request.serialize("123", r1).array();
 			Request r2 = Request.deserialize("123", ByteBuffer.wrap(r1Bytes));
 			sbyte[] r2Bytes = Request.serialize("123", r2).array();
@@ -262,15 +328,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void roundTripPutAll()
 		{
 			PutItem r1 = new PutItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			item["attr_ss"] = (new AttributeValue()).withSS("a", "b");
-			item["attr_n"] = (new AttributeValue()).withN("1");
-			item["attr_ns"] = (new AttributeValue()).withNS("1", "2");
+			item["attr_ss"] = new AttributeValue {
+
+SS = "a", "b",
+};
+			item["attr_n"] = new AttributeValue {
+
+N = "1",
+};
+			item["attr_ns"] = new AttributeValue {
+
+NS = "1", "2",
+};
 			item["attr_b"] = (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes()));
 			item["attr_bs"] = (new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("asdf").GetBytes()));
-			r1.setRequest(new PutItemRequest()
-				.withTableName(TABLE_NAME).withItem(item).withReturnValues("ALL_OLD"));
+			r1.setRequest(new PutItemRequest {
+
+TableName = TABLE_NAME,
+Item = item,
+ReturnValues = "ALL_OLD",)
+};
 			sbyte[] r1Bytes = Request.serialize("123", r1).array();
 			Request r2 = Request.deserialize("123", ByteBuffer.wrap(r1Bytes));
 			assertEquals(r1.Request, ((PutItem)r2).Request);
@@ -283,17 +362,45 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void roundTripUpdateAll()
 		{
 			UpdateItem r1 = new UpdateItem();
-			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
 			key[HASH_ATTR_NAME] = new AttributeValue("a");
 
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates["attr_ss"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withSS("a", "b"));
-			updates["attr_n"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withN("1"));
-			updates["attr_ns"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withNS("1", "2"));
-			updates["attr_b"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())));
-			updates["attr_bs"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("asdf").GetBytes())));
-			r1.setRequest(new UpdateItemRequest()
-				.withTableName(TABLE_NAME).withKey(key).withAttributeUpdates(updates));
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
+			updates["attr_ss"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue(new AttributeValue {
+
+SS = "a", "b",)
+};
+			updates["attr_n"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue(new AttributeValue {
+
+N = "1",)
+};
+			updates["attr_ns"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue(new AttributeValue {
+
+NS = "1", "2",)
+};
+			updates["attr_b"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue((new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())));
+			updates["attr_bs"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue((new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("asdf").GetBytes())));
+			r1.setRequest(new UpdateItemRequest {
+
+TableName = TABLE_NAME,
+Key = key,
+AttributeUpdates = updates,)
+};
 			sbyte[] r1Bytes = Request.serialize("123", r1).array();
 			Request r2 = Request.deserialize("123", ByteBuffer.wrap(r1Bytes));
 			sbyte[] r2Bytes = Request.serialize("123", r2).array();
@@ -305,11 +412,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void roundTripPutAllJSON()
 		{
 			PutItem r1 = new PutItem();
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
-			item["json_attr"] = (new AttributeValue()).withM(JSON_M_ATTR_VAL);
-			r1.setRequest(new PutItemRequest()
-				.withTableName(TABLE_NAME).withItem(item).withReturnValues("ALL_OLD"));
+			item["json_attr"] = new AttributeValue {
+
+M = JSON_M_ATTR_VAL,
+};
+			r1.setRequest(new PutItemRequest {
+
+TableName = TABLE_NAME,
+Item = item,
+ReturnValues = "ALL_OLD",)
+};
 			sbyte[] r1Bytes = Request.serialize("123", r1).array();
 			Request r2 = Request.deserialize("123", ByteBuffer.wrap(r1Bytes));
 			assertEquals(r1.Request, ((PutItem)r2).Request);
@@ -322,13 +436,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void roundTripUpdateAllJSON()
 		{
 			UpdateItem r1 = new UpdateItem();
-			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
 			key[HASH_ATTR_NAME] = new AttributeValue("a");
 
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates["attr_m"] = (new AttributeValueUpdate()).withAction("PUT").withValue((new AttributeValue()).withM(JSON_M_ATTR_VAL));
-			r1.setRequest(new UpdateItemRequest()
-				.withTableName(TABLE_NAME).withKey(key).withAttributeUpdates(updates));
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
+			updates["attr_m"] = new AttributeValueUpdate {
+
+Action = "PUT",
+}.withValue(new AttributeValue {
+
+M = JSON_M_ATTR_VAL,)
+};
+			r1.setRequest(new UpdateItemRequest {
+
+TableName = TABLE_NAME,
+Key = key,
+AttributeUpdates = updates,)
+};
 			sbyte[] r1Bytes = Request.serialize("123", r1).array();
 			Request r2 = Request.deserialize("123", ByteBuffer.wrap(r1Bytes));
 			sbyte[] r2Bytes = Request.serialize("123", r2).array();
@@ -339,7 +463,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			get
 			{
-				return (new PutItemRequest()).withItem(BASIC_ITEM).withTableName(TABLE_NAME);
+				return new PutItemRequest {
+
+Item = BASIC_ITEM,
+TableName = TABLE_NAME,
+};
 			}
 		}
 
@@ -347,7 +475,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			get
 			{
-				return (new UpdateItemRequest()).withKey(BASIC_ITEM).withTableName(TABLE_NAME);
+				return new UpdateItemRequest {
+
+Key = BASIC_ITEM,
+TableName = TABLE_NAME,
+};
 			}
 		}
 
@@ -355,7 +487,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			get
 			{
-				return (new DeleteItemRequest()).withKey(BASIC_ITEM).withTableName(TABLE_NAME);
+				return new DeleteItemRequest {
+
+Key = BASIC_ITEM,
+TableName = TABLE_NAME,
+};
 			}
 		}
 
@@ -409,9 +545,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			private readonly RequestTest outerInstance;
 
 
-			internal readonly IList<KeySchemaElement> keySchema;
+			internal readonly List<KeySchemaElement> keySchema;
 
-			public MockTransactionManager(RequestTest outerInstance, IList<KeySchemaElement> keySchema) : base(new AmazonDynamoDBClient(), "Dummy", "DummyOther")
+			public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema) : base(new AmazonDynamoDBClient(), "Dummy", "DummyOther")
 			{
 				this.outerInstance = outerInstance;
 				this.keySchema = keySchema;
@@ -419,7 +555,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> getTableSchema(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
-			protected internal override IList<KeySchemaElement> getTableSchema(string tableName)
+			protected internal override List<KeySchemaElement> getTableSchema(string tableName)
 			{
 				return keySchema;
 			}

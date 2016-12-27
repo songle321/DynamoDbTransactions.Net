@@ -66,7 +66,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <returns> The item if it's locked (or if it's locked, but not yet applied) </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> checkItemCommitted(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-		protected internal virtual IDictionary<string, AttributeValue> checkItemCommitted(IDictionary<string, AttributeValue> item)
+		protected internal virtual Dictionary<string, AttributeValue> checkItemCommitted(Dictionary<string, AttributeValue> item)
 		{
 			// If the item doesn't exist, it's not locked
 			if (item == null)
@@ -101,11 +101,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <returns> a previously committed version of the item </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> getOldCommittedItem(final Transaction lockingTx, final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key)
-		protected internal virtual IDictionary<string, AttributeValue> getOldCommittedItem(Transaction lockingTx, string tableName, IDictionary<string, AttributeValue> key)
+		protected internal virtual Dictionary<string, AttributeValue> getOldCommittedItem(Transaction lockingTx, string tableName, Dictionary<string, AttributeValue> key)
 		{
 			Request lockingRequest = lockingTx.TxItem.getRequestForKey(tableName, key);
 			txAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
-			IDictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImage(lockingRequest.Rid.Value);
+			Dictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImage(lockingRequest.Rid.Value);
 			if (oldItem == null)
 			{
 				if (LOG.DebugEnabled)
@@ -124,7 +124,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <returns> the request </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected com.amazonaws.services.dynamodbv2.model.GetItemRequest createGetItemRequest(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-		protected internal virtual GetItemRequest createGetItemRequest(string tableName, IDictionary<string, AttributeValue> item)
+		protected internal virtual GetItemRequest createGetItemRequest(string tableName, Dictionary<string, AttributeValue> item)
 		{
 			Dictionary<string, AttributeValue> key = txManager.createKeyMap(tableName, item);
 
@@ -154,14 +154,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <returns> A committed version of the item (not necessarily the latest committed version). </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final String tableName, final int numRetries)
-		protected internal virtual IDictionary<string, AttributeValue> handleItem(IDictionary<string, AttributeValue> item, string tableName, int numRetries)
+		protected internal virtual Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, string tableName, int numRetries)
 		{
 			GetItemRequest request = null; // only create if necessary
 			for (int i = 0; i <= numRetries; i++)
 			{
 //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
 //ORIGINAL LINE: final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> currentItem;
-				IDictionary<string, AttributeValue> currentItem;
+				Dictionary<string, AttributeValue> currentItem;
 				if (i == 0)
 				{
 					currentItem = item;
@@ -218,7 +218,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> filterAttributesToGet(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet)
-		protected internal virtual IDictionary<string, AttributeValue> filterAttributesToGet(IDictionary<string, AttributeValue> item, IList<string> attributesToGet)
+		protected internal virtual Dictionary<string, AttributeValue> filterAttributesToGet(Dictionary<string, AttributeValue> item, List<string> attributesToGet)
 		{
 			if (item == null)
 			{
@@ -228,7 +228,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				return item;
 			}
-			IDictionary<string, AttributeValue> result = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> result = new Dictionary<string, AttributeValue>();
 			foreach (string attributeName in attributesToGet)
 			{
 				AttributeValue value = item[attributeName];
@@ -242,7 +242,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 //ORIGINAL LINE: @Override public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName)
-		public virtual IDictionary<string, AttributeValue> handleItem(IDictionary<string, AttributeValue> item, IList<string> attributesToGet, string tableName)
+		public virtual Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName)
 		{
 			return filterAttributesToGet(handleItem(item, tableName, numRetries), attributesToGet);
 		}
