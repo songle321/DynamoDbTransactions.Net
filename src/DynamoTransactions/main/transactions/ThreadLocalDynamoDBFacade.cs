@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 
-/// <summary>
-/// Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
 	/// <summary>
@@ -28,313 +29,219 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// reuse the mapper and its underlying cache for each call to the mapper from a
 	/// transaction or the transaction manager.
 	/// </summary>
-	public class ThreadLocalDynamoDBFacade : AmazonDynamoDBClient
+	public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB
 	{
 
 		private readonly ThreadLocal<AmazonDynamoDBClient> backend = new ThreadLocal<AmazonDynamoDBClient>();
 
-		private AmazonDynamoDBClient Backend
+        public IClientConfig Config
+        {
+            get
+            {
+                return ((IAmazonDynamoDB)Backend).Config;
+            }
+        }
+
+        private AmazonDynamoDBClient Backend
 		{
 			get
 			{
-				if (backend.Value.get() == null)
+				if (backend.Value== null)
 				{
 					throw new Exception("No backend to proxy");
 				}
-				return backend.get();
+				return backend.Value;
 			}
 			set
 			{
-				backend.set(value);
+				backend.Value = value;
 			}
 		}
 
+        public Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).BatchGetItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(BatchGetItemRequest request)
-		{
-			return Backend.batchGetItem(request);
-		}
+        public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).BatchGetItemAsync(requestItems, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchWriteItemResponse batchWriteItem(com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchWriteItemResponse batchWriteItem(BatchWriteItemRequest request)
-		{
-			return Backend.batchWriteItem(request);
-		}
+        public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).BatchGetItemAsync(requestItems, returnConsumedCapacity, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.CreateTableResponse createTable(com.amazonaws.services.dynamodbv2.model.CreateTableRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override CreateTableResponse createTable(CreateTableRequest request)
-		{
-			return Backend.createTable(request);
-		}
+        public Task<BatchWriteItemResponse> BatchWriteItemAsync(BatchWriteItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).BatchWriteItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteItemResponse deleteItem(DeleteItemRequest request)
-		{
-			return Backend.deleteItem(request);
-		}
+        public Task<BatchWriteItemResponse> BatchWriteItemAsync(Dictionary<string, List<WriteRequest>> requestItems, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).BatchWriteItemAsync(requestItems, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteTableResponse deleteTable(com.amazonaws.services.dynamodbv2.model.DeleteTableRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteTableResponse deleteTable(DeleteTableRequest request)
-		{
-			return Backend.deleteTable(request);
-		}
+        public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).CreateTableAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(com.amazonaws.services.dynamodbv2.model.DescribeTableRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResponse describeTable(DescribeTableRequest request)
-		{
-			return Backend.describeTable(request);
-		}
+        public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).CreateTableAsync(tableName, keySchema, attributeDefinitions, provisionedThroughput, cancellationToken);
+        }
 
-		public override ResponseMetadata getCachedResponseMetadata(AmazonWebServiceRequest request)
-		{
-			return Backend.getCachedResponseMetadata(request);
-		}
+        public Task<DeleteItemResponse> DeleteItemAsync(DeleteItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DeleteItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override GetItemResponse getItem(GetItemRequest request)
-		{
-			return Backend.getItem(request);
-		}
+        public Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DeleteItemAsync(tableName, key, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables() throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables()
-		{
-			return Backend.listTables();
-		}
+        public Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DeleteItemAsync(tableName, key, returnValues, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(com.amazonaws.services.dynamodbv2.model.ListTablesRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(ListTablesRequest request)
-		{
-			return Backend.listTables(request);
-		}
+        public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DeleteTableAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItem(com.amazonaws.services.dynamodbv2.model.PutItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override PutItemResponse putItem(PutItemRequest request)
-		{
-			return Backend.putItem(request);
-		}
+        public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DeleteTableAsync(tableName, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.QueryResponse query(com.amazonaws.services.dynamodbv2.model.QueryRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override QueryResponse query(QueryRequest request)
-		{
-			return Backend.query(request);
-		}
+        public Task<DescribeLimitsResponse> DescribeLimitsAsync(DescribeLimitsRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DescribeLimitsAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(com.amazonaws.services.dynamodbv2.model.ScanRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(ScanRequest request)
-		{
-			return Backend.scan(request);
-		}
+        public Task<DescribeTableResponse> DescribeTableAsync(DescribeTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DescribeTableAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public void setEndpoint(String request) throws IllegalArgumentException
-		public override string Endpoint
-		{
-			set
-			{
-				Backend.Endpoint = value;
-			}
-		}
+        public Task<DescribeTableResponse> DescribeTableAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).DescribeTableAsync(tableName, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public void setRegion(com.amazonaws.regions.Region request) throws IllegalArgumentException
-		public override Region Region
-		{
-			set
-			{
-				Backend.Region = value;
-			}
-		}
+        public void Dispose()
+        {
+            ((IAmazonDynamoDB)Backend).Dispose();
+        }
 
-		public override void shutdown()
-		{
-			Backend.shutdown();
-		}
+        public Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).GetItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateItemResponse updateItem(UpdateItemRequest request)
-		{
-			return Backend.updateItem(request);
-		}
+        public Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).GetItemAsync(tableName, key, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateTableResponse updateTable(com.amazonaws.services.dynamodbv2.model.UpdateTableRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateTableResponse updateTable(UpdateTableRequest request)
-		{
-			return Backend.updateTable(request);
-		}
+        public Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, bool consistentRead, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).GetItemAsync(tableName, key, consistentRead, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, IList<string> attributesToGet)
-		{
-			return Backend.scan(tableName, attributesToGet);
-		}
+        public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ListTablesAsync(cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, IDictionary<string, Condition> scanFilter)
-		{
-			return Backend.scan(tableName, scanFilter);
-		}
+        public Task<ListTablesResponse> ListTablesAsync(int limit, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ListTablesAsync(limit, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, IList<string> attributesToGet, IDictionary<string, Condition> scanFilter)
-		{
-			return Backend.scan(tableName, attributesToGet, scanFilter);
-		}
+        public Task<ListTablesResponse> ListTablesAsync(ListTablesRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ListTablesAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateTableResponse updateTable(String tableName, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateTableResponse updateTable(string tableName, ProvisionedThroughput provisionedThroughput)
-		{
-			return Backend.updateTable(tableName, provisionedThroughput);
-		}
+        public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ListTablesAsync(exclusiveStartTableName, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteTableResponse deleteTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteTableResponse deleteTable(string tableName)
-		{
-			return Backend.deleteTable(tableName);
-		}
+        public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, int limit, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ListTablesAsync(exclusiveStartTableName, limit, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchWriteItemResponse batchWriteItem(java.util.Map<String, java.util.List<com.amazonaws.services.dynamodbv2.model.WriteRequest>> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchWriteItemResponse batchWriteItem(IDictionary<string, IList<WriteRequest>> requestItems)
-		{
-			return Backend.batchWriteItem(requestItems);
-		}
+        public Task<PutItemResponse> PutItemAsync(PutItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).PutItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResponse describeTable(string tableName)
-		{
-			return Backend.describeTable(tableName);
-		}
+        public Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).PutItemAsync(tableName, item, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override GetItemResponse getItem(string tableName, IDictionary<string, AttributeValue> key)
-		{
-			return Backend.getItem(tableName, key);
-		}
+        public Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).PutItemAsync(tableName, item, returnValues, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, Nullable<bool> consistentRead) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override GetItemResponse getItem(string tableName, IDictionary<string, AttributeValue> key, bool? consistentRead)
-		{
-			return Backend.getItem(tableName, key, consistentRead);
-		}
+        public Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).QueryAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteItemResponse deleteItem(string tableName, IDictionary<string, AttributeValue> key)
-		{
-			return Backend.deleteItem(tableName, key);
-		}
+        public Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ScanAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, String returnValues) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteItemResponse deleteItem(string tableName, IDictionary<string, AttributeValue> key, string returnValues)
-		{
-			return Backend.deleteItem(tableName, key, returnValues);
-		}
+        public Task<ScanResponse> ScanAsync(string tableName, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ScanAsync(tableName, scanFilter, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.CreateTableResponse createTable(java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> attributeDefinitions, String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override CreateTableResponse createTable(IList<AttributeDefinition> attributeDefinitions, string tableName, IList<KeySchemaElement> keySchema, ProvisionedThroughput provisionedThroughput)
-		{
-			return Backend.createTable(attributeDefinitions, tableName, keySchema, provisionedThroughput);
-		}
+        public Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ScanAsync(tableName, attributesToGet, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override PutItemResponse putItem(string tableName, IDictionary<string, AttributeValue> item)
-		{
-			return Backend.putItem(tableName, item);
-		}
+        public Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).ScanAsync(tableName, attributesToGet, scanFilter, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, String returnValues) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override PutItemResponse putItem(string tableName, IDictionary<string, AttributeValue> item, string returnValues)
-		{
-			return Backend.putItem(tableName, item, returnValues);
-		}
+        public Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).UpdateItemAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(String exclusiveStartTableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(string exclusiveStartTableName)
-		{
-			return Backend.listTables(exclusiveStartTableName);
-		}
+        public Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).UpdateItemAsync(tableName, key, attributeUpdates, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(String exclusiveStartTableName, Nullable<int> limit) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(string exclusiveStartTableName, int? limit)
-		{
-			return Backend.listTables(exclusiveStartTableName, limit);
-		}
+        public Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).UpdateItemAsync(tableName, key, attributeUpdates, returnValues, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(Nullable<int> limit) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(int? limit)
-		{
-			return Backend.listTables(limit);
-		}
+        public Task<UpdateTableResponse> UpdateTableAsync(UpdateTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).UpdateTableAsync(request, cancellationToken);
+        }
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate> attributeUpdates) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateItemResponse updateItem(string tableName, IDictionary<string, AttributeValue> key, IDictionary<string, AttributeValueUpdate> attributeUpdates)
-		{
-			return Backend.updateItem(tableName, key, attributeUpdates);
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate> attributeUpdates, String returnValues) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateItemResponse updateItem(string tableName, IDictionary<string, AttributeValue> key, IDictionary<string, AttributeValueUpdate> attributeUpdates, string returnValues)
-		{
-			return Backend.updateItem(tableName, key, attributeUpdates, returnValues);
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems, String returnConsumedCapacity) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(IDictionary<string, KeysAndAttributes> requestItems, string returnConsumedCapacity)
-		{
-			return Backend.batchGetItem(requestItems, returnConsumedCapacity);
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(IDictionary<string, KeysAndAttributes> requestItems)
-		{
-			return Backend.batchGetItem(requestItems);
-		}
-
-		public override DescribeLimitsResponse describeLimits(DescribeLimitsRequest request)
-		{
-			return Backend.describeLimits(request);
-		}
-
-		public override AmazonDynamoDBWaiters waiters()
-		{
-			return Backend.waiters();
-		}
-
-	}
+        public Task<UpdateTableResponse> UpdateTableAsync(string tableName, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return ((IAmazonDynamoDB)Backend).UpdateTableAsync(tableName, provisionedThroughput, cancellationToken);
+        }
+    }
 
 }
