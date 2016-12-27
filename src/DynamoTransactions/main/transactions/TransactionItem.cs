@@ -1,26 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 using com.amazonaws.services.dynamodbv2.util;
 
-/// <summary>
-/// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
- namespace com.amazonaws.services.dynamodbv2.transactions
+using static com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
+
+// <summary>
+// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
+namespace com.amazonaws.services.dynamodbv2.transactions
  {
 
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -46,7 +52,7 @@ using com.amazonaws.services.dynamodbv2.util;
 		private readonly TransactionManager txManager;
 		private IDictionary<string, AttributeValue> txItem;
 		private int version;
-		private readonly IDictionary<string, AttributeValue> txKey;
+		private readonly Dictionary<string, AttributeValue> txKey;
 		private readonly IDictionary<string, Dictionary<ImmutableKey, Request>> requestsMap = new Dictionary<string, Dictionary<ImmutableKey, Request>>();
 
 		/*
@@ -97,10 +103,10 @@ using com.amazonaws.services.dynamodbv2.util;
 				this.txId = txId;
 				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
 				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
-				this.txKey = Collections.unmodifiableMap(txKeyMap);
+				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
 				if (insert)
 				{
-					this.txItem = insert();
+					this.txItem = this.insert();
 				}
 				else
 				{
@@ -126,7 +132,7 @@ using com.amazonaws.services.dynamodbv2.util;
 				this.txId = txItem[Transaction.AttributeName.TXID.ToString()].S;
 				IDictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
 				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
-				this.txKey = Collections.unmodifiableMap(txKeyMap);
+				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
 			}
 			else
 			{
@@ -151,22 +157,26 @@ using com.amazonaws.services.dynamodbv2.util;
 		/// <exception cref="TransactionException"> if the transaction already exists </exception>
 		private IDictionary<string, AttributeValue> insert()
 		{
-			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[Transaction.AttributeName.STATE.ToString()] = new AttributeValue(STATE_PENDING);
-			item[Transaction.AttributeName.VERSION.ToString()] = (new AttributeValue()).withN(Convert.ToString(1));
+			item[Transaction.AttributeName.VERSION.ToString()] = (new AttributeValue {N = Convert.ToString(1)});
 			item[Transaction.AttributeName.DATE.ToString()] = txManager.CurrentTimeAttribute;
-//JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
-			item.putAll(txKey);
+            foreach(var keyValue in txKey) item.Add(keyValue.Key, keyValue.Value);
 
-			IDictionary<string, ExpectedAttributeValue> expectNotExists = new Dictionary<string, ExpectedAttributeValue>(2);
+			Dictionary<string, ExpectedAttributeValue> expectNotExists = new Dictionary<string, ExpectedAttributeValue>(2);
 			expectNotExists[Transaction.AttributeName.TXID.ToString()] = new ExpectedAttributeValue(false);
 			expectNotExists[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(false);
 
-			PutItemRequest request = (new PutItemRequest()).withTableName(txManager.TransactionTableName).withItem(item).withExpected(expectNotExists);
+		    PutItemRequest request = new PutItemRequest
+		    {
+		        TableName = txManager.TransactionTableName,
+		        Item = item,
+		        Expected = expectNotExists
+		    };
 
 			try
 			{
-				txManager.Client.putItem(request);
+				txManager.Client.PutItemAsync(request).Wait();
 				return item;
 			}
 			catch (ConditionalCheckFailedException e)
@@ -181,8 +191,13 @@ using com.amazonaws.services.dynamodbv2.util;
 		/// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
 		private IDictionary<string, AttributeValue> get()
 		{
-			GetItemRequest getRequest = (new GetItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withConsistentRead(true);
-			return txManager.Client.getItem(getRequest).Item;
+			GetItemRequest getRequest = new GetItemRequest
+			{
+			    TableName = txManager.TransactionTableName,
+                Key = txKey.ToDictionary(x => x.Key, x => x.Value),
+                ConsistentRead = true
+			};
+			return txManager.Client.GetItemAsync(getRequest).Result.Item;
 		}
 
 		/// <summary>
@@ -261,7 +276,7 @@ using com.amazonaws.services.dynamodbv2.util;
 				List<Request> requests = new List<Request>();
 				foreach (KeyValuePair<string, Dictionary<ImmutableKey, Request>> tableRequests in requestsMap.SetOfKeyValuePairs())
 				{
-					foreach (KeyValuePair<ImmutableKey, Request> keyRequests in tableRequests.Value.entrySet())
+					foreach (KeyValuePair<ImmutableKey, Request> keyRequests in tableRequests.Value)
 					{
 						requests.Add(keyRequests.Value);
 					}
@@ -314,23 +329,51 @@ using com.amazonaws.services.dynamodbv2.util;
 				callerRequest.Rid = version;
         
 				// 2. Write request to transaction item
-				ByteBuffer requestBytes = Request.serialize(txId, callerRequest);
-				AttributeValueUpdate txItemUpdate = (new AttributeValueUpdate()).withAction(AttributeAction.ADD).withValue((new AttributeValue()).withBS(Arrays.asList(requestBytes)));
+				MemoryStream requestBytes = Request.serialize(txId, callerRequest);
+				AttributeValueUpdate txItemUpdate = new AttributeValueUpdate
+				{
+				    Action = AttributeAction.ADD,
+                    Value = new AttributeValue
+                    {
+                        BS = new List<MemoryStream> {requestBytes}
+                    }
+				};
         
-				IDictionary<string, AttributeValueUpdate> txItemUpdates = new Dictionary<string, AttributeValueUpdate>();
+				Dictionary<string, AttributeValueUpdate> txItemUpdates = new Dictionary<string, AttributeValueUpdate>();
 				txItemUpdates[Transaction.AttributeName.REQUESTS.ToString()] = txItemUpdate;
-				txItemUpdates[Transaction.AttributeName.VERSION.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.ADD).withValue((new AttributeValue()).withN("1"));
-				txItemUpdates[Transaction.AttributeName.DATE.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute);
+			    txItemUpdates[Transaction.AttributeName.VERSION.ToString()] = new AttributeValueUpdate
+			    {
+			        Action = AttributeAction.ADD,
+			        Value = new AttributeValue
+			        {
+			            N = "1"
+			        }
+			    };
+			    txItemUpdates[Transaction.AttributeName.DATE.ToString()] = new AttributeValueUpdate
+			    {
+			        Action = AttributeAction.PUT,
+			        Value = txManager.CurrentTimeAttribute
+			    };
         
-				IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+				Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
 				expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_PENDING));
-				expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue((new AttributeValue()).withN(Convert.ToString(version)));
-        
-				UpdateItemRequest txItemUpdateRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withExpected(expected).withReturnValues(ReturnValue.ALL_NEW).withAttributeUpdates(txItemUpdates);
+				expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue(new AttributeValue
+				{
+				    N = Convert.ToString(version)
+                });
+
+			    UpdateItemRequest txItemUpdateRequest = new UpdateItemRequest
+			    {
+			        TableName = txManager.TransactionTableName,
+			        Key = txKey,
+			        Expected = expected,
+			        ReturnValues = ReturnValue.ALL_NEW,
+			        AttributeUpdates = txItemUpdates
+			    };
         
 				try
 				{
-					txItem = txManager.Client.updateItem(txItemUpdateRequest).Attributes;
+					txItem = txManager.Client.UpdateItemAsync(txItemUpdateRequest).Result.Attributes;
 					int newVersion = int.Parse(txItem[Transaction.AttributeName.VERSION.ToString()].N);
 					txAssert(newVersion == version + 1, txId, "Unexpected version number from update result");
 					version = newVersion;
@@ -357,9 +400,9 @@ using com.amazonaws.services.dynamodbv2.util;
 		private void loadRequests()
 		{
 			AttributeValue requestsVal = txItem[Transaction.AttributeName.REQUESTS.ToString()];
-			IList<ByteBuffer> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<ByteBuffer>(0);
+			IList<MemoryStream> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<MemoryStream>(0);
 
-			foreach (ByteBuffer rawRequest in rawRequests)
+			foreach (MemoryStream rawRequest in rawRequests)
 			{
 				Request request = Request.deserialize(txId, rawRequest);
 				// TODO don't make strings out of the PK all the time, also dangerous if behavior of toString changes!
@@ -431,7 +474,7 @@ using com.amazonaws.services.dynamodbv2.util;
 		/// </summary>
 		/// <param name="item"> </param>
 		/// <param name="rid"> </param>
-		public virtual void saveItemImage(IDictionary<string, AttributeValue> item, int rid)
+		public virtual void saveItemImage(Dictionary<string, AttributeValue> item, int rid)
 		{
 			txAssert(!item.ContainsKey(Transaction.AttributeName.APPLIED.ToString()), txId, "The transaction has already applied this item image, it should not be saving over the item image with it");
 
@@ -444,8 +487,11 @@ using com.amazonaws.services.dynamodbv2.util;
 			// Don't save over the already saved item.  Prevents us from saving the applied image instead of the previous image in the case
 			// of a re-drive.
 			// If we want to be extremely paranoid, we could expect every attribute to be set exactly already in a second write step, and assert
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
-			expected[Transaction.AttributeName.IMAGE_ID.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
+			expected[Transaction.AttributeName.IMAGE_ID.ToString()] = new ExpectedAttributeValue
+			{
+			    Exists = false
+			};
 
 			AttributeValue existingImageId = item[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 			if (existingImageId != null)
@@ -456,8 +502,12 @@ using com.amazonaws.services.dynamodbv2.util;
 			// TODO failures?  Size validation?
 			try
 			{
-				txManager.Client.putItem(new PutItemRequest()
-					.withTableName(txManager.ItemImageTableName).withExpected(expected).withItem(item));
+			    txManager.Client.PutItemAsync(new PutItemRequest
+			    {
+			        TableName = txManager.ItemImageTableName,
+			        Expected = expected,
+			        Item = item
+			    });
 			}
 			catch (ConditionalCheckFailedException)
 			{
@@ -477,11 +527,15 @@ using com.amazonaws.services.dynamodbv2.util;
 		{
 			txAssert(rid > 0, txId, "Expected rid > 0");
 
-			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
+			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
 			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
-			IDictionary<string, AttributeValue> item = txManager.Client.getItem(new GetItemRequest()
-				.withTableName(txManager.ItemImageTableName).withKey(key).withConsistentRead(true)).Item;
+			IDictionary<string, AttributeValue> item = txManager.Client.GetItemAsync(new GetItemRequest
+			{
+			    TableName = txManager.ItemImageTableName,
+                Key = key,
+                ConsistentRead = true
+			}).Result.Item;
 
 			if (item != null)
 			{
@@ -500,11 +554,14 @@ using com.amazonaws.services.dynamodbv2.util;
 		{
 			txAssert(rid > 0, txId, "Expected rid > 0");
 
-			IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
+			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
 			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
-			txManager.Client.deleteItem(new DeleteItemRequest()
-				.withTableName(txManager.ItemImageTableName).withKey(key));
+			txManager.Client.DeleteItemAsync(new DeleteItemRequest
+			{
+			    TableName = txManager.ItemImageTableName,
+                Key = key
+			}).Wait();
 		}
 
 		/*
@@ -525,21 +582,40 @@ using com.amazonaws.services.dynamodbv2.util;
 		public virtual void finish(State targetState, int expectedVersion)
 		{
 			txAssert(State.COMMITTED.Equals(targetState) || State.ROLLED_BACK.Equals(targetState),"Illegal state in finish(): " + targetState, "txItem", txItem);
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
-			expected[Transaction.AttributeName.STATE.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withS(STATE_PENDING));
-			expected[Transaction.AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withExists(false);
-			expected[Transaction.AttributeName.VERSION.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withN(Convert.ToString(expectedVersion)));
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
+		    expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue
+		    {
+		        Value = new AttributeValue {S = STATE_PENDING}
+		    };
+			expected[Transaction.AttributeName.FINALIZED.ToString()] = new ExpectedAttributeValue { Exists = false };
+		    expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue
+		    {
+		        Value = new AttributeValue {N = Convert.ToString(expectedVersion)}
+		    };
 
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates.put(Transaction.AttributeName.STATE.ToString(), new AttributeValueUpdate()
-				.withAction(AttributeAction.PUT).withValue(new AttributeValue(stateToString(targetState))));
-			updates.put(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate()
-				.withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute));
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
+		    updates.Add(Transaction.AttributeName.STATE.ToString(), new AttributeValueUpdate
+		    {
+		        Action = AttributeAction.PUT,
+		        Value = new AttributeValue(stateToString(targetState))
+		    });
+		    updates.Add(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate
+		    {
+		        Action = AttributeAction.PUT,
+		        Value = txManager.CurrentTimeAttribute
+		    });
 
-			UpdateItemRequest finishRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withAttributeUpdates(updates).withReturnValues(ReturnValue.ALL_NEW).withExpected(expected);
+			UpdateItemRequest finishRequest = new UpdateItemRequest
+			{
+			    TableName = txManager.TransactionTableName,
+                Key = txKey,
+                AttributeUpdates = updates,
+                ReturnValues = ReturnValue.ALL_NEW,
+                Expected = expected
+            };
 
-			UpdateItemResponse finishResponse = txManager.Client.updateItem(finishRequest);
-			txItem = finishResult.Attributes;
+			UpdateItemResponse finishResponse = txManager.Client.UpdateItemAsync(finishRequest).Result;
+			txItem = finishResponse.Attributes;
 			if (txItem == null)
 			{
 				throw new TransactionAssertionException(txId, "Unexpected null tx item after committing " + targetState);
@@ -559,7 +635,7 @@ using com.amazonaws.services.dynamodbv2.util;
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
 		public virtual void complete(State expectedCurrentState)
 		{
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
 
 			if (State.COMMITTED.Equals(expectedCurrentState))
 			{
@@ -574,15 +650,28 @@ using com.amazonaws.services.dynamodbv2.util;
 				throw new TransactionAssertionException(txId, "Illegal state in finish(): " + expectedCurrentState + " txItem " + txItem);
 			}
 
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates.put(Transaction.AttributeName.FINALIZED.ToString(), new AttributeValueUpdate()
-				.withAction(AttributeAction.PUT).withValue(new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL)));
-			updates.put(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate()
-				.withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute));
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
+		    updates.Add(Transaction.AttributeName.FINALIZED.ToString(), new AttributeValueUpdate
+		    {
+		        Action = AttributeAction.PUT,
+		        Value = new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL)
 
-			UpdateItemRequest completeRequest = (new UpdateItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withAttributeUpdates(updates).withReturnValues(ReturnValue.ALL_NEW).withExpected(expected);
+		    });
+		    updates.Add(Transaction.AttributeName.DATE.ToString(), new AttributeValueUpdate
+		    {
+		        Action = AttributeAction.PUT,
+		        Value = txManager.CurrentTimeAttribute
+		    });
 
-			txItem = txManager.Client.updateItem(completeRequest).Attributes;
+			UpdateItemRequest completeRequest = new UpdateItemRequest
+			{
+			    TableName = txManager.TransactionTableName,
+                AttributeUpdates = updates,
+                ReturnValues = ReturnValue.ALL_NEW,
+                Expected = expected
+            };
+
+			txItem = txManager.Client.UpdateItemAsync(completeRequest).Result.Attributes;
 		}
 
 		/// <summary>
@@ -593,11 +682,19 @@ using com.amazonaws.services.dynamodbv2.util;
 //ORIGINAL LINE: public void delete() throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
 		public virtual void delete()
 		{
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
-			expected[Transaction.AttributeName.FINALIZED.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL));
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
+		    expected[Transaction.AttributeName.FINALIZED.ToString()] = new ExpectedAttributeValue
+		    {
+		        Value = new AttributeValue(Transaction.BOOLEAN_TRUE_ATTR_VAL)
+		    };
 
-			DeleteItemRequest completeRequest = (new DeleteItemRequest()).withTableName(txManager.TransactionTableName).withKey(txKey).withExpected(expected);
-			txManager.Client.deleteItem(completeRequest);
+			DeleteItemRequest completeRequest = new DeleteItemRequest
+			{
+			    TableName = txManager.TransactionTableName,
+                Key = txKey,
+                Expected = expected
+			};
+			txManager.Client.DeleteItemAsync(completeRequest).Wait();
 		}
 
 		public virtual bool Completed

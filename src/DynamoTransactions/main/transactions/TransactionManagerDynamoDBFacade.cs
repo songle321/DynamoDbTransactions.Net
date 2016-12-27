@@ -1,72 +1,37 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
 
-/// <summary>
-/// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). You may not use
-/// this file except in compliance with the License. A copy of the License is
-/// located at
-/// 
-/// http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed on
-/// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
-/// implied. See the License for the specific language governing permissions and
-/// limitations under the License.
-/// </summary>
+// <summary>
+// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). You may not use
+// this file except in compliance with the License. A copy of the License is
+// located at
+// 
+// http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
+// implied. See the License for the specific language governing permissions and
+// limitations under the License.
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using Region = com.amazonaws.regions.Region;
-	using AttributeDefinition = com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using BatchGetItemRequest = com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
-	using BatchGetItemResponse = com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse;
-	using BatchWriteItemRequest = com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
-	using BatchWriteItemResponse = com.amazonaws.services.dynamodbv2.model.BatchWriteItemResult;
-	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
-	using CreateTableRequest = com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-	using CreateTableResponse = com.amazonaws.services.dynamodbv2.model.CreateTableResult;
-	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-	using DeleteItemResponse = com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
-	using DeleteTableRequest = com.amazonaws.services.dynamodbv2.model.DeleteTableRequest;
-	using DeleteTableResponse = com.amazonaws.services.dynamodbv2.model.DeleteTableResult;
-	using DescribeTableRequest = com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
-	using DescribeTableResponse = com.amazonaws.services.dynamodbv2.model.DescribeTableResponse;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
-	using KeysAndAttributes = com.amazonaws.services.dynamodbv2.model.KeysAndAttributes;
-	using ListTablesRequest = com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
-	using ListTablesResponse = com.amazonaws.services.dynamodbv2.model.ListTablesResult;
-	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using PutItemResponse = com.amazonaws.services.dynamodbv2.model.PutItemResult;
-	using QueryRequest = com.amazonaws.services.dynamodbv2.model.QueryRequest;
-	using QueryResponse = com.amazonaws.services.dynamodbv2.model.QueryResult;
-	using ScanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest;
-	using ScanResponse = com.amazonaws.services.dynamodbv2.model.ScanResult;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using UpdateItemResponse = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
-	using UpdateTableRequest = com.amazonaws.services.dynamodbv2.model.UpdateTableRequest;
-	using UpdateTableResponse = com.amazonaws.services.dynamodbv2.model.UpdateTableResult;
-	using WriteRequest = com.amazonaws.services.dynamodbv2.model.WriteRequest;
-	using IsolationLevel = com.amazonaws.services.dynamodbv2.transactions.Transaction.IsolationLevel;
-
 
 	/// <summary>
 	/// Facade to support the DynamoDBMapper doing a read using a specific isolation
 	/// level. Used by <seealso cref="TransactionManager#load(Object, IsolationLevel)"/>.
 	/// </summary>
-	public class TransactionManagerDynamoDBFacade : AbstractAmazonDynamoDB
+	public class TransactionManagerDynamoDBFacade : IAmazonDynamoDB
 	{
 
 		private readonly TransactionManager txManager;
-		private readonly IsolationLevel isolationLevel;
+		private readonly Transaction.IsolationLevel isolationLevel;
 		private readonly ReadIsolationHandler isolationHandler;
 
-		public TransactionManagerDynamoDBFacade(TransactionManager txManager, IsolationLevel isolationLevel)
+		public TransactionManagerDynamoDBFacade(TransactionManager txManager, Transaction.IsolationLevel isolationLevel)
 		{
 			this.txManager = txManager;
 			this.isolationLevel = isolationLevel;

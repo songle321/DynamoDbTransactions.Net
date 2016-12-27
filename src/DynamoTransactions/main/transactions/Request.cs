@@ -22,30 +22,6 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 /// </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions
  {
-
-
-	using JsonGenerationException = com.fasterxml.jackson.core.JsonGenerationException;
-	using JsonGenerator = com.fasterxml.jackson.core.JsonGenerator;
-	using JsonParseException = com.fasterxml.jackson.core.JsonParseException;
-	using JsonParser = com.fasterxml.jackson.core.JsonParser;
-	using JsonProcessingException = com.fasterxml.jackson.core.JsonProcessingException;
-	using Version = com.fasterxml.jackson.core.Version;
-	using JsonIgnore = com.fasterxml.jackson.annotation.JsonIgnore;
-	using Include = com.fasterxml.jackson.annotation.JsonInclude.Include;
-	using JsonProperty = com.fasterxml.jackson.annotation.JsonProperty;
-	using JsonSubTypes = com.fasterxml.jackson.annotation.JsonSubTypes;
-	using Type = com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-	using JsonTypeInfo = com.fasterxml.jackson.annotation.JsonTypeInfo;
-	using JsonTypeName = com.fasterxml.jackson.annotation.JsonTypeName;
-	using DeserializationContext = com.fasterxml.jackson.databind.DeserializationContext;
-	using JsonDeserializer = com.fasterxml.jackson.databind.JsonDeserializer;
-	using JsonMappingException = com.fasterxml.jackson.databind.JsonMappingException;
-	using JsonSerializer = com.fasterxml.jackson.databind.JsonSerializer;
-	using ObjectMapper = com.fasterxml.jackson.databind.ObjectMapper;
-	using SerializationFeature = com.fasterxml.jackson.databind.SerializationFeature;
-	using SerializerProvider = com.fasterxml.jackson.databind.SerializerProvider;
-	using SimpleModule = com.fasterxml.jackson.databind.module.SimpleModule;
-
 	/// <summary>
 	/// Represents a write or lock request within a transaction - either a PutItem, UpdateItem, DeleteItem, or a LockItem request used for read locks
 	/// </summary>
@@ -512,12 +488,12 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 			MAPPER.registerModule(module);
 		};
 
-		protected internal static ByteBuffer serialize(string txId, object request)
+		protected internal static MemoryStream serialize(string txId, object request)
 		{
 			try
 			{
-				sbyte[] requestBytes = MAPPER.writeValueAsBytes(request);
-				return ByteBuffer.wrap(requestBytes);
+				byte[] requestBytes = MAPPER.writeValueAsBytes(request);
+				return new MemoryStream(requestBytes);
 			}
 			catch (JsonGenerationException e)
 			{
@@ -535,7 +511,7 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
 
 
-		protected internal static Request deserialize(string txId, ByteBuffer rawRequest)
+		protected internal static Request deserialize(string txId, MemoryStream rawRequest)
 		{
 			sbyte[] requestBytes = rawRequest.array();
 			try

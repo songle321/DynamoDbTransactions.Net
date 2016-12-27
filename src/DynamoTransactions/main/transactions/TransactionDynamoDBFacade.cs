@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
 
 /// <summary>
 /// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,56 +19,13 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-
-	using Region = com.amazonaws.regions.Region;
-	using AttributeDefinition = com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using BatchGetItemRequest = com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
-	using BatchGetItemResponse = com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse;
-	using BatchWriteItemRequest = com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
-	using BatchWriteItemResponse = com.amazonaws.services.dynamodbv2.model.BatchWriteItemResult;
-	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
-	using ConditionalCheckFailedException = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
-	using CreateTableRequest = com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-	using CreateTableResponse = com.amazonaws.services.dynamodbv2.model.CreateTableResult;
-	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-	using DeleteItemResponse = com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
-	using DeleteTableRequest = com.amazonaws.services.dynamodbv2.model.DeleteTableRequest;
-	using DeleteTableResponse = com.amazonaws.services.dynamodbv2.model.DeleteTableResult;
-	using DescribeLimitsRequest = com.amazonaws.services.dynamodbv2.model.DescribeLimitsRequest;
-	using DescribeLimitsResponse = com.amazonaws.services.dynamodbv2.model.DescribeLimitsResult;
-	using DescribeTableRequest = com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
-	using DescribeTableResponse = com.amazonaws.services.dynamodbv2.model.DescribeTableResponse;
-	using ExpectedAttributeValue = com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using KeySchemaElement = com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
-	using KeysAndAttributes = com.amazonaws.services.dynamodbv2.model.KeysAndAttributes;
-	using ListTablesRequest = com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
-	using ListTablesResponse = com.amazonaws.services.dynamodbv2.model.ListTablesResult;
-	using ProvisionedThroughput = com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using PutItemResponse = com.amazonaws.services.dynamodbv2.model.PutItemResult;
-	using QueryRequest = com.amazonaws.services.dynamodbv2.model.QueryRequest;
-	using QueryResponse = com.amazonaws.services.dynamodbv2.model.QueryResult;
-	using ScanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest;
-	using ScanResponse = com.amazonaws.services.dynamodbv2.model.ScanResult;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using UpdateItemResponse = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
-	using UpdateTableRequest = com.amazonaws.services.dynamodbv2.model.UpdateTableRequest;
-	using UpdateTableResponse = com.amazonaws.services.dynamodbv2.model.UpdateTableResult;
-	using WriteRequest = com.amazonaws.services.dynamodbv2.model.WriteRequest;
-	using AmazonDynamoDBWaiters = com.amazonaws.services.dynamodbv2.waiters.AmazonDynamoDBWaiters;
-
 	/// <summary>
 	/// Facade for <seealso cref="AmazonDynamoDBClient"/> that forwards requests to a
 	/// <seealso cref="Transaction"/>, omitting conditional checks and consistent read options
 	/// from each request. Only supports the operations needed by DynamoDBMapper for
 	/// loading, saving or deleting items.
 	/// </summary>
-	public class TransactionDynamoDBFacade : AmazonDynamoDBClient
+	public class TransactionDynamoDBFacade : IAmazonDynamoDB
 	{
 
 		private readonly Transaction txn;
