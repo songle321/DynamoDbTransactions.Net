@@ -523,7 +523,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// </summary>
 		/// <param name="rid">
 		/// @return </param>
-		public virtual IDictionary<string, AttributeValue> loadItemImage(int rid)
+		public virtual Dictionary<string, AttributeValue> loadItemImage(int rid)
 		{
 			txAssert(rid > 0, txId, "Expected rid > 0");
 

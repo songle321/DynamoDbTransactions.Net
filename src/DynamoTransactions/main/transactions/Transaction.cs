@@ -48,7 +48,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: protected Transaction(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> txItem, TransactionManager txManager) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
-		protected internal Transaction(IDictionary<string, AttributeValue> txItem, TransactionManager txManager)
+		protected internal Transaction(Dictionary<string, AttributeValue> txItem, TransactionManager txManager)
 		{
 			this.txManager = txManager;
 			this.txItem = new TransactionItem(txItem, txManager);
@@ -106,7 +106,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		    GetItemResponse result = new GetItemResponse {Item = item};
 			return result;
 		}
-		public static void stripSpecialAttributes(IDictionary<string, AttributeValue> item)
+		public static void stripSpecialAttributes(Dictionary<string, AttributeValue> item)
 		{
 			if (item == null)
 			{
@@ -117,7 +117,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				item.Remove(specialAttribute);
 			}
 		}
-		public static bool isLocked(IDictionary<string, AttributeValue> item)
+		public static bool isLocked(Dictionary<string, AttributeValue> item)
 		{
 			if (item == null)
 			{
@@ -129,7 +129,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 			return false;
 		}
-		public static bool isApplied(IDictionary<string, AttributeValue> item)
+		public static bool isApplied(Dictionary<string, AttributeValue> item)
 		{
 			if (item == null)
 			{
@@ -141,7 +141,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 			return false;
 		}
-		public static bool isTransient(IDictionary<string, AttributeValue> item)
+		public static bool isTransient(Dictionary<string, AttributeValue> item)
 		{
 			if (item == null)
 			{
@@ -578,7 +578,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				rollbackItemAndReleaseLock(request);
 
 				// 2. Delete the old item image, we don't need it anymore
-				txItem.deleteItemImage(request.Rid);
+				txItem.deleteItemImage(request.Rid.Value);
 			}
 
 			complete(TransactionItem.State.ROLLED_BACK);
@@ -588,7 +588,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			rollbackItemAndReleaseLock(request.TableName, request.getKey(txManager), request is Request.GetItem, request.Rid);
 		}
 
-		protected internal virtual void rollbackItemAndReleaseLock(string tableName, IDictionary<string, AttributeValue> key, bool? isGet, int? rid)
+		protected internal virtual void rollbackItemAndReleaseLock(string tableName, Dictionary<string, AttributeValue> key, bool? isGet, int? rid)
 		{
 			// TODO there seems to be a race that leads to orphaned old item images (but is still correct in terms of the transaction)
 			// A previous master could have stalled after writing the tx record, fall asleep, and then finally insert the old item image 
@@ -612,10 +612,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 
 			// Read the old item image, if the rid is known.  Otherwise we treat it as if we don't have an item image.
-			IDictionary<string, AttributeValue> itemImage = null;
+			Dictionary<string, AttributeValue> itemImage = null;
 			if (rid != null)
 			{
-				itemImage = txItem.loadItemImage(rid);
+				itemImage = txItem.loadItemImage(rid.Value);
 			}
 
 			if (itemImage != null)
@@ -630,11 +630,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 				try
 				{
-					IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-					expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(txId));
+					Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+					expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
 
-					PutItemRequest put = (new PutItemRequest()).withTableName(tableName).withItem(itemImage).withExpected(expected);
-					txManager.Client.putItem(put);
+Value = new AttributeValue(txId),
+};
+
+					PutItemRequest put = new PutItemRequest {
+
+TableName = tableName,
+Item = itemImage,
+Expected = expected,
+};
+					txManager.Client.PutItemAsync(put).Wait();
 				}
 				catch (ConditionalCheckFailedException)
 				{
@@ -646,11 +654,22 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				// 3) We didn't find a backup. Try deleting the item with expected: 1) Transient, 2) Locked by us, return success
 				try
 				{
-					IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-					expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(txId));
-					expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(BOOLEAN_TRUE_ATTR_VAL));
+					Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+					expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
 
-					DeleteItemRequest delete = (new DeleteItemRequest()).withTableName(tableName).withKey(key).withExpected(expected);
+Value = new AttributeValue(txId),
+};
+					expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue {
+
+Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL),
+};
+
+					DeleteItemRequest delete = new DeleteItemRequest {
+
+TableName = tableName,
+Key = key,
+Expected = expected,
+};
 					txManager.Client.DeleteItemAsync(delete).Wait();
 					return;
 				}
@@ -665,7 +684,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				//   b) Otherwise release the lock (okay to delete if transient to re-use logic)
 
 				// 4) Read the item. If we don't have the lock anymore, meaning it was already rolled back.  Return.
-				IDictionary<string, AttributeValue> item = getItem(tableName, key);
+				Dictionary<string, AttributeValue> item = getItem(tableName, key);
 
 				if (item == null || !txId.Equals(getOwner(item)))
 				{
@@ -681,46 +700,70 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				releaseReadLock(tableName, key);
 			}
 		}
-		protected internal virtual void releaseReadLock(string tableName, IDictionary<string, AttributeValue> key)
+		protected internal virtual void releaseReadLock(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			releaseReadLock(txId, txManager, tableName, key);
 		}
 
-		protected internal static void releaseReadLock(string txId, TransactionManager txManager, string tableName, IDictionary<string, AttributeValue> key)
+		protected internal static void releaseReadLock(string txId, TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
 		{
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-			expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(txId));
-			expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withExists(false);
-			expected[AttributeName.APPLIED.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+			expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
+
+Value = new AttributeValue(txId),
+};
+			expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue {
+
+Exists = false,
+};
+			expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue {
+
+Exists = false,
+};
 
 			try
 			{
-				IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
+				Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
 				updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate {Action = AttributeAction.DELETE};
 				updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate {Action = AttributeAction.DELETE};
 
-				UpdateItemRequest update = (new UpdateItemRequest()).withTableName(tableName).withAttributeUpdates(updates).withKey(key).withExpected(expected);
-				txManager.Client.updateItem(update);
+				UpdateItemRequest update = new UpdateItemRequest {
+
+TableName = tableName,
+AttributeUpdates = updates,
+Key = key,
+Expected = expected,
+};
+				txManager.Client.UpdateItemAsync(update).Wait();
 			}
 			catch (ConditionalCheckFailedException)
 			{
 				try
 				{
-					expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withValue((new AttributeValue()).withS(BOOLEAN_TRUE_ATTR_VAL));
+					expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue { 
+Value = new AttributeValue {
 
-					DeleteItemRequest delete = (new DeleteItemRequest()).withTableName(tableName).withKey(key).withExpected(expected);
-					txManager.Client.deleteItem(delete);
+S = BOOLEAN_TRUE_ATTR_VAL
+}};
+
+					DeleteItemRequest delete = new DeleteItemRequest {
+
+TableName = tableName,
+Key = key,
+Expected = expected,
+};
+					txManager.Client.DeleteItemAsync(delete).Wait();
 				}
 				catch (ConditionalCheckFailedException)
 				{
 					// Ignore, means it was definitely rolled back
 					// Re-read to ensure that it wasn't applied
-					IDictionary<string, AttributeValue> item = getItem(txManager, tableName, key);
+					Dictionary<string, AttributeValue> item = getItem(txManager, tableName, key);
 					txAssert(!(item != null && txId.Equals(getOwner(item)) && item.ContainsKey(AttributeName.APPLIED.ToString())), "Item should not have been applied.  Unable to release lock", "item", item);
 				}
 			}
 		}
-		protected internal static void unlockItemUnsafe(TransactionManager txManager, string tableName, IDictionary<string, AttributeValue> item, string txId)
+		protected internal static void unlockItemUnsafe(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> item, string txId)
 		{
 
 			// 1) Ensure the transaction does not exist 
@@ -736,23 +779,32 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 
 			// 2) Remove all transaction attributes and condition on txId equality
-			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-			expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(txId));
+			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+			expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
 
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
+Value = new AttributeValue(txId),
+};
+
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
 			foreach (string attrName in SPECIAL_ATTR_NAMES)
 			{
 				updates[attrName] = new AttributeValueUpdate {Action = AttributeAction.DELETE};
 			}
 
-			IDictionary<string, AttributeValue> key = Request.getKeyFromItem(tableName, item, txManager);
+			Dictionary<string, AttributeValue> key = Request.getKeyFromItem(tableName, item, txManager);
 
-			UpdateItemRequest update = (new UpdateItemRequest()).withTableName(tableName).withAttributeUpdates(updates).withKey(key).withExpected(expected);
+			UpdateItemRequest update = new UpdateItemRequest {
+
+TableName = tableName,
+AttributeUpdates = updates,
+Key = key,
+Expected = expected,
+};
 
 			// Delete the item, and ignore conditional write failures
 			try
 			{
-				txManager.Client.updateItem(update);
+				txManager.Client.UpdateItemAsync(update).Wait();
 			}
 			catch (ConditionalCheckFailedException)
 			{
@@ -813,7 +865,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 
 			// 2. Write txId to item
-			IDictionary<string, AttributeValue> item = lockItem(callerRequest, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
+			Dictionary<string, AttributeValue> item = lockItem(callerRequest, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
 
 			//    As long as this wasn't a duplicate read request,
 			// 3. Save the item image to a new item in case we need to roll back, unless:
@@ -849,7 +901,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			// 4. Apply change to item, keeping lock on the item, returning the attributes according to RETURN_VALUE
 			//    If we are a read request, and there is an applied delete request for the same item in the tx, return null.
-			IDictionary<string, AttributeValue> returnItem = applyAndKeepLock(callerRequest, item);
+			Dictionary<string, AttributeValue> returnItem = applyAndKeepLock(callerRequest, item);
 
 			// 5. Optimization: Keep track of the requests that this transaction object has fully applied
 			if (callerRequest.Rid != null)
@@ -860,15 +912,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			return returnItem;
 		}
 
-		protected internal virtual void saveItemImage(Request callerRequest, IDictionary<string, AttributeValue> item)
+		protected internal virtual void saveItemImage(Request callerRequest, Dictionary<string, AttributeValue> item)
 		{
 			if (isRequestSaveable(callerRequest, item) && !item.ContainsKey(AttributeName.APPLIED.ToString()))
 			{
-				txItem.saveItemImage(item, callerRequest.Rid);
+				txItem.saveItemImage(item, callerRequest.Rid.Value);
 			}
 		}
 
-		protected internal virtual bool isRequestSaveable(Request callerRequest, IDictionary<string, AttributeValue> item)
+		protected internal virtual bool isRequestSaveable(Request callerRequest, Dictionary<string, AttributeValue> item)
 		{
 			if (!(callerRequest is Request.GetItem) && !item.ContainsKey(AttributeName.TRANSIENT.ToString()))
 			{
@@ -878,9 +930,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> lockItem(Request callerRequest, boolean expectExists, int attempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-		protected internal virtual IDictionary<string, AttributeValue> lockItem(Request callerRequest, bool expectExists, int attempts)
+		protected internal virtual Dictionary<string, AttributeValue> lockItem(Request callerRequest, bool expectExists, int attempts)
 		{
-			IDictionary<string, AttributeValue> key = callerRequest.getKey(txManager);
+			Dictionary<string, AttributeValue> key = callerRequest.getKey(txManager);
 
 			if (attempts <= 0)
 			{
@@ -891,30 +943,55 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			//   - If we expect the item TO exist, we only update the lock
 			//   - If we expect the item NOT to exist, we update both the transient attribute and the lock.
 			// In both cases we expect the txid not to be set
-			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-			updates[AttributeName.TXID.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.PUT).withValue(new AttributeValue(txId));
-			updates[AttributeName.DATE.ToString()] = (new AttributeValueUpdate()).withAction(AttributeAction.PUT).withValue(txManager.CurrentTimeAttribute);
+			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
+			updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate {
 
-			IDictionary<string, ExpectedAttributeValue> expected;
+Action = AttributeAction.PUT,
+Value = new AttributeValue(txId),
+};
+			updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate {
+
+Action = AttributeAction.PUT,
+Value = txManager.CurrentTimeAttribute,
+};
+
+			Dictionary<string, ExpectedAttributeValue> expected;
 			if (expectExists)
 			{
 				expected = callerRequest.getExpectExists(txManager);
-				expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+				expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
+
+Exists = false,
+};
 			}
 			else
 			{
 				expected = new Dictionary<string, ExpectedAttributeValue>(1);
-				updates.Add(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate()
-					.withAction(AttributeAction.PUT).withValue((new AttributeValue()).withS(BOOLEAN_TRUE_ATTR_VAL)));
+				updates.Add(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate { 
+Action = AttributeAction.PUT,
+Value = new AttributeValue {
+
+S = BOOLEAN_TRUE_ATTR_VAL
+}});
 			}
-			expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+			expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
+
+Exists = false,
+};
 
 			// Do a conditional update on NO transaction id, and that the item DOES exist
-			UpdateItemRequest updateRequest = (new UpdateItemRequest()).withTableName(callerRequest.TableName).withExpected(expected).withKey(key).withReturnValues(ReturnValue.ALL_NEW).withAttributeUpdates(updates);
+			UpdateItemRequest updateRequest = new UpdateItemRequest {
+
+TableName = callerRequest.TableName,
+Expected = expected,
+Key = key,
+ReturnValues = ReturnValue.ALL_NEW,
+AttributeUpdates = updates,
+};
 
 			string owner = null;
 			bool nextExpectExists = false;
-			IDictionary<string, AttributeValue> item = null;
+			Dictionary<string, AttributeValue> item = null;
 			try
 			{
 				item = txManager.Client.UpdateItemAsync(updateRequest).Result.Attributes;
@@ -970,9 +1047,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 			return lockItem(callerRequest, nextExpectExists, attempts - 1);
 		}
-		protected internal virtual IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
+		protected internal virtual Dictionary<string, AttributeValue> applyAndKeepLock(Request request, Dictionary<string, AttributeValue> lockedItem)
 		{
-			IDictionary<string, AttributeValue> returnItem = null;
+			Dictionary<string, AttributeValue> returnItem = null;
 
 			// 1. Remember what return values the caller wanted.
 			string returnValues = request.ReturnValues; // save the returnValues because we will mutate it
@@ -986,9 +1063,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				try
 				{
-					IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-					expected[AttributeName.TXID.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue(txId));
-					expected[AttributeName.APPLIED.ToString()] = (new ExpectedAttributeValue()).withExists(false);
+					Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+					expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
+
+Value = new AttributeValue(txId),
+};
+					expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue {
+
+Exists = false,
+};
 
 					// TODO assert if the caller request contains any of our internally defined fields?
 					//      but we aren't copying the request object, so our retries might trigger the assertion.
@@ -1006,7 +1089,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 						put.Item.Add(AttributeName.DATE.ToString(), lockedItem[AttributeName.DATE.ToString()]);
 						put.Expected = expected;
 						put.ReturnValues = returnValues;
-						returnItem = txManager.Client.putItem(put).Attributes;
+						returnItem = txManager.Client.PutItemAsync(put).Result.Attributes;
 					}
 					else if (request is Request.UpdateItem)
 					{
@@ -1026,8 +1109,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 							update.AttributeUpdates = new Dictionary<string, AttributeValueUpdate>(1);
 						}
 
-						update.AttributeUpdates.Add(AttributeName.APPLIED.ToString(), new AttributeValueUpdate()
-							.withAction(AttributeAction.PUT).withValue(new AttributeValue(BOOLEAN_TRUE_ATTR_VAL)));
+						update.AttributeUpdates.Add(AttributeName.APPLIED.ToString(), new AttributeValueUpdate
+                        {
+							
+Action = AttributeAction.PUT,
+Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL)});
 
 						returnItem = txManager.Client.UpdateItemAsync(update).Result.Attributes;
 					}
@@ -1101,7 +1187,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				{
 					return returnItem; // If the apply write succeeded, we have the ALL_OLD from the request
 				}
-				returnItem = txItem.loadItemImage(request.Rid);
+				returnItem = txItem.loadItemImage(request.Rid.Value);
 				if (returnItem == null)
 				{
 					throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the old copy of the image is missing");
@@ -1135,18 +1221,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				throw new TransactionAssertionException(txId, "Unsupported return values: " + returnValues);
 			}
 		}
-		protected internal virtual IDictionary<string, AttributeValue> getItem(string tableName, IDictionary<string, AttributeValue> key)
+		protected internal virtual Dictionary<string, AttributeValue> getItem(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			return getItem(txManager, tableName, key);
 		}
 
-		protected internal static IDictionary<string, AttributeValue> getItem(TransactionManager txManager, string tableName, IDictionary<string, AttributeValue> key)
+		protected internal static Dictionary<string, AttributeValue> getItem(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
 		{
-			GetItemRequest getRequest = (new GetItemRequest()).withTableName(tableName).withConsistentRead(true).withKey(key);
+			GetItemRequest getRequest = new GetItemRequest {
+
+TableName = tableName,
+ConsistentRead = true,
+Key = key,
+};
 			GetItemResponse getResponse = txManager.Client.GetItemAsync(getRequest).Result;
 			return getResponse.Item;
 		}
-		protected internal static string getOwner(IDictionary<string, AttributeValue> item)
+		protected internal static string getOwner(Dictionary<string, AttributeValue> item)
 		{
 			if (item == null)
 			{
@@ -1259,10 +1350,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: public <T> void delete(final T item)
 		public virtual void delete<T>(T item)
 		{
-			doWithMapper(new CallableAnonymousInnerClass(this, item));
+			doWithMapper(new CallableAnonymousInnerClass<T>(this, item));
 		}
 
-		private class CallableAnonymousInnerClass : Callable<Void>
+		private class CallableAnonymousInnerClass<T> : Callable<object>
 		{
 			private readonly Transaction outerInstance;
 
@@ -1276,7 +1367,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override public Void call() throws Exception
-			public override Void call()
+			public object call()
 			{
 				outerInstance.txManager.ClientMapper.delete(item);
 				return null;
@@ -1286,10 +1377,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: public <T> T load(final T item)
 		public virtual T load<T>(T item)
 		{
-			return doWithMapper(new CallableAnonymousInnerClass2(this, item));
+			return doWithMapper(new CallableAnonymousInnerClass2<T>(this, item));
 		}
 
-		private class CallableAnonymousInnerClass2 : Callable<T>
+		private class CallableAnonymousInnerClass2<T> : Callable<T>
 		{
 			private readonly Transaction outerInstance;
 
@@ -1303,7 +1394,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override public T call() throws Exception
-			public override T call()
+			public T call()
 			{
 				return outerInstance.txManager.ClientMapper.load(item);
 			}
@@ -1312,10 +1403,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: public <T> void save(final T item)
 		public virtual void save<T>(T item)
 		{
-			doWithMapper(new CallableAnonymousInnerClass3(this, item));
+			doWithMapper(new CallableAnonymousInnerClass3<T>(this, item));
 		}
 
-		private class CallableAnonymousInnerClass3 : Callable<Void>
+		private class CallableAnonymousInnerClass3<T> : Callable<object>
 		{
 			private readonly Transaction outerInstance;
 
@@ -1329,7 +1420,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override public Void call() throws Exception
-			public override Void call()
+			public object call()
 			{
 				outerInstance.txManager.ClientMapper.save(item);
 				return null;
@@ -1340,17 +1431,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			try
 			{
 				txManager.FacadeProxy.Backend = new TransactionDynamoDBFacade(this, txManager);
-				return callable.call();
-			}
-			catch (Exception e)
-			{
-				// have to do this here in order to avoid having to declare a checked exception type
-				throw e;
-			}
-			catch (Exception e)
-			{
-				// none of the callers of this method need to throw a checked exception
-				throw new Exception(e);
+				return callable.call<T>();
 			}
 			finally
 			{

@@ -42,7 +42,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        private AmazonDynamoDBClient Backend
+	    internal IAmazonDynamoDB Backend
 		{
 			get
 			{

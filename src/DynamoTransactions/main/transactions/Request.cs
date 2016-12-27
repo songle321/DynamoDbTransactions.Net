@@ -409,7 +409,7 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 			}
 		}
 
-		protected internal static IDictionary<string, AttributeValue> getKeyFromItem(string tableName, IDictionary<string, AttributeValue> item, TransactionManager txManager)
+		protected internal static Dictionary<string, AttributeValue> getKeyFromItem(string tableName, IDictionary<string, AttributeValue> item, TransactionManager txManager)
 		{
 			if (item == null)
 			{
@@ -452,7 +452,7 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 		/// <returns> a map for use in an expected clause to ensure the item exists </returns>
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @JsonIgnore protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue> getExpectExists(TransactionManager txManager)
-		protected internal virtual IDictionary<string, ExpectedAttributeValue> getExpectExists(TransactionManager txManager)
+		protected internal virtual Dictionary<string, ExpectedAttributeValue> getExpectExists(TransactionManager txManager)
 		{
 			IDictionary<string, AttributeValue> key = getKey(txManager);
 			IDictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(key.Count);
