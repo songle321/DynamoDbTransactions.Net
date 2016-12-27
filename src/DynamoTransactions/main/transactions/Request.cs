@@ -40,7 +40,7 @@ using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @JsonIgnore protected abstract java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> getKey(TransactionManager txManager);
-		protected internal abstract IDictionary<string, AttributeValue> getKey(TransactionManager txManager);
+		protected internal abstract Dictionary<string, AttributeValue> getKey(TransactionManager txManager);
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @JsonIgnore protected abstract String getReturnValues();
