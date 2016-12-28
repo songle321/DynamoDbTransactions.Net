@@ -202,7 +202,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testQueryContainsItem(TransactionManagerDynamoDBFacade facade, IDictionary<string, AttributeValue> item, bool filterAttributes)
 		{
 			QueryRequest queryRequest = createQueryRequest(filterAttributes);
-			QueryResponse queryResponse = facade.query(queryRequest);
+			QueryResponse queryResponse = facade.QueryAsync(queryRequest);
 			assertEquals(1, queryResult.Items.size());
 			assertContainsNoTransactionAttributes(queryResult.Items.get(0));
 			assertEquals(item, queryResult.Items.get(0));
@@ -213,7 +213,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private void testQueryIsEmpty(TransactionManagerDynamoDBFacade facade)
 		{
 			QueryRequest queryRequest = createQueryRequest(false);
-			QueryResponse queryResponse = facade.query(queryRequest);
+			QueryResponse queryResponse = facade.QueryAsync(queryRequest);
 			assertNotNull(queryResult.Items);
 			assertEquals(0, queryResult.Items.size());
 		}
@@ -244,7 +244,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 		/// <summary>
-		/// Test that calls to scan, query, getItem, and batchGetItems contain
+		/// Test that calls to scan, QueryAsync, getItem, and batchGetItems contain
 		/// the expected result. </summary>
 		/// <param name="facade"> The facade to test </param>
 		/// <param name="item"> The expected item to be found </param>
