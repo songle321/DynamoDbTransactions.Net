@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
@@ -7,6 +8,7 @@ using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 using static com.amazonaws.services.dynamodbv2.transactions.Transaction;
 using static com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
+using System.Linq;
 
 // <summary>
 // Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -1506,15 +1508,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     // Remove attributes that weren't asked for in the request
                     ISet<string> attributesToGet = new HashSet<string>(getRequest.AttributesToGet);
-                    IEnumerator<KeyValuePair<string, AttributeValue>> it = lockedItem.SetOfKeyValuePairs().GetEnumerator();
-                    while (it.MoveNext())
+                    var toRemove = lockedItem.Where(x => !attributesToGet.Contains(x.Key));
+                    foreach (var item in toRemove)
                     {
-                        KeyValuePair<string, AttributeValue> attr = it.Current;
-                        if (!attributesToGet.Contains(attr.Key))
-                        {
-                            //JAVA TO C# CONVERTER TODO TASK: .NET enumerators are read-only:
-                            it.remove(); // TODO does this need to keep the tx attributes?
-                        }
+                        lockedItem.Remove(item.Key); // TODO does this need to keep the tx attributes
                     }
                 }
                 return lockedItem;
@@ -1533,7 +1530,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_OLD from the request
                 }
-                returnItem = txItem.loadItemImageAsync(request.Rid.Value);
+                returnItem = await txItem.loadItemImageAsync(request.Rid.Value);
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the old copy of the image is missing");
