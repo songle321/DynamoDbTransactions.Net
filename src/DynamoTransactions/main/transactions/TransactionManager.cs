@@ -264,7 +264,7 @@ TableName = tableName,
             {
                 log.warn("Breaking a lock on table " + tableName + " for transaction " + txId + " for item " + item + ".  This will leave the item in an unknown state");
             }
-            Transaction.unlockItemUnsafe(this, tableName, item, txId);
+            Transaction.unlockItemUnsafeAsync(this, tableName, item, txId);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -367,7 +367,7 @@ public virtual int Compare(AttributeDefinition arg0, AttributeDefinition arg1)
         ///            . </param>
         /// <returns> An instance of the item class with all attributes populated from
         ///         the table, or null if the item does not exist. </returns>
-        public virtual async Task<T> load<T>(T item, Transaction.IsolationLevel isolationLevel)
+        public virtual async Task<T> loadAsync<T>(T item, Transaction.IsolationLevel isolationLevel)
         {
             try
             {

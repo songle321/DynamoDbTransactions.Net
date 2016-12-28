@@ -23,7 +23,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 {
     /// <summary>
     /// Facade to support the DynamoDBMapper doing a read using a specific isolation
-    /// level. Used by <seealso cref="TransactionManager#load(Object, IsolationLevel)"/>.
+    /// level. Used by <seealso cref="TransactionManager#loadAsync(Object, IsolationLevel)"/>.
     /// </summary>
     public class TransactionManagerDynamoDBFacade : IAmazonDynamoDB
     {

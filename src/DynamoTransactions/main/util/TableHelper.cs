@@ -35,7 +35,7 @@ private readonly AmazonDynamoDBClient client;
 
 		public virtual string verifyTableExists(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
 		{
-			DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest(tableName)).Result;
+			DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest(tableName));
 			if (!(new HashSet<AttributeDefinition>(definitions)).Equals(new HashSet<AttributeDefinition>(describe.Table.AttributeDefinitions)))
 			{
 				throw new ResourceInUseException("Table " + tableName + " had the wrong AttributesToGet." + " Expected: " + definitions + " " + " Was: " + describe.Table.AttributeDefinitions);
@@ -115,7 +115,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
                     KeySchema = keySchema,
                     LocalSecondaryIndexes = localIndexes,
                     ProvisionedThroughput = provisionedThroughput
-				}).Result.TableDescription.TableStatus;
+				}).TableDescription.TableStatus;
 			}
 
 			if (waitTimeSeconds != null && !TableStatus.ACTIVE.ToString().Equals(status))
@@ -140,7 +140,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 				DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
 				{
 				    TableName = tableName
-				}).Result;
+				});
 				string status = describe.Table.TableStatus;
 				if (TableStatus.ACTIVE.ToString().Equals(status))
 				{
@@ -204,7 +204,7 @@ if (waitTimeSeconds < 0)
 					DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
 					{
 					    TableName = tableName
-					}).Result;
+					});
 					string status = describe.Table.TableStatus;
 					if (!TableStatus.DELETING.ToString().Equals(status))
 					{

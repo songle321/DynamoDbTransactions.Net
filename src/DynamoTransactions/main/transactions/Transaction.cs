@@ -22,6 +22,7 @@ using static com.amazonaws.services.dynamodbv2.transactions.exceptions.Transacti
 // or implied. See the License for the specific language governing permissions 
 // and limitations under the License. 
 // </summary>
+
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
     /// <summary>
@@ -48,7 +49,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     ///   <li>When involving an item in a transaction that does not yet exist in the table, this library will insert the item without any other attributes 
     ///       except for the primary key and some transaction metadata attributes.  If you perform reads on your table outside of the transaction library,
     ///       you need to be prepared to deal with these "half written" items. These are identifiable by the presence of a "_TxT" attribute.  See 
-    ///       getItem in <seealso cref="TransactionManager"/> for read options that handle dealing with these "half written" items for you.</li>
+    ///       getItemAsync in <seealso cref="TransactionManager"/> for read options that handle dealing with these "half written" items for you.</li>
     ///   <li>You can't perform multiple write operations on the same item within the transaction</li>
     ///   <li>If you read in a transaction after a write, the read will return the item as if the write has committed.</li>
     ///   <li>Read locks may be upgraded to write locks, and you can read items if the have write locks.</li>
@@ -138,10 +139,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         public virtual string Id
         {
-            get
-            {
-                return txId;
-            }
+            get { return txId; }
         }
 
         /// <summary>
@@ -154,12 +152,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="TransactionNotFoundException"> if the transaction does not exist </exception>
         /// <exception cref="TransactionException"> on unexpected errors or unresolvable OCC contention </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItem(com.amazonaws.services.dynamodbv2.model.PutItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        public virtual PutItemResponse putItem(PutItemRequest request)
+        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItemAsync(com.amazonaws.services.dynamodbv2.model.PutItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        public virtual async Task<PutItemResponse> putItemAsync(PutItemRequest request)
         {
             Request.PutItem wrappedRequest = new Request.PutItem();
             wrappedRequest.Request = request;
-            Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
+            Dictionary<string, AttributeValue> item = await driveRequestAsync(wrappedRequest);
             stripSpecialAttributes(item);
             return new PutItemResponse
             {
@@ -177,12 +175,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="TransactionNotFoundException"> if the transaction does not exist </exception>
         /// <exception cref="TransactionException"> on unexpected errors or unresolvable OCC contention </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        public virtual UpdateItemResponse updateItem(UpdateItemRequest request)
+        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItemAsync(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        public virtual async Task<UpdateItemResponse> updateItemAsync(UpdateItemRequest request)
         {
             Request.UpdateItem wrappedRequest = new Request.UpdateItem();
             wrappedRequest.Request = request;
-            Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
+            Dictionary<string, AttributeValue> item = await driveRequestAsync(wrappedRequest);
             stripSpecialAttributes(item);
             return new UpdateItemResponse
             {
@@ -200,12 +198,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="TransactionNotFoundException"> if the transaction does not exist </exception>
         /// <exception cref="TransactionException"> on unexpected errors or unresolvable OCC contention </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        public virtual DeleteItemResponse deleteItem(DeleteItemRequest request)
+        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItemAsync(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        public virtual async Task<DeleteItemResponse> deleteItemAsync(DeleteItemRequest request)
         {
             Request.DeleteItem wrappedRequest = new Request.DeleteItem();
             wrappedRequest.Request = request;
-            Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
+            Dictionary<string, AttributeValue> item = await driveRequestAsync(wrappedRequest);
             stripSpecialAttributes(item);
             return new DeleteItemResponse
             {
@@ -224,12 +222,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="TransactionNotFoundException"> if the transaction does not exist </exception>
         /// <exception cref="TransactionException"> on unexpected errors or unresolvable OCC contention </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        public virtual GetItemResponse getItem(GetItemRequest request)
+        //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItemAsync(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        public virtual async Task<GetItemResponse> getItemAsync(GetItemRequest request)
         {
             Request.GetItem wrappedRequest = new Request.GetItem();
             wrappedRequest.Request = request;
-            Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
+            Dictionary<string, AttributeValue> item = await driveRequestAsync(wrappedRequest);
             stripSpecialAttributes(item);
             GetItemResponse result = new GetItemResponse
             {
@@ -305,6 +303,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             return await deleteIfAfterAsync(null);
         }
+
         /// <summary>
         /// Deletes the transaction, only if it has not been update since the specified duration.  A transaction's 
         /// "last updated date" is updated when:
@@ -382,12 +381,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// </summary>
         /// <param name="rollbackAfterDurationMills"> </param>
         /// <param name="deleteAfterDurationMillis"> </param>
-        public virtual void sweep(long rollbackAfterDurationMills, long deleteAfterDurationMillis)
+        public virtual async Task sweepAsync(long rollbackAfterDurationMills, long deleteAfterDurationMillis)
         {
             // If the item has been completed for the specified threshold, deleteAsync it.
             if (txItem.Completed)
             {
-                deleteAsync(deleteAfterDurationMillis);
+                await deleteAsync(deleteAfterDurationMillis);
             }
             else
             {
@@ -396,11 +395,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 switch (txItem.getState())
                 {
                     case TransactionItem.State.PENDING:
-                        if ((txItem.LastUpdateTimeMillis + rollbackAfterDurationMills) < DateTimeHelperClass.CurrentUnixTimeMillis())
+                        if ((txItem.LastUpdateTimeMillis + rollbackAfterDurationMills) <
+                            DateTimeHelperClass.CurrentUnixTimeMillis())
                         {
                             try
                             {
-                                rollback();
+                                await rollbackAsync();
                             }
                             catch (TransactionCompletedException)
                             {
@@ -410,10 +410,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         break;
                     case TransactionItem.State.COMMITTED: // NOTE: falling through to ROLLED_BACK
                     case TransactionItem.State.ROLLED_BACK:
-                        // This could call either commitAsync or rollback - they'll both do the right thing if it's already committed
+                        // This could call either commitAsync or rollbackAsync - they'll both do the right thing if it's already committed
                         try
                         {
-                            rollback();
+                            await rollbackAsync();
                         }
                         catch (TransactionCompletedException)
                         {
@@ -421,7 +421,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         }
                         break;
                     default:
-                        throw new TransactionAssertionException(txId, "Unexpected state in transaction: " + txItem.getState());
+                        throw new TransactionAssertionException(txId,
+                            "Unexpected state in transaction: " + txItem.getState());
                 }
             }
         }
@@ -434,14 +435,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="ItemNotLockedException"> if we were unable to acquire the lock because of contention with other transactions </exception>
         /// <exception cref="TransactionException"> if another unresolvable error occurs, including too much contention on this transaction record </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: protected synchronized java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> driveRequest(Request clientRequest) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        protected internal virtual Dictionary<string, AttributeValue> driveRequest(Request clientRequest)
+        //ORIGINAL LINE: protected synchronized java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> driveRequestAsync(Request clientRequest) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> driveRequestAsync(Request clientRequest)
         {
-            lock (this)
+            await semaphore.WaitAsync();
+            try
             {
                 /* 1. Validate the request (no conditions, required attributes, no conflicting attributes etc)
 				 * 2. Copy the request (we change things in it, so don't mutate the caller's request
-				 * 3. Acquire the lock, save image, apply via addRequest()
+				 * 3. Acquire the lock, save image, apply via addRequestAsync()
 				 *    a) If that fails, go to 3) again.
 				 */
 
@@ -456,18 +458,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     try
                     {
-                        Dictionary<string, AttributeValue> item = addRequest(requestCopy, (i != 0), TX_LOCK_ACQUIRE_ATTEMPTS);
+                        Dictionary<string, AttributeValue> item =
+                            await addRequestAsync(requestCopy, (i != 0), TX_LOCK_ACQUIRE_ATTEMPTS);
                         return item;
                     }
                     catch (ItemNotLockedException e)
                     {
-                        // Roll back or complete the other transaction
+                        // Roll back or completeAsync the other transaction
                         lastConflict = e;
                         Transaction conflictingTransaction = null;
                         try
                         {
                             conflictingTransaction = new Transaction(e.LockOwnerTxId, txManager, false);
-                            conflictingTransaction.rollback();
+                            conflictingTransaction.rollbackAsync();
                         }
                         catch (TransactionNotFoundException)
                         {
@@ -480,6 +483,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     }
                 }
                 throw lastConflict;
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
@@ -502,7 +509,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                 // 2. Verify that we should continue
                 //    a) If the transaction is closed, return or throw depending on COMPLETE or ROLLED_BACK.
-                //    b) If the transaction is ROLLED_BACK, continue doRollback(), but at the end throw.
+                //    b) If the transaction is ROLLED_BACK, continue doRollbackAsync(), but at the end throw.
                 //    c) If the transaction is COMMITTED, go to doCommitAsync(), and at the end return.
 
                 // 3. Save the transaction's version number to detect if additional requests are added
@@ -558,7 +565,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     if (TransactionItem.State.ROLLED_BACK.Equals(txItem.getState()))
                     {
-                        doRollback();
+                        doRollbackAsync();
                         throw new TransactionRolledBackException(txId, "Transaction was rolled back");
                     }
 
@@ -571,7 +578,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     int version = txItem.Version;
 
-                    verifyLocks();
+                    verifyLocksAsync();
 
                     try
                     {
@@ -597,14 +604,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// Rolls back the transaction.  You can only roll back a transaction that is in the PENDING state (not yet committed).
         /// <li>If you roll back a transaction in COMMITTED, this will continue committing the transaction if it isn't completed yet, 
         ///      but you will get back a TransactionCommittedException. </li>
-        /// <li>If you roll back and already rolled back transaction, this will ensure the rollback completed, and return success</li>
+        /// <li>If you roll back and already rolled back transaction, this will ensure the rollbackAsync completed, and return success</li>
         /// <li>If the transaction no longer exists, you'll get back an UnknownCompletedTransactionException</li>   
         /// </summary>
         /// <exception cref="TransactionCommittedException"> - the transaction was committed by a concurrent overlapping transaction </exception>
         /// <exception cref="UnknownCompletedTransactionException"> - the transaction completed, but it is not known whether it was rolled back or committed </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public synchronized void rollback() throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException
-        public virtual async Task rollback()
+        //ORIGINAL LINE: public synchronized void rollbackAsync() throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException
+        public virtual async Task rollbackAsync()
         {
             await semaphore.WaitAsync();
             try
@@ -637,7 +644,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     if (!txItem.Completed)
                     {
-                        doCommitAsync();
+                        await doCommitAsync();
                     }
                     throw new TransactionCommittedException(txId, "Transaction was committed");
                 }
@@ -645,7 +652,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     if (!txItem.Completed)
                     {
-                        doRollback();
+                        doRollbackAsync();
                     }
                     return;
                 }
@@ -654,13 +661,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     if (!alreadyRereadTxItem)
                     {
                         // The item was modified in the meantime (another request was added to it)
-                        // so make sure we re-read it, and then try the rollback again
+                        // so make sure we re-read it, and then try the rollbackAsync again
                         txItem = new TransactionItem(txId, txManager, false);
                     }
-                    rollback();
+                    await rollbackAsync();
                     return;
                 }
-                throw new TransactionAssertionException(txId, "Unexpected state in rollback(): " + state);
+                throw new TransactionAssertionException(txId, "Unexpected state in rollbackAsync(): " + state);
             }
             finally
             {
@@ -677,14 +684,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// This is optimized to consider the "version" numbers of the items that this Transaction object has fully applied so far
         /// to optimize the normal case that doesn't have failures.
         /// </summary>
-        protected internal virtual void verifyLocks()
+        protected internal virtual async Task verifyLocksAsync()
         {
             foreach (Request request in txItem.Requests)
             {
                 // Optimization: If our transaction object (this) has first-hand fully applied a request, no need to do it again.
                 if (!fullyAppliedRequests.Contains(request.Rid))
                 {
-                    addRequest(request, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
+                    await addRequestAsync(request, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
                 }
             }
         }
@@ -696,13 +703,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// it was in when deleted.  The caller is responsible for guaranteeing that it was actually in "currentState" immediately before calling
         /// this method.  
         /// </summary>
-        //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-        //ORIGINAL LINE: protected void complete(final State expectedCurrentState)
-        protected internal virtual void complete(TransactionItem.State expectedCurrentState)
+        protected internal virtual async Task completeAsync(TransactionItem.State expectedCurrentState)
         {
             try
             {
-                txItem.complete(expectedCurrentState);
+                await txItem.completeAsync(expectedCurrentState);
             }
             catch (ConditionalCheckFailedException)
             {
@@ -747,7 +752,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 txItem.deleteItemImage(request.Rid.Value);
             }
 
-            complete(TransactionItem.State.COMMITTED);
+            await completeAsync(TransactionItem.State.COMMITTED);
         }
 
         /// <summary>
@@ -794,7 +799,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     UpdateItemRequest update = new UpdateItemRequest
                     {
                         TableName = request.TableName,
-.withKey(request.getKey(txManager))AttributeUpdates = updates,
+                        Key = request.getKey(txManager),
+                        AttributeUpdates = updates,
                         Expected = expected
                     };
                     await txManager.Client.UpdateItemAsync(update);
@@ -804,13 +810,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     DeleteItemRequest delete = new DeleteItemRequest
                     {
                         TableName = request.TableName,
-.withKey(request.getKey(txManager))Expected = expected
+                        Key = request.getKey(txManager),
+                        Expected = expected
                     };
                     await txManager.Client.DeleteItemAsync(delete);
                 }
                 else if (request is Request.GetItem)
                 {
-                    releaseReadLock(request.TableName, request.getKey(txManager));
+                    releaseReadLockAsync(request.TableName, request.getKey(txManager));
                 }
                 else
                 {
@@ -831,9 +838,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// Rolls back the transaction, only if the transaction is in the ROLLED_BACK state.
         /// 
         /// This handles using the AttributeName.TRANSIENT to ensure that if an item was "phantom" (inserted during the transaction when acquiring the lock),
-        /// it gets deleted on rollback.
+        /// it gets deleted on rollbackAsync.
         /// </summary>
-        protected internal virtual void doRollback()
+        protected internal virtual async Task doRollbackAsync()
         {
             txAssert(TransactionItem.State.ROLLED_BACK.Equals(txItem.getState()), txId, "Transaction state is not " + TransactionItem.State.ROLLED_BACK, "state", txItem.getState(), "txItem", txItem);
 
@@ -842,13 +849,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 // Unlike unlockItems(), the order is important here.
 
                 // 1. Apply the old item image over the one the request modified 
-                rollbackItemAndReleaseLock(request);
+                await rollbackItemAndReleaseLockAsync(request);
 
                 // 2. Delete the old item image, we don't need it anymore
-                txItem.deleteItemImage(request.Rid);
+                txItem.deleteItemImage(request.Rid.Value);
             }
 
-            complete(TransactionItem.State.ROLLED_BACK);
+            await completeAsync(TransactionItem.State.ROLLED_BACK);
         }
 
         /// <summary>
@@ -861,12 +868,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// In either case, if the item did not exist before the lock was acquired, it is deleted.
         /// </summary>
         /// <param name="request"> </param>
-        protected internal virtual void rollbackItemAndReleaseLock(Request request)
+        protected internal virtual async Task rollbackItemAndReleaseLockAsync(Request request)
         {
-            rollbackItemAndReleaseLock(request.TableName, request.getKey(txManager), request is Request.GetItem, request.Rid);
+            await rollbackItemAndReleaseLockAsync(request.TableName, request.getKey(txManager), request is Request.GetItem, request.Rid);
         }
 
-        protected internal virtual void rollbackItemAndReleaseLock(string tableName, Dictionary<string, AttributeValue> key, bool? isGet, int? rid)
+        protected internal virtual async Task rollbackItemAndReleaseLockAsync(string tableName, Dictionary<string, AttributeValue> key, bool? isGet, int? rid)
         {
             // TODO there seems to be a race that leads to orphaned old item images (but is still correct in terms of the transaction)
             // A previous master could have stalled after writing the tx record, fall asleep, and then finally insert the old item image 
@@ -874,7 +881,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             // so a sweeper needs to deal with it.
 
             // Possible outcomes:
-            // 1) We know for sure from just the request (getItem) that we never back up the item. Release the lock (and deleteAsync if transient)
+            // 1) We know for sure from just the request (getItemAsync) that we never back up the item. Release the lock (and deleteAsync if transient)
             // 2) We found a backup.  Apply the backup.
             // 3) We didn't find a backup. Try deleting the item with expected: 1) Transient, 2) Locked by us, return success
             // 4) Read the item. If we don't have the lock anymore, meaning it was already rolled back.  Return.
@@ -883,9 +890,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             //   b) Otherwise release the lock (okay to deleteAsync if transient to re-use logic)
 
             // 1. Read locks don't have a saved item image, so just unlock them and return
-            if (isGet != null && isGet)
+            if (isGet.HasValue && isGet.Value)
             {
-                releaseReadLock(tableName, key);
+                releaseReadLockAsync(tableName, key);
                 return;
             }
 
@@ -893,13 +900,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, AttributeValue> itemImage = null;
             if (rid != null)
             {
-                itemImage = txItem.loadItemImage(rid);
+                itemImage = txItem.loadItemImage(rid.Value);
             }
 
             if (itemImage != null)
             {
                 // 2. Found a backup.  Replace the current item with the pre-changes version of the item, at the same time removing the lock attributes
-                txAssert(itemImage.Remove(AttributeName.TRANSIENT.ToString()) == null, txId, "Didn't expect to have saved an item image for a transient item", "itemImage", itemImage);
+                txAssert(itemImage.Remove(AttributeName.TRANSIENT.ToString()) == false, txId, "Didn't expect to have saved an item image for a transient item", "itemImage", itemImage);
 
                 itemImage.Remove(AttributeName.TXID.ToString());
                 itemImage.Remove(AttributeName.DATE.ToString());
@@ -920,7 +927,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         Item = itemImage,
                         Expected = expected
                     };
-                    txManager.Client.putItem(put);
+                    await txManager.Client.PutItemAsync(put);
                 }
                 catch (ConditionalCheckFailedException)
                 {
@@ -948,7 +955,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         Key = key,
                         Expected = expected
                     };
-                    txManager.Client.deleteItem(delete);
+                    await txManager.Client.DeleteItemAsync(delete);
                     return;
                 }
                 catch (ConditionalCheckFailedException)
@@ -962,7 +969,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 //   b) Otherwise release the lock (okay to deleteAsync if transient to re-use logic)
 
                 // 4) Read the item. If we don't have the lock anymore, meaning it was already rolled back.  Return.
-                Dictionary<string, AttributeValue> item = getItem(tableName, key);
+                Dictionary<string, AttributeValue> item = getItemAsync(tableName, key);
 
                 if (item == null || !txId.Equals(getOwner(item)))
                 {
@@ -975,7 +982,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 txAssert(!item.ContainsKey(AttributeName.APPLIED.ToString()), txId, "Applied change to item but didn't save a backup", "table", tableName, "key", key, "item" + item);
 
                 //   b) Otherwise release the lock (okay to deleteAsync if transient to re-use logic)
-                releaseReadLock(tableName, key);
+                releaseReadLockAsync(tableName, key);
             }
         }
 
@@ -983,17 +990,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// Unlocks an item without applying the previous item image on top of it.  This will deleteAsync the item if it 
         /// was marked as phantom.  
         /// 
-        /// This is ONLY valid for releasing a read lock (either during rollback or post-commitAsync) 
+        /// This is ONLY valid for releasing a read lock (either during rollbackAsync or post-commitAsync) 
         ///  OR releasing a lock where the change wasn't applied yet.
         /// </summary>
         /// <param name="tableName"> </param>
         /// <param name="key"> </param>
-        protected internal virtual void releaseReadLock(string tableName, Dictionary<string, AttributeValue> key)
+        protected internal virtual async Task releaseReadLockAsync(string tableName, Dictionary<string, AttributeValue> key)
         {
-            releaseReadLock(txId, txManager, tableName, key);
+            await releaseReadLockAsync(txId, txManager, tableName, key);
         }
 
-        protected internal static void releaseReadLock(string txId, TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
+        protected internal static async Task releaseReadLockAsync(string txId, TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
         {
             Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
             expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
@@ -1028,17 +1035,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     Key = key,
                     Expected = expected
                 };
-                txManager.Client.updateItem(update);
+                await txManager.Client.UpdateItemAsync(update);
             }
             catch (ConditionalCheckFailedException)
             {
                 try
                 {
-                    expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue
+                    expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue
                     {
-                        S = BOOLEAN_TRUE_ATTR_VAL,
-
-                    });
+                        Value = new AttributeValue {S = BOOLEAN_TRUE_ATTR_VAL}
+                    };
 
                     DeleteItemRequest delete = new DeleteItemRequest
                     {
@@ -1046,13 +1052,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         Key = key,
                         Expected = expected
                     };
-                    txManager.Client.deleteItem(delete);
+                    await txManager.Client.DeleteItemAsync(delete);
                 }
                 catch (ConditionalCheckFailedException)
                 {
                     // Ignore, means it was definitely rolled back
                     // Re-read to ensure that it wasn't applied
-                    Dictionary<string, AttributeValue> item = getItem(txManager, tableName, key);
+                    Dictionary<string, AttributeValue> item = getItemAsync(txManager, tableName, key);
                     txAssert(!(item != null && txId.Equals(getOwner(item)) && item.ContainsKey(AttributeName.APPLIED.ToString())), "Item should not have been applied.  Unable to release lock", "item", item);
                 }
             }
@@ -1064,7 +1070,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <param name="txManager"> </param>
         /// <param name="tableName"> </param>
         /// <param name="item"> </param>
-        protected internal static void unlockItemUnsafe(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> item, string txId)
+        protected internal static async Task unlockItemUnsafeAsync(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> item, string txId)
         {
             // 1) Ensure the transaction does not exist 
             try
@@ -1107,7 +1113,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             // Delete the item, and ignore conditional write failures
             try
             {
-                txManager.Client.updateItem(update);
+                await txManager.Client.UpdateItemAsync(update);
             }
             catch (ConditionalCheckFailedException)
             {
@@ -1128,8 +1134,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="TransactionException"> on unexpected errors or unresolvable OCC contention </exception>
         /// <returns> the applied item image, or null if the apply was a deleteAsync. </returns>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> addRequest(Request callerRequest, boolean isRedrive, int numAttempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        protected internal virtual Dictionary<string, AttributeValue> addRequest(Request callerRequest, bool isRedrive, int numAttempts)
+        //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> addRequestAsync(Request callerRequest, boolean isRedrive, int numAttempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> addRequestAsync(Request callerRequest, bool isRedrive, int numAttempts)
         {
             // 1. Write the full caller request to the transaction item, but not if it's being re-driven.
             //    (In order to re-drive, the request must already be in the transaction item) 
@@ -1140,7 +1146,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     // 1a. Verify the locks up to ensure that if we are adding a "read" request for an item that has been written to in this transaction,
                     //     that we return the write.
-                    verifyLocks();
+                    await verifyLocksAsync();
                     try
                     {
                         txItem.addRequest(callerRequest);
@@ -1180,7 +1186,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
 
             // 2. Write txId to item
-            Dictionary<string, AttributeValue> item = lockItem(callerRequest, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
+            Dictionary<string, AttributeValue> item = await lockItemAsync(callerRequest, true, ITEM_LOCK_ACQUIRE_ATTEMPTS);
 
             //    As long as this wasn't a duplicate read request,
             // 3. Save the item image to a new item in case we need to roll back, unless:
@@ -1197,18 +1203,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
             catch (TransactionNotFoundException e)
             {
-                releaseReadLock(callerRequest.TableName, callerRequest.getKey(txManager));
+                await releaseReadLockAsync(callerRequest.TableName, callerRequest.getKey(txManager));
                 throw e;
             }
             switch (txItem.getState())
             {
-                case COMMITTED:
-                    doCommitAsync();
+                case TransactionItem.State.COMMITTED:
+                    await doCommitAsync();
                     throw new TransactionCommittedException(txId, "The transaction already committed");
-                case ROLLED_BACK:
-                    doRollback();
+                case TransactionItem.State.ROLLED_BACK:
+                    await doRollbackAsync();
                     throw new TransactionRolledBackException(txId, "The transaction already rolled back");
-                case PENDING:
+                case TransactionItem.State.PENDING:
                     break;
                 default:
                     throw new TransactionException(txId, "Unexpected state " + txItem.getState());
@@ -1216,7 +1222,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // 4. Apply change to item, keeping lock on the item, returning the attributes according to RETURN_VALUE
             //    If we are a read request, and there is an applied deleteAsync request for the same item in the tx, return null.
-            Dictionary<string, AttributeValue> returnItem = applyAndKeepLock(callerRequest, item);
+            Dictionary<string, AttributeValue> returnItem = await applyAndKeepLockAsync(callerRequest, item);
 
             // 5. Optimization: Keep track of the requests that this transaction object has fully applied
             if (callerRequest.Rid != null)
@@ -1231,7 +1237,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             if (isRequestSaveable(callerRequest, item) && !item.ContainsKey(AttributeName.APPLIED.ToString()))
             {
-                txItem.saveItemImage(item, callerRequest.Rid);
+                txItem.saveItemImage(item, callerRequest.Rid.Value);
             }
         }
 
@@ -1255,14 +1261,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <exception cref="ItemNotLockedException"> when the item is locked by another transaction </exception>
         /// <exception cref="TransactionException"> when we ran out of attempts to write the item, but it did not appear to be owned </exception>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> lockItem(Request callerRequest, boolean expectExists, int attempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
-        protected internal virtual Dictionary<string, AttributeValue> lockItem(Request callerRequest, bool expectExists, int attempts)
+        //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> lockItemAsync(Request callerRequest, boolean expectExists, int attempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> lockItemAsync(Request callerRequest, bool expectExists, int attempts)
         {
             Dictionary<string, AttributeValue> key = callerRequest.getKey(txManager);
 
             if (attempts <= 0)
             {
-                throw new TransactionException(txId, "Unable to acquire item lock for item " + key); // This won't trigger a rollback, it's really just a case of contention and needs more redriving
+                throw new TransactionException(txId, "Unable to acquire item lock for item " + key); // This won't trigger a rollbackAsync, it's really just a case of contention and needs more redriving
             }
 
             // Create Expected and Updates maps.  
@@ -1293,15 +1299,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             else
             {
                 expected = new Dictionary<string, ExpectedAttributeValue>(1);
-                updates.put(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate
+                updates.Add(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate
                 {
                     Action = AttributeAction.PUT,
-
-                }.withValue(new AttributeValue
-                {
-                    S = BOOLEAN_TRUE_ATTR_VAL,
-
-                }));
+                    Value = new AttributeValue {S = BOOLEAN_TRUE_ATTR_VAL}
+                });
             }
             expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
             {
@@ -1323,7 +1325,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, AttributeValue> item = null;
             try
             {
-                item = txManager.Client.updateItem(updateRequest).Attributes;
+                item = (await txManager.Client.UpdateItemAsync(updateRequest)).Attributes;
                 owner = getOwner(item);
             }
             catch (ConditionalCheckFailedException)
@@ -1333,7 +1335,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 //   2) this transaction already is attempting to lock the item.  
                 //   3) the item does not exist
                 // Get the item and see which is the case
-                item = getItem(callerRequest.TableName, key);
+                item = getItemAsync(callerRequest.TableName, key);
                 if (item == null)
                 {
                     nextExpectExists = false;
@@ -1352,13 +1354,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return item;
                 }
-                // For now, always roll back / complete the other transaction in the case of a conflict.
+                // For now, always roll back / completeAsync the other transaction in the case of a conflict.
                 if (attempts > 1)
                 {
                     try
                     {
                         Transaction otherTransaction = txManager.resumeTransaction(owner);
-                        otherTransaction.rollback();
+                        await otherTransaction.rollbackAsync();
                     }
                     catch (TransactionCompletedException)
                     {
@@ -1366,7 +1368,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     }
                     catch (TransactionNotFoundException)
                     {
-                        releaseReadLock(owner, txManager, callerRequest.TableName, key);
+                        await releaseReadLockAsync(owner, txManager, callerRequest.TableName, key);
                     }
                 }
                 else
@@ -1374,7 +1376,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     throw new ItemNotLockedException(txId, owner, callerRequest.TableName, key);
                 }
             }
-            return lockItem(callerRequest, nextExpectExists, attempts - 1);
+            return await lockItemAsync(callerRequest, nextExpectExists, attempts - 1);
         }
 
 
@@ -1390,7 +1392,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <param name="request"> </param>
         /// <param name="lockedItem"> </param>
         /// <returns> the copy of the item, as requested in ReturnValues of the request (or the new item in the case of a read), or null if this is a redrive  </returns>
-        protected internal virtual Dictionary<string, AttributeValue> applyAndKeepLock(Request request, Dictionary<string, AttributeValue> lockedItem)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> applyAndKeepLockAsync(Request request, Dictionary<string, AttributeValue> lockedItem)
         {
             Dictionary<string, AttributeValue> returnItem = null;
 
@@ -1423,16 +1425,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     {
                         PutItemRequest put = ((Request.PutItem)request).Request;
                         // Add the lock id and "is transient" flags to the put request (put replaces) 
-                        put.Item.put(AttributeName.TXID.ToString(), new AttributeValue(txId));
-                        put.Item.put(AttributeName.APPLIED.ToString(), new AttributeValue(BOOLEAN_TRUE_ATTR_VAL));
+                        put.Item.Add(AttributeName.TXID.ToString(), new AttributeValue(txId));
+                        put.Item.Add(AttributeName.APPLIED.ToString(), new AttributeValue(BOOLEAN_TRUE_ATTR_VAL));
                         if (lockedItem.ContainsKey(AttributeName.TRANSIENT.ToString()))
                         {
-                            put.Item.put(AttributeName.TRANSIENT.ToString(), lockedItem[AttributeName.TRANSIENT.ToString()]);
+                            put.Item.Add(AttributeName.TRANSIENT.ToString(), lockedItem[AttributeName.TRANSIENT.ToString()]);
                         }
-                        put.Item.put(AttributeName.DATE.ToString(), lockedItem[AttributeName.DATE.ToString()]);
+                        put.Item.Add(AttributeName.DATE.ToString(), lockedItem[AttributeName.DATE.ToString()]);
                         put.Expected = expected;
                         put.ReturnValues = returnValues;
-                        returnItem = txManager.Client.putItem(put).Attributes;
+                        returnItem = (await txManager.Client.PutItemAsync(put)).Attributes;
                     }
                     else if (request is Request.UpdateItem)
                     {
@@ -1443,23 +1445,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         if (update.AttributeUpdates != null)
                         {
                             // Defensively deleteAsync the attributes in the request that could interfere with the transaction
-                            update.AttributeUpdates.remove(AttributeName.TXID.ToString());
-                            update.AttributeUpdates.remove(AttributeName.TRANSIENT.ToString());
-                            update.AttributeUpdates.remove(AttributeName.DATE.ToString());
+                            update.AttributeUpdates.Remove(AttributeName.TXID.ToString());
+                            update.AttributeUpdates.Remove(AttributeName.TRANSIENT.ToString());
+                            update.AttributeUpdates.Remove(AttributeName.DATE.ToString());
                         }
                         else
                         {
                             update.AttributeUpdates = new Dictionary<string, AttributeValueUpdate>(1);
                         }
 
-                        update.AttributeUpdates.put(AttributeName.APPLIED.ToString(), new AttributeValueUpdate
+                        update.AttributeUpdates.Add(AttributeName.APPLIED.ToString(), new AttributeValueUpdate
                         {
                             Action = AttributeAction.PUT,
                             Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL),
 
                         });
 
-                        returnItem = txManager.Client.updateItem(update).Attributes;
+                        returnItem = (await txManager.Client.UpdateItemAsync(update)).Attributes;
                     }
                     else if (request is Request.DeleteItem)
                     {
@@ -1531,7 +1533,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_OLD from the request
                 }
-                returnItem = txItem.loadItemImage(request.Rid);
+                returnItem = txItem.loadItemImage(request.Rid.Value);
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the old copy of the image is missing");
@@ -1544,7 +1546,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_NEW from the request
                 }
-                returnItem = getItem(request.TableName, request.getKey(txManager));
+                returnItem = await getItemAsync(request.TableName, request.getKey(txManager));
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the item no longer exists");
@@ -1572,12 +1574,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <param name="tableName"> </param>
         /// <param name="key"> </param>
         /// <returns> the item map, with all attributes fetched </returns>
-        protected internal virtual Dictionary<string, AttributeValue> getItem(string tableName, Dictionary<string, AttributeValue> key)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> getItemAsync(string tableName, Dictionary<string, AttributeValue> key)
         {
-            return getItem(txManager, tableName, key);
+            return await getItemAsync(txManager, tableName, key);
         }
 
-        protected internal static Dictionary<string, AttributeValue> getItem(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
+        protected internal static async Task<Dictionary<string, AttributeValue>> getItemAsync(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
         {
             GetItemRequest getRequest = new GetItemRequest
             {
@@ -1585,7 +1587,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 ConsistentRead = true,
                 Key = key
             };
-            GetItemResponse getResult = txManager.Client.getItem(getRequest);
+            GetItemResponse getResult = await txManager.Client.GetItemAsync(getRequest);
             return getResult.Item;
         }
 
@@ -1751,7 +1753,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///         the table, or null if the item does not exist as of the start of
         ///         this transaction. </returns>
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-        //ORIGINAL LINE: public <T> T load(final T item)
+        //ORIGINAL LINE: public <T> T loadAsync(final T item)
         public virtual T load<T>(T item)
         {
             return dMapper = new CallableAnonymousInnerClass2(this, item),

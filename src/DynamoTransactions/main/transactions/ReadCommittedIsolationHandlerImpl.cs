@@ -153,7 +153,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     {
                         request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
                     }
-                    currentItem = txManager.Client.GetItemAsync(request, cancellationToken).Result.Item;
+                    currentItem = txManager.Client.GetItemAsync(request, cancellationToken).Item;
                 }
 
                 // 1. Return the item if it isn't locked (or if it's locked, but not applied yet)

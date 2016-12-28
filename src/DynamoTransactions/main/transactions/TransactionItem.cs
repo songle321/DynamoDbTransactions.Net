@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -62,7 +63,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// </summary>
 		/// <param name="txId"> the id of the transaction to insert or retrieve </param>
 		/// <param name="txManager"> </param>
-		/// <param name="insert"> whether to insert the transaction (it's a new transaction) or to load an existing one </param>
+		/// <param name="insert"> whether to insert the transaction (it's a new transaction) or to loadAsync an existing one </param>
 		/// <exception cref="TransactionNotFoundException"> If it is being retrieved and it is not found </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public TransactionItem(String txId, TransactionManager txManager, boolean insert) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
@@ -174,7 +175,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			try
 			{
-				txManager.Client.PutItemAsync(request).Wait();
+				txManager.Client.PutItemAsync(request);
 				return item;
 			}
 			catch (ConditionalCheckFailedException e)
@@ -195,7 +196,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Key = txKey.ToDictionary(x => x.Key, x => x.Value),
                 ConsistentRead = true
 			};
-			return txManager.Client.GetItemAsync(getRequest).Result.Item;
+			return txManager.Client.GetItemAsync(getRequest).Item;
 		}
 
 		/// <summary>
@@ -314,7 +315,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <exception cref="InvalidRequestException"> If the request would add too much data to the transaction </exception>
 		/// <returns> true if the request was added, false if it didn't need to be added (because it was a duplicate lock request) </returns>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public synchronized boolean addRequest(Request callerRequest) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException
+//ORIGINAL LINE: public synchronized boolean addRequestAsync(Request callerRequest) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException
 		public virtual bool addRequest(Request callerRequest)
 		{
 			lock (this)
@@ -371,7 +372,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         
 				try
 				{
-					txItem = txManager.Client.UpdateItemAsync(txItemUpdateRequest).Result.Attributes;
+					txItem = txManager.Client.UpdateItemAsync(txItemUpdateRequest).Attributes;
 					int newVersion = int.Parse(txItem[Transaction.AttributeName.VERSION.ToString()].N);
 					txAssert(newVersion == version + 1, txId, "Unexpected version number from update result");
 					version = newVersion;
@@ -453,7 +454,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 		/// <summary>
-		/// Really should only be used in the catch of addRequest 
+		/// Really should only be used in the catch of addRequestAsync 
 		/// </summary>
 		/// <param name="request"> </param>
 		private void removeRequestFromMap(Request request)
@@ -533,7 +534,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			    TableName = txManager.ItemImageTableName,
                 Key = key,
                 ConsistentRead = true
-			}).Result.Item;
+			}).Item;
 
 			if (item != null)
 			{
@@ -559,7 +560,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 			    TableName = txManager.ItemImageTableName,
                 Key = key
-			}).Wait();
+			});
 		}
 
 		/*
@@ -612,7 +613,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Expected = expected
             };
 
-			UpdateItemResponse finishResponse = txManager.Client.UpdateItemAsync(finishRequest).Result;
+			UpdateItemResponse finishResponse = txManager.Client.UpdateItemAsync(finishRequest);
 			txItem = finishResponse.Attributes;
 			if (txItem == null)
 			{
@@ -629,9 +630,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="expectedCurrentState"> </param>
 		/// <exception cref="ConditionalCheckFailedException"> if the transaction is completed, doesn't exist anymore, or even if it isn't committed or rolled back   </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void complete(final State expectedCurrentState) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
+//ORIGINAL LINE: public void completeAsync(final State expectedCurrentState) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-		public virtual void complete(State expectedCurrentState)
+		public virtual async Task completeAsync(State expectedCurrentState)
 		{
 			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
 
@@ -669,7 +670,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Expected = expected
             };
 
-			txItem = txManager.Client.UpdateItemAsync(completeRequest).Result.Attributes;
+			txItem = (await txManager.Client.UpdateItemAsync(completeRequest)).Attributes;
 		}
 
 		/// <summary>
@@ -692,7 +693,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Key = txKey,
                 Expected = expected
 			};
-			txManager.Client.DeleteItemAsync(completeRequest).Wait();
+			txManager.Client.DeleteItemAsync(completeRequest);
 		}
 
 		public virtual bool Completed
