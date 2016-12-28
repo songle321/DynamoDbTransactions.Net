@@ -22,8 +22,7 @@ using Amazon.DynamoDBv2.Model;
  {
 	public class TableHelper
 	{
-
-		private readonly AmazonDynamoDBClient client;
+private readonly AmazonDynamoDBClient client;
 
 		public TableHelper(AmazonDynamoDBClient client)
 		{
@@ -97,8 +96,7 @@ using Amazon.DynamoDBv2.Model;
 //ORIGINAL LINE: public void verifyOrCreateTable(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput, Nullable<long> waitTimeSeconds) throws InterruptedException
 		public virtual void verifyOrCreateTable(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
 		{
-
-			if (waitTimeSeconds != null && waitTimeSeconds < 0)
+if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			{
 				throw new System.ArgumentException("Invalid waitTimeSeconds " + waitTimeSeconds);
 			}
@@ -163,8 +161,7 @@ using Amazon.DynamoDBv2.Model;
 //ORIGINAL LINE: public void waitForTableActive(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, long waitTimeSeconds) throws InterruptedException
 		public virtual void waitForTableActive(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
 		{
-
-			if (waitTimeSeconds < 0)
+if (waitTimeSeconds < 0)
 			{
 				throw new System.ArgumentException("Invalid waitTimeSeconds " + waitTimeSeconds);
 			}
@@ -193,8 +190,7 @@ using Amazon.DynamoDBv2.Model;
 //ORIGINAL LINE: public void waitForTableDeleted(String tableName, long waitTimeSeconds) throws InterruptedException
 		public virtual void waitForTableDeleted(string tableName, long waitTimeSeconds)
 		{
-
-			if (waitTimeSeconds < 0)
+if (waitTimeSeconds < 0)
 			{
 				throw new System.ArgumentException("Invalid waitTimeSeconds " + waitTimeSeconds);
 			}

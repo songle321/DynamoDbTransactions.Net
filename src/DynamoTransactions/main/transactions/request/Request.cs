@@ -30,8 +30,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     [JsonObject]
     public abstract class Request
     {
-
-        private static readonly ISet<string> VALID_RETURN_VALUES = new HashSet<string>(new[] { "ALL_OLD", "ALL_NEW", "NONE" });
+private static readonly ISet<string> VALID_RETURN_VALUES = new HashSet<string>(new[] { "ALL_OLD", "ALL_NEW", "NONE" });
 
         protected int? rid;
 
@@ -65,8 +64,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         [JsonObject]
         public class GetItem : Request
         {
-
-            internal GetItemRequest request;
+internal GetItemRequest request;
 
             public virtual GetItemRequest Request
             {
@@ -112,8 +110,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         [JsonObject]
         public class UpdateItem : Request
         {
-
-            internal UpdateItemRequest request;
+internal UpdateItemRequest request;
 
             public virtual UpdateItemRequest Request
             {
@@ -190,8 +187,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         [JsonObject]
         public class DeleteItem : Request
         {
-
-            internal DeleteItemRequest request;
+internal DeleteItemRequest request;
 
             public virtual DeleteItemRequest Request
             {
@@ -484,8 +480,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //private class ByteBufferSerializer : JsonSerializer<ByteBuffer>
         //{
-
-        //    //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
+//    //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //    //ORIGINAL LINE: @Override public void serialize(ByteBuffer value, com.fasterxml.jackson.core.JsonGenerator jgen, com.fasterxml.jackson.databind.SerializerProvider provider) throws java.io.IOException, com.fasterxml.jackson.core.JsonProcessingException
         //    public override void serialize(ByteBuffer value, JsonGenerator jgen, SerializerProvider provider)
         //    {
@@ -497,8 +492,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //private class ByteBufferDeserializer : JsonDeserializer<ByteBuffer>
         //{
-
-        //    //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
+//    //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //    //ORIGINAL LINE: @Override public ByteBuffer deserialize(com.fasterxml.jackson.core.JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext ctxt) throws java.io.IOException, com.fasterxml.jackson.core.JsonProcessingException
         //    public override ByteBuffer deserialize(JsonParser jp, DeserializationContext ctxt)
         //    {

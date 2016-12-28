@@ -23,8 +23,7 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ImmutableKey
 	{
-
-		private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
+private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 
 		public ImmutableKey(Dictionary<string, AttributeValue> mutableKey)
 		{

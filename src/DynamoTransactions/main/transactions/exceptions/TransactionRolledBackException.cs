@@ -14,14 +14,12 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-	/// <summary>
+/// <summary>
 	/// Thrown when a transaction was attempted to be committed, but it actually rolled back.
 	/// </summary>
 	public class TransactionRolledBackException : TransactionCompletedException
 	{
-
-		private const long serialVersionUID = 1628959201410733660L;
+private const long serialVersionUID = 1628959201410733660L;
 
 		public TransactionRolledBackException(string txId, string message) : base(txId, message)
 		{

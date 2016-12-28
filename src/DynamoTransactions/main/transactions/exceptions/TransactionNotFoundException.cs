@@ -14,15 +14,12 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-
-	/// <summary>
+/// <summary>
 	/// Indicates that the transaction record no longer exists (or never did)
 	/// </summary>
 	public class TransactionNotFoundException : TransactionException
 	{
-
-		private const long serialVersionUID = 1482803351154923519L;
+private const long serialVersionUID = 1482803351154923519L;
 
 		public TransactionNotFoundException(string txId) : base(txId, "Transaction not found")
 		{

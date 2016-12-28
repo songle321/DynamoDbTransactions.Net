@@ -21,15 +21,13 @@ using Amazon.Runtime;
 // </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	/// <summary>
+/// <summary>
 	/// Facade to support the DynamoDBMapper doing a read using a specific isolation
 	/// level. Used by <seealso cref="TransactionManager#load(Object, IsolationLevel)"/>.
 	/// </summary>
 	public class TransactionManagerDynamoDBFacade : IAmazonDynamoDB
 	{
-
-		private readonly TransactionManager txManager;
+private readonly TransactionManager txManager;
 		private readonly Transaction.IsolationLevel isolationLevel;
 		private readonly ReadIsolationHandler isolationHandler;
 
@@ -92,7 +90,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public override GetItemResponse getItem(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			return getItem(new GetItemRequest {
-
 TableName = tableName,
 Key = key,
 });
@@ -103,7 +100,6 @@ Key = key,
 		public override GetItemResponse getItem(string tableName, Dictionary<string, AttributeValue> key, bool? consistentRead)
 		{
 			return getItem(new GetItemRequest {
-
 TableName = tableName,
 Key = key,
 ConsistentRead = consistentRead,
@@ -137,9 +133,8 @@ ConsistentRead = consistentRead,
 		public override BatchGetItemResponse batchGetItem(Dictionary<string, KeysAndAttributes> requestItems, string returnConsumedCapacity)
 		{
 			BatchGetItemRequest request = new BatchGetItemRequest {
-
 RequestItems = requestItems,
-ReturnConsumedCapacity = returnConsumedCapacity,
+ReturnConsumedCapacity = returnConsumedCapacity
 };
 			return batchGetItem(request);
 		}
@@ -149,8 +144,7 @@ ReturnConsumedCapacity = returnConsumedCapacity,
 		public override BatchGetItemResponse batchGetItem(Dictionary<string, KeysAndAttributes> requestItems)
 		{
 			BatchGetItemRequest request = new BatchGetItemRequest {
-
-RequestItems = requestItems,
+RequestItems = requestItems
 };
 			return batchGetItem(request);
 		}
@@ -172,9 +166,8 @@ RequestItems = requestItems,
 		public override ScanResponse scan(string tableName, List<string> attributesToGet)
 		{
 			ScanRequest request = new ScanRequest {
-
 TableName = tableName,
-AttributesToGet = attributesToGet,
+AttributesToGet = attributesToGet
 };
 			return scan(request);
 		}
@@ -184,9 +177,8 @@ AttributesToGet = attributesToGet,
 		public override ScanResponse scan(string tableName, Dictionary<string, Condition> scanFilter)
 		{
 			ScanRequest request = new ScanRequest {
-
 TableName = tableName,
-ScanFilter = scanFilter,
+ScanFilter = scanFilter
 };
 			return scan(request);
 		}
@@ -196,10 +188,9 @@ ScanFilter = scanFilter,
 		public override ScanResponse scan(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter)
 		{
 			ScanRequest request = new ScanRequest {
-
 TableName = tableName,
 AttributesToGet = attributesToGet,
-ScanFilter = scanFilter,
+ScanFilter = scanFilter
 };
 			return scan(request);
 		}

@@ -14,14 +14,12 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-	/// <summary>
+/// <summary>
 	/// Thrown when a transaction is no longer pending, but it is not known whether it committed or was rolled back.
 	/// </summary>
 	public class UnknownCompletedTransactionException : TransactionCompletedException
 	{
-
-		private const long serialVersionUID = 612575052603020091L;
+private const long serialVersionUID = 612575052603020091L;
 
 		public UnknownCompletedTransactionException(string txId, string message) : base(txId, message)
 		{

@@ -14,15 +14,13 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-	/// <summary>
+/// <summary>
 	/// Thrown when a transaction is completed (either committed or rolled back) and it wasn't the expectation of the caller
 	/// for this to happen .
 	/// </summary>
 	public class TransactionCompletedException : TransactionException
 	{
-
-		private const long serialVersionUID = -8170993155989412979L;
+private const long serialVersionUID = -8170993155989412979L;
 
 		public TransactionCompletedException(string txId, string message) : base(txId, message)
 		{

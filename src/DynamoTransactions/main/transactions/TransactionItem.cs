@@ -28,7 +28,6 @@ using static com.amazonaws.services.dynamodbv2.transactions.exceptions.Transacti
 // </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
  {
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static com.amazonaws.services.dynamodbv2.transactions.Transaction.AttributeName;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -42,8 +41,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// </summary>
 	public class TransactionItem
 	{
-
-		/* Transaction states */
+/* Transaction states */
 		private const string STATE_PENDING = "P";
 		private const string STATE_COMMITTED = "C";
 		private const string STATE_ROLLED_BACK = "R";
@@ -546,7 +544,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 		/// <summary>
-		/// Deletes the old version of the item.  Item images are immutable - it's just create + delete, so there is no need for
+		/// Deletes the old version of the item.  Item images are immutable - it's just create + deleteAsync, so there is no need for
 		/// concurrent modification checks.
 		/// </summary>
 		/// <param name="rid"> </param>
@@ -625,7 +623,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <summary>
 		/// Completes a transaction by marking its "Finalized" attribute.  This leaves the completed transaction item around
 		/// so that the party who created the transaction can see whether it was completed or rolled back.  They can then either 
-		/// delete the transaction record when they're done, or they can run a sweeper process to go and delete the completed transactions
+		/// deleteAsync the transaction record when they're done, or they can run a sweeper process to go and deleteAsync the completed transactions
 		/// later on. 
 		/// </summary>
 		/// <param name="expectedCurrentState"> </param>
@@ -679,7 +677,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// </summary>
 		/// <exception cref="ConditionalCheckFailedException"> if the item does not exist or is not finalized </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void delete() throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
+//ORIGINAL LINE: public void deleteAsync() throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
 		public virtual void delete()
 		{
 			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);

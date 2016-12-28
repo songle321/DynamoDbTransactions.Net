@@ -16,8 +16,7 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
+using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using Before = org.junit.Before;
 	using Test = org.junit.Test;
 	using RunWith = org.junit.runner.RunWith;
@@ -33,10 +32,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @RunWith(MockitoJUnitRunner.class) public class ReadUncommittedIsolationHandlerImplUnitTest
 	public class ReadUncommittedIsolationHandlerImplUnitTest
 	{
-
-		protected internal const string TABLE_NAME = "TEST_TABLE";
+protected internal const string TABLE_NAME = "TEST_TABLE";
 		protected internal static readonly Dictionary<string, AttributeValue> KEY = Collections.singletonMap("Id", new AttributeValue {
-
 S = "KeyValue",)
 };
 		protected internal const string TX_ID = "e1b52a78-0187-4787-b1a3-27f63a78898b";
@@ -61,29 +58,25 @@ S = "KeyValue",)
 			{
 				item[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(TX_ID);
 				item[Transaction.AttributeName.DATE.ToString()] = new AttributeValue {
-
-S = "",
+S = ""
 };
 				if (isTransient)
 				{
 					item[Transaction.AttributeName.TRANSIENT.ToString()] = new AttributeValue {
-
-S = "",
+S = ""
 };
 				}
 				if (isApplied)
 				{
 					item[Transaction.AttributeName.APPLIED.ToString()] = new AttributeValue {
-
-S = "",
+S = ""
 };
 				}
 			}
 			if (!isTransient)
 			{
 				item["attr1"] = new AttributeValue {
-
-S = "some value",
+S = "some value"
 };
 			}
 //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:

@@ -31,8 +31,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// </summary>
 	public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB
 	{
-
-		private readonly ThreadLocal<AmazonDynamoDBClient> backend = new ThreadLocal<AmazonDynamoDBClient>();
+private readonly ThreadLocal<AmazonDynamoDBClient> backend = new ThreadLocal<AmazonDynamoDBClient>();
 
         public IClientConfig Config
         {

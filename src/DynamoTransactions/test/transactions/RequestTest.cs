@@ -16,7 +16,6 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static org.junit.Assert.assertArrayEquals;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -47,11 +46,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 	public class RequestTest
 	{
-
-		private const string TABLE_NAME = "Dummy";
+private const string TABLE_NAME = "Dummy";
 		private const string HASH_ATTR_NAME = "Foo";
 		private static readonly List<KeySchemaElement> HASH_SCHEMA = Arrays.asList(new KeySchemaElement {
-
 AttributeName = HASH_ATTR_NAME,
 KeyType = KeyType.HASH,)
 };
@@ -65,43 +62,33 @@ KeyType = KeyType.HASH,)
 		static RequestTest()
 		{
 			JSON_M_ATTR_VAL["attr_s"] = new AttributeValue {
-
-S = "s",
+S = "s"
 };
 			JSON_M_ATTR_VAL["attr_n"] = new AttributeValue {
-
-N = "1",
+N = "1"
 };
 			JSON_M_ATTR_VAL["attr_b"] = (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes()));
 			JSON_M_ATTR_VAL["attr_ss"] = new AttributeValue {
-
-SS = "a", "b",
+SS = "a", "b"
 };
 			JSON_M_ATTR_VAL["attr_ns"] = new AttributeValue {
-
-NS = "1", "2",
+NS = "1", "2"
 };
 			JSON_M_ATTR_VAL["attr_bs"] = (new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("ghjk").GetBytes()));
 			JSON_M_ATTR_VAL["attr_bool"] = new AttributeValue {
-
-BOOL = true,
+BOOL = true
 };
 			JSON_M_ATTR_VAL["attr_l"] = (new AttributeValue()).withL(new AttributeValue {
-
 S = "s",
 }, new AttributeValue {
-
 N = "1",
 }, (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())), new AttributeValue {
-
 BOOL = true,
 }, new AttributeValue {
-
 NULL = true,)
 };
 			JSON_M_ATTR_VAL["attr_null"] = new AttributeValue {
-
-NULL = true,
+NULL = true
 };
 
 			BASIC_ITEM[HASH_ATTR_NAME] = new AttributeValue("a");
@@ -115,7 +102,6 @@ NULL = true,
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			r.setRequest(new PutItemRequest {
-
 TableName = TABLE_NAME,
 Item = item,)
 };
@@ -130,7 +116,6 @@ Item = item,)
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 
 			invalidRequestTest(new PutItemRequest {
-
 Item = item,, "TableName must not be null")
 };
 		}
@@ -140,7 +125,6 @@ Item = item,, "TableName must not be null")
 		public virtual void putNullItem()
 		{
 			invalidRequestTest(new PutItemRequest {
-
 TableName = TABLE_NAME,, "PutItem must contain an Item")
 };
 		}
@@ -153,7 +137,6 @@ TableName = TABLE_NAME,, "PutItem must contain an Item")
 			item["other-attr"] = new AttributeValue("a");
 
 			invalidRequestTest(new PutItemRequest {
-
 TableName = TABLE_NAME,
 Item = item,, "PutItem request must contain the key attribute")
 };
@@ -268,7 +251,6 @@ ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			r.setRequest(new UpdateItemRequest {
-
 TableName = TABLE_NAME,
 Key = item,)
 };
@@ -283,7 +265,6 @@ Key = item,)
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			r.setRequest(new DeleteItemRequest {
-
 TableName = TABLE_NAME,
 Key = item,)
 };
@@ -298,7 +279,6 @@ Key = item,)
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			r.setRequest(new GetItemRequest {
-
 TableName = TABLE_NAME,
 Key = item,)
 };
@@ -313,7 +293,6 @@ Key = item,)
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			r1.setRequest(new GetItemRequest {
-
 TableName = TABLE_NAME,
 Key = item,)
 };
@@ -331,21 +310,17 @@ Key = item,)
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			item["attr_ss"] = new AttributeValue {
-
-SS = "a", "b",
+SS = "a", "b"
 };
 			item["attr_n"] = new AttributeValue {
-
-N = "1",
+N = "1"
 };
 			item["attr_ns"] = new AttributeValue {
-
-NS = "1", "2",
+NS = "1", "2"
 };
 			item["attr_b"] = (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes()));
 			item["attr_bs"] = (new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("asdf").GetBytes()));
 			r1.setRequest(new PutItemRequest {
-
 TableName = TABLE_NAME,
 Item = item,
 ReturnValues = "ALL_OLD",)
@@ -367,36 +342,27 @@ ReturnValues = "ALL_OLD",)
 
 			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
 			updates["attr_ss"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue(new AttributeValue {
-
 SS = "a", "b",)
 };
 			updates["attr_n"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue(new AttributeValue {
-
 N = "1",)
 };
 			updates["attr_ns"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue(new AttributeValue {
-
 NS = "1", "2",)
 };
 			updates["attr_b"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue((new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())));
 			updates["attr_bs"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue((new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("asdf").GetBytes())));
 			r1.setRequest(new UpdateItemRequest {
-
 TableName = TABLE_NAME,
 Key = key,
 AttributeUpdates = updates,)
@@ -415,11 +381,9 @@ AttributeUpdates = updates,)
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[HASH_ATTR_NAME] = new AttributeValue("a");
 			item["json_attr"] = new AttributeValue {
-
-M = JSON_M_ATTR_VAL,
+M = JSON_M_ATTR_VAL
 };
 			r1.setRequest(new PutItemRequest {
-
 TableName = TABLE_NAME,
 Item = item,
 ReturnValues = "ALL_OLD",)
@@ -441,14 +405,11 @@ ReturnValues = "ALL_OLD",)
 
 			Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
 			updates["attr_m"] = new AttributeValueUpdate {
-
 Action = "PUT",
 }.withValue(new AttributeValue {
-
 M = JSON_M_ATTR_VAL,)
 };
 			r1.setRequest(new UpdateItemRequest {
-
 TableName = TABLE_NAME,
 Key = key,
 AttributeUpdates = updates,)
@@ -464,9 +425,8 @@ AttributeUpdates = updates,)
 			get
 			{
 				return new PutItemRequest {
-
 Item = BASIC_ITEM,
-TableName = TABLE_NAME,
+TableName = TABLE_NAME
 };
 			}
 		}
@@ -476,9 +436,8 @@ TableName = TABLE_NAME,
 			get
 			{
 				return new UpdateItemRequest {
-
 Key = BASIC_ITEM,
-TableName = TABLE_NAME,
+TableName = TABLE_NAME
 };
 			}
 		}
@@ -488,9 +447,8 @@ TableName = TABLE_NAME,
 			get
 			{
 				return new DeleteItemRequest {
-
 Key = BASIC_ITEM,
-TableName = TABLE_NAME,
+TableName = TABLE_NAME
 };
 			}
 		}

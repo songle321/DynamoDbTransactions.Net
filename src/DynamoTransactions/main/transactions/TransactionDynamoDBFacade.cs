@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -28,8 +30,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// </summary>
 	public class TransactionDynamoDBFacade : IAmazonDynamoDB
 	{
-
-		private readonly Transaction txn;
+private readonly Transaction txn;
 		private readonly TransactionManager txManager;
 
 		public TransactionDynamoDBFacade(Transaction txn, TransactionManager txManager)
@@ -39,15 +40,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteItemResponse deleteItem(DeleteItemRequest request)
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse DeleteItemAsync(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+		public async Task<DeleteItemResponse> DeleteItemAsync(DeleteItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
 			checkExpectedValues(request.TableName, request.Key, expectedValues);
 
 			// conditional checks are handled by the above call
 			request.Expected = null;
-			return txn.deleteItem(request);
+			return await txn.DeleteItemAsync(request, cancellationToken);
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -97,7 +98,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				// this also has the effect of locking the item, which gives the
 				// same behavior
 				GetItemResponse result = getItem(new GetItemRequest {
-
 AttributesToGet = expectedValues.Keys,
 Key = itemKey,
 TableName = tableName
@@ -168,7 +168,6 @@ TableName = tableName
 		public override GetItemResponse getItem(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			return getItem(new GetItemRequest {
-
 TableName = tableName,
 Key = key
 });
@@ -179,7 +178,6 @@ Key = key
 		public override GetItemResponse getItem(string tableName, Dictionary<string, AttributeValue> key, bool? consistentRead)
 		{
 			return getItem(new GetItemRequest {
-
 TableName = tableName,
 Key = key,
 ConsistentRead = consistentRead ?? false
@@ -187,22 +185,20 @@ ConsistentRead = consistentRead ?? false
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse DeleteItemAsync(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
 		public override DeleteItemResponse deleteItem(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			return deleteItem(new DeleteItemRequest {
-
 TableName = tableName,
 Key = key
 });
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, String returnValues) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
+//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse DeleteItemAsync(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key, String returnValues) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
 		public override DeleteItemResponse deleteItem(string tableName, Dictionary<string, AttributeValue> key, string returnValues)
 		{
 			return deleteItem(new DeleteItemRequest {
-
 TableName = tableName,
 Key = key,
 ReturnValues = returnValues
@@ -221,7 +217,6 @@ ReturnValues = returnValues
 		public override PutItemResponse putItem(string tableName, Dictionary<string, AttributeValue> item)
 		{
 			return putItem(new PutItemRequest {
-
 TableName = tableName,
 Item = item
 });
@@ -232,7 +227,6 @@ Item = item
 		public override PutItemResponse putItem(string tableName, Dictionary<string, AttributeValue> item, string returnValues)
 		{
 			return putItem(new PutItemRequest {
-
 TableName = tableName,
 Item = item,
 ReturnValues = returnValues
@@ -244,7 +238,6 @@ ReturnValues = returnValues
 		public override UpdateItemResponse updateItem(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates)
 		{
 			return updateItem(new UpdateItemRequest {
-
 TableName = tableName,
 Key = key,
 AttributeUpdates = attributeUpdates
@@ -256,7 +249,6 @@ AttributeUpdates = attributeUpdates
 		public override UpdateItemResponse updateItem(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, string returnValues)
 		{
 			return updateItem(new UpdateItemRequest {
-
 TableName = tableName,
 Key = key,
 AttributeUpdates = attributeUpdates,

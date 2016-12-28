@@ -41,8 +41,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// </summary>
 	public class ReadCommittedIsolationHandlerImpl : ReadIsolationHandler
 	{
-
-		private const int DEFAULT_NUM_RETRIES = 2;
+private const int DEFAULT_NUM_RETRIES = 2;
 		private static readonly Log LOG = LogFactory.getLog(typeof(ReadCommittedIsolationHandlerImpl));
 
 		private readonly TransactionManager txManager;

@@ -14,12 +14,9 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-
-	public class DuplicateRequestException : TransactionException
+public class DuplicateRequestException : TransactionException
 	{
-
-		private const long serialVersionUID = 5461061207526371210L;
+private const long serialVersionUID = 5461061207526371210L;
 
 		public DuplicateRequestException(string txId, string tableName, string key) : base(txId, "Duplicate request for table name " + tableName + " for key " + key)
 		{

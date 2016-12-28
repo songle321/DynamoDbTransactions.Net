@@ -16,9 +16,7 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-
-	using Test = org.junit.Test;
+using Test = org.junit.Test;
 
 	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using ConditionalCheckFailedException = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
@@ -26,7 +24,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 	public class TransactionDynamoDBFacadeTest
 	{
-
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void testCheckExpectedStringValueWithMatchingItem()
 		public virtual void testCheckExpectedStringValueWithMatchingItem()
@@ -74,11 +71,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void testCheckExpectedNumericValueWithMatchingItem()
 		{
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-
 N = "3.14",)
 };
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-
 N = "3.14",))
 };
 
@@ -91,11 +86,9 @@ N = "3.14",))
 		public virtual void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
 		{
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-
 N = "3.140",)
 };
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-
 N = "3.14",))
 };
 
@@ -108,11 +101,9 @@ N = "3.14",))
 		public virtual void testCheckExpectedNumericValueWithNonMatchingItem()
 		{
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-
 N = "3.14",)
 };
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-
 N = "12",))
 };
 
@@ -125,7 +116,6 @@ N = "12",))
 		{
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("3.14"));
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-
 N = "3.14",))
 };
 
@@ -137,11 +127,9 @@ N = "3.14",))
 		public virtual void testCheckExpectedInvalidNumericValue()
 		{
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-
 N = "1.1",)
 };
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-
 N = "!!.!!",))
 };
 

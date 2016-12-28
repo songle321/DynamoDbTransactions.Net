@@ -30,8 +30,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// </summary>
     public class TransactionManager
     {
-
-        private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
+private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
         private static readonly List<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
 
         private static readonly List<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
@@ -66,8 +65,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             definition = new List<AttributeDefinition> { new AttributeDefinition
             {
-
-                AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
+AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
                 AttributeType = ScalarAttributeType.S,
             }};
             definition.Sort(new AttributeDefinitionComparator());
@@ -119,8 +117,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 DescribeTableResponse result = await client.DescribeTableAsync(new DescribeTableRequest
                 {
-
-                    TableName = tableName,
+TableName = tableName,
                 }, cancellationToken);
                 schema = result.Table.KeySchema;
                 tableSchemaCache[tableName] = schema;
@@ -276,8 +273,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             (new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
-
-                ReadCapacityUnits = readCapacityUnits,
+ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
             }, waitTimeSeconds);
         }
@@ -288,8 +284,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             (new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
-
-                ReadCapacityUnits = readCapacityUnits,
+ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
             }, waitTimeSeconds);
         }
@@ -335,8 +330,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         private class AttributeDefinitionComparator : IComparer<AttributeDefinition>
         {
-
-            public virtual int Compare(AttributeDefinition arg0, AttributeDefinition arg1)
+public virtual int Compare(AttributeDefinition arg0, AttributeDefinition arg1)
             {
                 if (arg0 == null)
                 {

@@ -16,8 +16,7 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
+using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
 	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
 	using State = com.amazonaws.services.dynamodbv2.transactions.TransactionItem.State;
@@ -69,13 +68,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @RunWith(MockitoJUnitRunner.class) public class ReadCommittedIsolationHandlerImplUnitTest
 	public class ReadCommittedIsolationHandlerImplUnitTest
 	{
-
-		protected internal const int RID = 1;
+protected internal const int RID = 1;
 		protected internal static GetItemRequest GET_ITEM_REQUEST = new GetItemRequest {
-
 TableName = TABLE_NAME,
 Key = KEY,
-ConsistentRead = true,
+ConsistentRead = true
 };
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -292,7 +289,6 @@ ConsistentRead = true,
 			doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
 			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
 			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
-
 Item = NON_TRANSIENT_APPLIED_ITEM,)
 };
 			bool caughtException = false;
@@ -318,7 +314,6 @@ Item = NON_TRANSIENT_APPLIED_ITEM,)
 			doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
 			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
-
 Item = NON_TRANSIENT_APPLIED_ITEM,)
 };
 			bool caughtException = false;

@@ -25,8 +25,7 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ImmutableAttributeValue
 	{
-
-		private readonly string n;
+private readonly string n;
 		private readonly string s;
 		private readonly sbyte[] b;
 		private readonly List<string> ns;

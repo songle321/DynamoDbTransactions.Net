@@ -20,8 +20,7 @@ using Amazon.DynamoDBv2.Model;
  {
 	public class InvalidRequestException : TransactionException
 	{
-
-		private const long serialVersionUID = 4622315126910271817L;
+private const long serialVersionUID = 4622315126910271817L;
 
 		private readonly string tableName;
 		private readonly Dictionary<string, AttributeValue> key;

@@ -23,8 +23,7 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ItemNotLockedException : TransactionException
 	{
-
-		private const long serialVersionUID = -2992047273290608776L;
+private const long serialVersionUID = -2992047273290608776L;
 
 		private readonly string txId;
 		private readonly string lockOwnerTxId;

@@ -14,7 +14,6 @@
 /// </summary>
 namespace com.amazonaws.services.dynamodbv2.util
 {
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static org.junit.Assert.assertEquals;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -27,7 +26,6 @@ namespace com.amazonaws.services.dynamodbv2.util
 
 	public class ImmutableAttributeValueTest
 	{
-
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void testBSEquals()
 		public virtual void testBSEquals()

@@ -26,8 +26,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// </summary>
 	public interface ReadIsolationHandler
 	{
-
-		/// <summary>
+/// <summary>
 		/// Returns a version of the item can be read at the isolation level implemented by
 		/// the handler. This is possibly null if the item is transient. It might not be latest
 		/// version if the isolation level is committed. </summary>

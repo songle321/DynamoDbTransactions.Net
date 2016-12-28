@@ -16,11 +16,9 @@
 // </summary>
  namespace com.amazonaws.services.dynamodbv2.transactions.exceptions
  {
-
-	public class TransactionException : Exception
+public class TransactionException : Exception
 	{
-
-		private const long serialVersionUID = -3886636775903901771L;
+private const long serialVersionUID = -3886636775903901771L;
 
 		private readonly string txId;
 
