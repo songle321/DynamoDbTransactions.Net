@@ -362,7 +362,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			t2.save(t2Item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2Item.ExpectedValues, t2.Id, false, true);
 
-			// Begin and finish t3
+			// Begin and finishAsync t3
 			ExampleHashKeyItem t3Item = new ExampleHashKeyItem();
 			t3Item.Id = item1.Id;
 			t3Item.Something = "t3";

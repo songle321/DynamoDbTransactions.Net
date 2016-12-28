@@ -89,7 +89,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             Request lockingRequest = lockingTx.TxItem.getRequestForKey(tableName, key);
             txAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
-            Dictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImage(lockingRequest.Rid.Value);
+            Dictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImageAsync(lockingRequest.Rid.Value);
             if (oldItem == null)
             {
                 if (LOG.DebugEnabled)

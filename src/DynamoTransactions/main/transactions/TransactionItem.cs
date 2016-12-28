@@ -54,6 +54,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		private readonly Dictionary<string, AttributeValue> txKey;
 		private readonly Dictionary<string, Dictionary<ImmutableKey, Request>> requestsMap = new Dictionary<string, Dictionary<ImmutableKey, Request>>();
 
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
+
 		/*
 		 * Constructors and initializers
 		 */
@@ -65,14 +67,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="txManager"> </param>
 		/// <param name="insert"> whether to insert the transaction (it's a new transaction) or to loadAsync an existing one </param>
 		/// <exception cref="TransactionNotFoundException"> If it is being retrieved and it is not found </exception>
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public TransactionItem(String txId, TransactionManager txManager, boolean insert) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
 		public TransactionItem(string txId, TransactionManager txManager, bool insert) : this(txId, txManager, insert, null)
 		{
 		}
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public TransactionItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> txItem, TransactionManager txManager) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
 		public TransactionItem(Dictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
 		{
 		}
@@ -85,8 +83,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="insert"> </param>
 		/// <param name="txItem"> A previously read transaction item (must include all of the attributes from the item). May not be specified with txId. </param>
 		/// <exception cref="TransactionNotFoundException"> </exception>
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: protected TransactionItem(String txId, TransactionManager txManager, boolean insert, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> txItem) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException
 		protected internal TransactionItem(string txId, TransactionManager txManager, bool insert, Dictionary<string, AttributeValue> txItem)
 		{
 			this.txManager = txManager;
@@ -109,7 +105,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				}
 				else
 				{
-					this.txItem = get();
+					this.txItem = await getAsync();
 					if (this.txItem == null)
 					{
 						throw new TransactionNotFoundException(this.txId);
@@ -188,7 +184,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// Fetches this transaction item from the tx table.  Uses consistent read.
 		/// </summary>
 		/// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
-		private Dictionary<string, AttributeValue> get()
+		private async Task<Dictionary<string, AttributeValue>> getAsync()
 		{
 			GetItemRequest getRequest = new GetItemRequest
 			{
@@ -196,7 +192,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Key = txKey.ToDictionary(x => x.Key, x => x.Value),
                 ConsistentRead = true
 			};
-			return txManager.Client.GetItemAsync(getRequest).Item;
+			return (await txManager.Client.GetItemAsync(getRequest)).Item;
 		}
 
 		/// <summary>
@@ -310,87 +306,95 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// Adds a request object (input param) to the transaction item.  Enforces that request are unique for a given table name and primary key.
 		/// Doesn't let you do more than one write per item.  However you can upgrade a read lock to a write. </summary>
 		/// <param name="callerRequest"> </param>
-		/// <exception cref="ConditionalCheckFailedException"> if the tx item changed out from under us.  If you get this you must throw this TransactionItem away. </exception>
-		/// <exception cref="DuplicateRequestException"> If you get this you do not need to throw away the item. </exception>
+		/// <exception cref="ConditionalCheckFailedException"> if the tx item changed out from under us.  If you getAsync this you must throw this TransactionItem away. </exception>
+		/// <exception cref="DuplicateRequestException"> If you getAsync this you do not need to throw away the item. </exception>
 		/// <exception cref="InvalidRequestException"> If the request would add too much data to the transaction </exception>
 		/// <returns> true if the request was added, false if it didn't need to be added (because it was a duplicate lock request) </returns>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public synchronized boolean addRequestAsync(Request callerRequest) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException
-		public virtual bool addRequest(Request callerRequest)
+		public virtual async Task<bool> addRequestAsync(Request callerRequest)
 		{
-			lock (this)
-			{
-				// 1. Ensure the request is unique (modifies the internal data structure if it is unique)
-				//    However, do not not short circuit.  If we're doing a read in a resumed transaction, it's important to ensure we're returning
-				//    any writes that happened before. 
-				addRequestToMap(callerRequest);
-        
-				callerRequest.Rid = version;
-        
-				// 2. Write request to transaction item
-				MemoryStream requestBytes = Request.serialize(txId, callerRequest);
-				AttributeValueUpdate txItemUpdate = new AttributeValueUpdate
-				{
-				    Action = AttributeAction.ADD,
-                    Value = new AttributeValue
-                    {
-                        BS = new List<MemoryStream> {requestBytes}
-                    }
-				};
-        
-				Dictionary<string, AttributeValueUpdate> txItemUpdates = new Dictionary<string, AttributeValueUpdate>();
-				txItemUpdates[Transaction.AttributeName.REQUESTS.ToString()] = txItemUpdate;
-			    txItemUpdates[Transaction.AttributeName.VERSION.ToString()] = new AttributeValueUpdate
-			    {
-			        Action = AttributeAction.ADD,
-			        Value = new AttributeValue
-			        {
-			            N = "1"
-			        }
-			    };
-			    txItemUpdates[Transaction.AttributeName.DATE.ToString()] = new AttributeValueUpdate
-			    {
-			        Action = AttributeAction.PUT,
-			        Value = txManager.CurrentTimeAttribute
-			    };
-        
-				Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-				expected[Transaction.AttributeName.STATE.ToString()] = new ExpectedAttributeValue(new AttributeValue(STATE_PENDING));
-				expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue(new AttributeValue
-				{
-				    N = Convert.ToString(version)
-                });
+		    await semaphore.WaitAsync();
+		    try
+		    {
+		        // 1. Ensure the request is unique (modifies the internal data structure if it is unique)
+		        //    However, do not not short circuit.  If we're doing a read in a resumed transaction, it's important to ensure we're returning
+		        //    any writes that happened before. 
+		        addRequestToMap(callerRequest);
 
-			    UpdateItemRequest txItemUpdateRequest = new UpdateItemRequest
-			    {
-			        TableName = txManager.TransactionTableName,
-			        Key = txKey,
-			        Expected = expected,
-			        ReturnValues = ReturnValue.ALL_NEW,
-			        AttributeUpdates = txItemUpdates
-			    };
-        
-				try
-				{
-					txItem = txManager.Client.UpdateItemAsync(txItemUpdateRequest).Attributes;
-					int newVersion = int.Parse(txItem[Transaction.AttributeName.VERSION.ToString()].N);
-					txAssert(newVersion == version + 1, txId, "Unexpected version number from update result");
-					version = newVersion;
-				}
-				catch (AmazonServiceException e)
-				{
-					if ("ValidationException".Equals(e.ErrorCode))
-					{
-						removeRequestFromMap(callerRequest);
-						throw new InvalidRequestException("The amount of data in the transaction cannot exceed the DynamoDB item size limit", txId, callerRequest.TableName, callerRequest.getKey(txManager), callerRequest);
-					}
-					else
-					{
-						throw e;
-					}
-				}
-				return true;
-			}
+		        callerRequest.Rid = version;
+
+		        // 2. Write request to transaction item
+		        MemoryStream requestBytes = Request.serialize(txId, callerRequest);
+		        AttributeValueUpdate txItemUpdate = new AttributeValueUpdate
+		        {
+		            Action = AttributeAction.ADD,
+		            Value = new AttributeValue
+		            {
+		                BS = new List<MemoryStream> {requestBytes}
+		            }
+		        };
+
+		        Dictionary<string, AttributeValueUpdate> txItemUpdates = new Dictionary<string, AttributeValueUpdate>();
+		        txItemUpdates[Transaction.AttributeName.REQUESTS.ToString()] = txItemUpdate;
+		        txItemUpdates[Transaction.AttributeName.VERSION.ToString()] = new AttributeValueUpdate
+		        {
+		            Action = AttributeAction.ADD,
+		            Value = new AttributeValue
+		            {
+		                N = "1"
+		            }
+		        };
+		        txItemUpdates[Transaction.AttributeName.DATE.ToString()] = new AttributeValueUpdate
+		        {
+		            Action = AttributeAction.PUT,
+		            Value = txManager.CurrentTimeAttribute
+		        };
+
+		        Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
+		        expected[Transaction.AttributeName.STATE.ToString()] =
+		            new ExpectedAttributeValue(new AttributeValue(STATE_PENDING));
+		        expected[Transaction.AttributeName.VERSION.ToString()] = new ExpectedAttributeValue(new AttributeValue
+		        {
+		            N = Convert.ToString(version)
+		        });
+
+		        UpdateItemRequest txItemUpdateRequest = new UpdateItemRequest
+		        {
+		            TableName = txManager.TransactionTableName,
+		            Key = txKey,
+		            Expected = expected,
+		            ReturnValues = ReturnValue.ALL_NEW,
+		            AttributeUpdates = txItemUpdates
+		        };
+
+		        try
+		        {
+		            txItem = (await txManager.Client.UpdateItemAsync(txItemUpdateRequest)).Attributes;
+		            int newVersion = int.Parse(txItem[Transaction.AttributeName.VERSION.ToString()].N);
+		            txAssert(newVersion == version + 1, txId, "Unexpected version number from update result");
+		            version = newVersion;
+		        }
+		        catch (AmazonServiceException e)
+		        {
+		            if ("ValidationException".Equals(e.ErrorCode))
+		            {
+		                removeRequestFromMap(callerRequest);
+		                throw new InvalidRequestException(
+		                    "The amount of data in the transaction cannot exceed the DynamoDB item size limit", txId,
+		                    callerRequest.TableName, callerRequest.getKey(txManager), callerRequest);
+		            }
+		            else
+		            {
+		                throw e;
+		            }
+		        }
+		        return true;
+		    }
+		    finally
+		    {
+		        semaphore.Release();
+		    }
 		}
 
 		/// <summary>
@@ -522,19 +526,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// </summary>
 		/// <param name="rid">
 		/// @return </param>
-		public virtual Dictionary<string, AttributeValue> loadItemImage(int rid)
+		public virtual async Task<Dictionary<string, AttributeValue>> loadItemImageAsync(int rid)
 		{
 			txAssert(rid > 0, txId, "Expected rid > 0");
 
 			Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(1);
 			key[Transaction.AttributeName.IMAGE_ID.ToString()] = new AttributeValue(txId + "#" + rid);
 
-			Dictionary<string, AttributeValue> item = txManager.Client.GetItemAsync(new GetItemRequest
+			Dictionary<string, AttributeValue> item = (await txManager.Client.GetItemAsync(new GetItemRequest
 			{
 			    TableName = txManager.ItemImageTableName,
                 Key = key,
                 ConsistentRead = true
-			}).Item;
+			})).Item;
 
 			if (item != null)
 			{
@@ -575,10 +579,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="expectedVersion"> </param>
 		/// <exception cref="ConditionalCheckFailedException"> if the transaction doesn't exist, isn't PENDING, is finalized, 
 		///         or the expected version doesn't match (if specified)   </exception>
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void finish(final State targetState, final int expectedVersion) throws com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
-//JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-		public virtual void finish(State targetState, int expectedVersion)
+		public virtual async Task finishAsync(State targetState, int expectedVersion)
 		{
 			txAssert(State.COMMITTED.Equals(targetState) || State.ROLLED_BACK.Equals(targetState),"Illegal state in finish(): " + targetState, "txItem", txItem);
 			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(2);
@@ -613,7 +614,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Expected = expected
             };
 
-			UpdateItemResponse finishResponse = txManager.Client.UpdateItemAsync(finishRequest);
+			UpdateItemResponse finishResponse = await txManager.Client.UpdateItemAsync(finishRequest);
 			txItem = finishResponse.Attributes;
 			if (txItem == null)
 			{

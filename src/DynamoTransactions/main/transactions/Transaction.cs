@@ -36,7 +36,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// <ul> 
     ///   <li>Atomicity: The transaction guarantees that if you successfully commitAsync your transaction, all of the requests in your transactions 
     ///       will eventually be applied without interference from other transactions.  If your application dies while committing, other 
-    ///       transactions that attempt to lock any of the items in your transactions will finish your transaction before making progress in their own.
+    ///       transactions that attempt to lock any of the items in your transactions will finishAsync your transaction before making progress in their own.
     ///       It is recommended that you periodically scan the Transactions table for stuck transactions, or look for stale locks when you read items, 
     ///       to ensure that transactions are eventually either re-driven or rolled back.</li>
     ///   <li>Isolation: This library offers 3 forms of read isolation.  The strongest form involves acquiring read locks within the scope of a transaction.
@@ -84,7 +84,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private readonly string txId;
         private readonly SortedSet<int?> fullyAppliedRequests = new SortedSet<int?>();
 
-        private SemaphoreSlim semaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
         static Transaction()
         {
@@ -582,7 +582,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     try
                     {
-                        txItem.finish(TransactionItem.State.COMMITTED, version);
+                        txItem.finishAsync(TransactionItem.State.COMMITTED, version);
                     }
                     catch (ConditionalCheckFailedException)
                     {
@@ -620,7 +620,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 bool alreadyRereadTxItem = false;
                 try
                 {
-                    txItem.finish(TransactionItem.State.ROLLED_BACK, txItem.Version);
+                    txItem.finishAsync(TransactionItem.State.ROLLED_BACK, txItem.Version);
                     state = TransactionItem.State.ROLLED_BACK;
                 }
                 catch (ConditionalCheckFailedException)
@@ -900,7 +900,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, AttributeValue> itemImage = null;
             if (rid != null)
             {
-                itemImage = txItem.loadItemImage(rid.Value);
+                itemImage = txItem.loadItemImageAsync(rid.Value);
             }
 
             if (itemImage != null)
@@ -1149,7 +1149,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     await verifyLocksAsync();
                     try
                     {
-                        txItem.addRequest(callerRequest);
+                        txItem.addRequestAsync(callerRequest);
                         success = true;
                         break;
                     }
@@ -1533,7 +1533,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_OLD from the request
                 }
-                returnItem = txItem.loadItemImage(request.Rid.Value);
+                returnItem = txItem.loadItemImageAsync(request.Rid.Value);
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the old copy of the image is missing");

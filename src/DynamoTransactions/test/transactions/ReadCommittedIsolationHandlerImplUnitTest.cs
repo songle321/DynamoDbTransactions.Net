@@ -191,7 +191,7 @@ ConsistentRead = true
 		{
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			when(mockRequest.Rid).thenReturn(RID);
-			when(mockTxItem.loadItemImage(RID)).thenReturn(null);
+			when(mockTxItem.loadItemImageAsync(RID)).thenReturn(null);
 			isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 		}
 
@@ -201,7 +201,7 @@ ConsistentRead = true
 		{
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			when(mockRequest.Rid).thenReturn(RID);
-			when(mockTxItem.loadItemImage(RID)).thenReturn(UNLOCKED_ITEM);
+			when(mockTxItem.loadItemImageAsync(RID)).thenReturn(UNLOCKED_ITEM);
 			Dictionary<string, AttributeValue> result = isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			assertEquals(UNLOCKED_ITEM, result);
 		}

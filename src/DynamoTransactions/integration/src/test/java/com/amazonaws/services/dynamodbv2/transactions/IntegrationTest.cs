@@ -312,7 +312,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t = manager.resumeTransaction(txId);
 			IDictionary<string, Dictionary<ImmutableKey, Request>> requests = t.TxItem.RequestMap;
 			Request r = requests[tableName][new ImmutableKey(key)];
-			IDictionary<string, AttributeValue> image = t.TxItem.loadItemImage(r.Rid);
+			IDictionary<string, AttributeValue> image = t.TxItem.loadItemImageAsync(r.Rid);
 			if (shouldExist)
 			{
 				assertNotNull(image);

@@ -31,7 +31,7 @@ using Test = org.junit.Test;
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("Bar")));
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 			// no exception expected
 		}
 
@@ -42,7 +42,7 @@ using Test = org.junit.Test;
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("NotBar")));
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -52,7 +52,7 @@ using Test = org.junit.Test;
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127}))));
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 			// no exception expected
 		}
 
@@ -63,7 +63,7 @@ using Test = org.junit.Test;
 			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
 			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {0, 127, (sbyte)-127}))));
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -77,7 +77,7 @@ N = "3.14",)
 N = "3.14",))
 };
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 			// no exception expected
 		}
 
@@ -92,7 +92,7 @@ N = "3.140",)
 N = "3.14",))
 };
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 			// no exception expected
 		}
 
@@ -107,7 +107,7 @@ N = "3.14",)
 N = "12",))
 };
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -119,7 +119,7 @@ N = "12",))
 N = "3.14",))
 };
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -133,7 +133,7 @@ N = "1.1",)
 N = "!!.!!",))
 };
 
-			TransactionDynamoDBFacade.checkExpectedValues(expected, item);
+			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
 		}
 
 	}

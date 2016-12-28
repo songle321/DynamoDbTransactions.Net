@@ -897,7 +897,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				.withTableName(INTEG_HASH_TABLE_NAME).withItem(new Dictionary<string, AttributeValue>(t2Item)));
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t2Item, t2.Id, false, true);
 
-			// Begin and finish t3
+			// Begin and finishAsync t3
 			IDictionary<string, AttributeValue> t3Item = new Dictionary<string, AttributeValue>(key1);
 			t3Item["whoami"] = new AttributeValue("t3");
 			t3Item["t3stuff"] = new AttributeValue("things");
@@ -1977,7 +1977,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: final java.util.concurrent.Semaphore resumedTransaction = new java.util.concurrent.Semaphore(0);
 			Semaphore resumedTransaction = new Semaphore(0);
 
-			// the main thread waits on this for t2 to finish with its rollback of t1
+			// the main thread waits on this for t2 to finishAsync with its rollback of t1
 //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
 //ORIGINAL LINE: final java.util.concurrent.Semaphore rolledBackT1 = new java.util.concurrent.Semaphore(0);
 			Semaphore rolledBackT1 = new Semaphore(0);
@@ -2007,7 +2007,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			// Now let t2 continue on and roll back t1
 			waitAfterResumeTransaction.release();
 
-			// Wait for t2 to finish rolling back t1
+			// Wait for t2 to finishAsync rolling back t1
 			rolledBackT1.acquire();
 
 			// T1 should be rolled back now and unable to do stuff
