@@ -1,34 +1,24 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
-/// <summary>
-/// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License").
-/// You may not use this file except in compliance with the License.
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express
-/// or implied. See the License for the specific language governing permissions
-/// and limitations under the License.
-/// </summary>
+// <summary>
+// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using State = com.amazonaws.services.dynamodbv2.transactions.TransactionItem.State;
-	using TransactionAssertionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException;
-	using TransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException;
-	using TransactionNotFoundException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException;
-	using UnknownCompletedTransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException;
-	using Before = org.junit.Before;
-	using Test = org.junit.Test;
-	using RunWith = org.junit.runner.RunWith;
-	using Mock = org.mockito.Mock;
-	using MockitoJUnitRunner = org.mockito.runners.MockitoJUnitRunner;
 
 
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -253,7 +243,7 @@ ConsistentRead = true
 		public virtual void handleItemReturnsItemForNonTransientAppliedItemWithCommittedTxItem()
 		{
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
-			when(mockTxItem.State).thenReturn(State.COMMITTED);
+			when(mockTxItem.State).thenReturn(TransactionItem.State.COMMITTED);
 			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
 		}
 
@@ -264,7 +254,7 @@ ConsistentRead = true
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			doReturn(UNLOCKED_ITEM).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-			when(mockTxItem.State).thenReturn(State.PENDING);
+			when(mockTxItem.State).thenReturn(TransactionItem.State.PENDING);
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
 			verify(isolationHandler).loadTransaction(TX_ID);
@@ -276,7 +266,7 @@ ConsistentRead = true
 		{
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-			when(mockTxItem.State).thenReturn(State.PENDING);
+			when(mockTxItem.State).thenReturn(TransactionItem.State.PENDING);
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0);
 			verify(isolationHandler).loadTransaction(TX_ID);

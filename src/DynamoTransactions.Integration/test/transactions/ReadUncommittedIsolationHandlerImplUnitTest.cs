@@ -1,33 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using Amazon.DynamoDBv2.Model;
+using FluentAssertions;
 
-/// <summary>
-/// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License").
-/// You may not use this file except in compliance with the License.
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express
-/// or implied. See the License for the specific language governing permissions
-/// and limitations under the License.
-/// </summary>
+// <summary>
+// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express
+// or implied. See the License for the specific language governing permissions
+// and limitations under the License.
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using Before = org.junit.Before;
-	using Test = org.junit.Test;
-	using RunWith = org.junit.runner.RunWith;
-	using MockitoJUnitRunner = org.mockito.runners.MockitoJUnitRunner;
-
-
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.assertEquals;
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.assertNull;
-
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @RunWith(MockitoJUnitRunner.class) public class ReadUncommittedIsolationHandlerImplUnitTest
 	public class ReadUncommittedIsolationHandlerImplUnitTest
@@ -80,7 +72,7 @@ S = "some value"
 };
 			}
 //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
-			item.putAll(KEY);
+            foreach(var entry in KEY) item.Add(entry.Key, entry.Value);
 			return item;
 		}
 
@@ -88,35 +80,45 @@ S = "some value"
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
 		public virtual void handleItemReturnsNullForNullItem()
 		{
-			assertNull(isolationHandler.HandleItemAsync(null, null, TABLE_NAME));
+			assertNull(isolationHandler.HandleItemAsync(null, null, TABLE_NAME, CancellationToken.None).Result);
 		}
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
-		public virtual void handleItemReturnsItemForUnlockedItem()
+    void assertNull(object p)
+    {
+        p.Should().BeNull();
+    }
+
+    //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+    //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
+    public virtual void handleItemReturnsItemForUnlockedItem()
 		{
-			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, null, TABLE_NAME));
+			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
 		}
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientUnappliedItem()
-		public virtual void handleItemReturnsNullForTransientUnappliedItem()
+    void assertEquals(object a, object b)
+    {
+        a.ShouldBeEquivalentTo(b);
+    }
+
+    //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+    //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientUnappliedItem()
+    public virtual void handleItemReturnsNullForTransientUnappliedItem()
 		{
-			assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME));
+			assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientAppliedItem()
 		public virtual void handleItemReturnsNullForTransientAppliedItem()
 		{
-			assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
+			assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsItemForNonTransientAppliedItem()
 		public virtual void handleItemReturnsItemForNonTransientAppliedItem()
 		{
-			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
+			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
 		}
 
 	}
