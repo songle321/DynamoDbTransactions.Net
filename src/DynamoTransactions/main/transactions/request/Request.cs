@@ -403,7 +403,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 throw new InvalidRequestException("PutItem must contain an Item", null, tableName, null, null);
             }
             Dictionary<string, AttributeValue> newKey = new Dictionary<string, AttributeValue>();
-            List<KeySchemaElement> schema = txManager.getTableSchema(tableName);
+            List<KeySchemaElement> schema = txManager.GetTableSchemaAsync(tableName);
             foreach (KeySchemaElement schemaElement in schema)
             {
                 AttributeValue val = item[schemaElement.AttributeName];

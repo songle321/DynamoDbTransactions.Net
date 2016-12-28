@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.util;
 
@@ -32,7 +34,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
         private static readonly List<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
 
-        private static readonly List<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = new[]
+        private static readonly List<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
         {
             new KeySchemaElement
             {
@@ -43,7 +45,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         private static readonly List<AttributeDefinition> TRANSACTION_IMAGES_TABLE_ATTRIBUTES;
 
-        private static readonly List<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = new[]
+        private static readonly List<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
         {
             new KeySchemaElement
             {
@@ -55,14 +57,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         static TransactionManager()
         {
-            List<AttributeDefinition> definition = new[] { new AttributeDefinition {
+            List<AttributeDefinition> definition = new List<AttributeDefinition> { new AttributeDefinition {
                 AttributeName = Transaction.AttributeName.TXID.ToString(),
                 AttributeType = ScalarAttributeType.S,
             }};
             definition.Sort(new AttributeDefinitionComparator());
             TRANSACTIONS_TABLE_ATTRIBUTES = definition;
 
-            definition = new[] { new AttributeDefinition
+            definition = new List<AttributeDefinition> { new AttributeDefinition
             {
 
                 AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
@@ -76,20 +78,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private readonly string transactionTableName;
         private readonly string itemImageTableName;
         private readonly ConcurrentDictionary<string, List<KeySchemaElement>> tableSchemaCache = new ConcurrentDictionary<string, List<KeySchemaElement>>();
-        private readonly DynamoDBMapper clientMapper;
+        private readonly DynamoDBContext clientMapper;
         private readonly ThreadLocalDynamoDBFacade facadeProxy;
         private readonly ReadUncommittedIsolationHandlerImpl readUncommittedIsolationHandler;
         private readonly ReadCommittedIsolationHandlerImpl readCommittedIsolationHandler;
 
-        public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, DynamoDBMapperConfig.DEFAULT)
-        {
-        }
+        //public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, DynamoDBContext.DEFAULT)
+        //{
+        //}
 
-        public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config) : this(client, transactionTableName, itemImageTableName, config, null)
-        {
-        }
-
-        public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBMapperConfig config, AttributeTransformer transformer)
+        public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBContextConfig config)
         {
             if (client == null)
             {
@@ -107,23 +105,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             this.transactionTableName = transactionTableName;
             this.itemImageTableName = itemImageTableName;
             this.facadeProxy = new ThreadLocalDynamoDBFacade();
-            this.clientMapper = new DynamoDBMapper(facadeProxy, config, transformer);
+            this.clientMapper = new DynamoDBContext(facadeProxy, config);
             this.readUncommittedIsolationHandler = new ReadUncommittedIsolationHandlerImpl();
             this.readCommittedIsolationHandler = new ReadCommittedIsolationHandlerImpl(this);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> getTableSchema(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
-        protected internal virtual List<KeySchemaElement> getTableSchema(string tableName)
+        //ORIGINAL LINE: protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
+        protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken)
         {
             List<KeySchemaElement> schema = tableSchemaCache[tableName];
             if (schema == null)
             {
-                DescribeTableResponse result = client.describeTable(new DescribeTableRequest
+                DescribeTableResponse result = await client.DescribeTableAsync(new DescribeTableRequest
                 {
 
                     TableName = tableName,
-                });
+                }, cancellationToken);
                 schema = result.Table.KeySchema;
                 tableSchemaCache[tableName] = schema;
             }
@@ -132,7 +130,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
         //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> createKeyMap(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-        protected internal virtual Dictionary<string, AttributeValue> createKeyMap(string tableName, Dictionary<string, AttributeValue> item)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> CreateKeyMapAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken)
         {
             if (string.ReferenceEquals(tableName, null))
             {
@@ -142,7 +140,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 throw new System.ArgumentException("must specify an item");
             }
-            List<KeySchemaElement> schema = getTableSchema(tableName);
+            List<KeySchemaElement> schema = await GetTableSchemaAsync(tableName, cancellationToken);
             Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>(schema.Count);
             foreach (KeySchemaElement element in schema)
             {
@@ -153,7 +151,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         public virtual Transaction newTransaction()
         {
-            Transaction transaction = new Transaction(UUID.randomUUID().ToString(), this, true);
+            Transaction transaction = new Transaction(Guid.NewGuid().ToString(), this, true);
             log.info("Started transaction " + transaction.Id);
             return transaction;
         }
@@ -185,7 +183,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        public virtual DynamoDBMapper ClientMapper
+        public virtual DynamoDBContext ClientMapper
         {
             get
             {
@@ -229,7 +227,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 request.AttributesToGet = attributesToGet.ToList();
             }
             GetItemResponse result = await Client.GetItemAsync(request, cancellationToken);
-            Dictionary<string, AttributeValue> item = getReadIsolationHandler(isolationLevel).handleItem(result.Item, request.AttributesToGet, request.TableName);
+            Dictionary<string, AttributeValue> item = await getReadIsolationHandler(isolationLevel).HandleItemAsync(result.Item, request.AttributesToGet, request.TableName, cancellationToken);
             Transaction.stripSpecialAttributes(item);
             result.Item = item;
             return result;
@@ -331,7 +329,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             get
             {
-                return (new AttributeValue()).withN((new double?(CurrentTime)).ToString());
+                return new AttributeValue { N = new double?(CurrentTime).ToString()};
             }
         }
 
@@ -350,13 +348,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     return 1;
                 }
 
-                int comp = arg0.AttributeName.compareTo(arg1.AttributeName);
+                int comp = String.Compare(arg0.AttributeName, arg1.AttributeName, StringComparison.Ordinal);
                 if (comp != 0)
                 {
                     return comp;
                 }
 
-                comp = arg0.AttributeType.compareTo(arg1.AttributeType);
+                comp = arg0.AttributeType.Value.CompareTo(arg1.AttributeType.Value);
                 return comp;
             }
 
@@ -375,12 +373,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///            . </param>
         /// <returns> An instance of the item class with all attributes populated from
         ///         the table, or null if the item does not exist. </returns>
-        public virtual T load<T>(T item, Transaction.IsolationLevel isolationLevel)
+        public virtual async Task<T> load<T>(T item, Transaction.IsolationLevel isolationLevel)
         {
             try
             {
                 FacadeProxy.Backend = new TransactionManagerDynamoDBFacade(this, isolationLevel);
-                return ClientMapper.load(item);
+                return await ClientMapper.LoadAsync<T>(item);
             }
             finally
             {

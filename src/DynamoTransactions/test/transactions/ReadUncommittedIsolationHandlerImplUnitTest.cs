@@ -95,35 +95,35 @@ S = "some value",
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
 		public virtual void handleItemReturnsNullForNullItem()
 		{
-			assertNull(isolationHandler.handleItem(null, null, TABLE_NAME));
+			assertNull(isolationHandler.HandleItemAsync(null, null, TABLE_NAME));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
 		public virtual void handleItemReturnsItemForUnlockedItem()
 		{
-			assertEquals(UNLOCKED_ITEM, isolationHandler.handleItem(UNLOCKED_ITEM, null, TABLE_NAME));
+			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, null, TABLE_NAME));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientUnappliedItem()
 		public virtual void handleItemReturnsNullForTransientUnappliedItem()
 		{
-			assertNull(isolationHandler.handleItem(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME));
+			assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientAppliedItem()
 		public virtual void handleItemReturnsNullForTransientAppliedItem()
 		{
-			assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.handleItem(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
+			assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsItemForNonTransientAppliedItem()
 		public virtual void handleItemReturnsItemForNonTransientAppliedItem()
 		{
-			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
+			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME));
 		}
 
 	}

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2.Model;
 
 // <summary>
@@ -35,8 +37,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="tableName"> The table that contains the item </param>
 		/// <returns> A version of the item that can be read at the isolation level. </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName);
-		Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName);
+//ORIGINAL LINE: public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> HandleItemAsync(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName);
+		Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken);
 
 	}
 

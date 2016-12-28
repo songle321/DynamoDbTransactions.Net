@@ -55,7 +55,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			List<Dictionary<string, AttributeValue>> result = new List<Dictionary<string, AttributeValue>>();
 			foreach (Dictionary<string, AttributeValue> item in items)
 			{
-				Dictionary<string, AttributeValue> handledItem = isolationHandler.handleItem(item, attributesToGet, tableName);
+				Dictionary<string, AttributeValue> handledItem = isolationHandler.HandleItemAsync(item, attributesToGet, tableName);
 				/// <summary>
 				/// If the item is null, BatchGetItems, Scan, and Query should exclude the item from
 				/// the returned list. This is based on the DynamoDB documentation.

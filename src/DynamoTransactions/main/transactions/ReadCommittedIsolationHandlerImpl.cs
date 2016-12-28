@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
@@ -117,16 +119,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			return oldItem;
 		}
 
-		/// <summary>
-		/// Create a GetItemRequest for an item (in the event that you need to get the item again). </summary>
-		/// <param name="tableName"> The table that holds the item </param>
-		/// <param name="item"> The item to get </param>
-		/// <returns> the request </returns>
-//JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: protected com.amazonaws.services.dynamodbv2.model.GetItemRequest createGetItemRequest(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-		protected internal virtual GetItemRequest createGetItemRequest(string tableName, Dictionary<string, AttributeValue> item)
+	    /// <summary>
+	    /// Create a GetItemRequest for an item (in the event that you need to get the item again). </summary>
+	    /// <param name="tableName"> The table that holds the item </param>
+	    /// <param name="item"> The item to get </param>
+	    /// <param name="cancellationToken"></param>
+	    /// <returns> the request </returns>
+	    protected internal virtual async Task<GetItemRequest> CreateGetItemRequestAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken)
 		{
-			Dictionary<string, AttributeValue> key = txManager.createKeyMap(tableName, item);
+			Dictionary<string, AttributeValue> key = await txManager.CreateKeyMapAsync(tableName, item, cancellationToken);
 
 			/*
 			 * Set the request to consistent read the next time around, since we may have read while locking tx
@@ -146,15 +147,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			return new Transaction(txId, txManager, false);
 		}
 
-		/// <summary>
-		/// Returns the item that's passed in if it's not locked. Otherwise, tries to get an old
-		/// committed version of the item. If that's not possible, it retries. </summary>
-		/// <param name="item"> The item to check. </param>
-		/// <param name="tableName"> The table that contains the item </param>
-		/// <returns> A committed version of the item (not necessarily the latest committed version). </returns>
-//JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final String tableName, final int numRetries)
-		protected internal virtual Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, string tableName, int numRetries)
+	    /// <summary>
+	    /// Returns the item that's passed in if it's not locked. Otherwise, tries to get an old
+	    /// committed version of the item. If that's not possible, it retries. </summary>
+	    /// <param name="item"> The item to check. </param>
+	    /// <param name="tableName"> The table that contains the item </param>
+	    /// <param name="numRetries"></param>
+	    /// <param name="cancellationToken"></param>
+	    /// <returns> A committed version of the item (not necessarily the latest committed version). </returns>
+	    protected internal virtual async Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, string tableName, int numRetries, CancellationToken cancellationToken)
 		{
 			GetItemRequest request = null; // only create if necessary
 			for (int i = 0; i <= numRetries; i++)
@@ -170,9 +171,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				{
 					if (request == null)
 					{
-						request = createGetItemRequest(tableName, item);
+						request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
 					}
-					currentItem = txManager.Client.GetItemAsync(request).Result.Item;
+					currentItem = txManager.Client.GetItemAsync(request, cancellationToken).Result.Item;
 				}
 
 				// 1. Return the item if it isn't locked (or if it's locked, but not applied yet)
@@ -199,7 +200,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 						// 4. Try to get a previously committed version of the item
 						if (request == null)
 						{
-							request = createGetItemRequest(tableName, item);
+							request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
 						}
 						return getOldCommittedItem(lockingTx, tableName, request.Key);
 					}
@@ -241,10 +242,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		}
 
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: @Override public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName)
-		public virtual Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName)
+//ORIGINAL LINE: @Override public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> HandleItemAsync(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName)
+		public virtual async Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken)
 		{
-			return filterAttributesToGet(handleItem(item, tableName, numRetries), attributesToGet);
+			return filterAttributesToGet(await HandleItemAsync(item, tableName, numRetries, cancellationToken), attributesToGet);
 		}
 
 	}

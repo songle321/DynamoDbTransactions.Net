@@ -213,8 +213,8 @@ ConsistentRead = true,
 //ORIGINAL LINE: @Test public void createGetItemRequestCorrectlyCreatesRequest()
 		public virtual void createGetItemRequestCorrectlyCreatesRequest()
 		{
-			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-			GetItemRequest request = isolationHandler.createGetItemRequest(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
+			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
+			GetItemRequest request = isolationHandler.CreateGetItemRequestAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
 			assertEquals(TABLE_NAME, request.TableName);
 			assertEquals(KEY, request.Key);
 			assertEquals(null, request.AttributesToGet);
@@ -225,22 +225,22 @@ ConsistentRead = true,
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
 		public virtual void handleItemReturnsNullForNullItem()
 		{
-			assertNull(isolationHandler.handleItem(null, TABLE_NAME, 0));
+			assertNull(isolationHandler.HandleItemAsync(null, TABLE_NAME, 0));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
 		public virtual void handleItemReturnsItemForUnlockedItem()
 		{
-			assertEquals(UNLOCKED_ITEM, isolationHandler.handleItem(UNLOCKED_ITEM, TABLE_NAME, 0));
+			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, TABLE_NAME, 0));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientItem()
 		public virtual void handleItemReturnsNullForTransientItem()
 		{
-			assertNull(isolationHandler.handleItem(TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
-			assertNull(isolationHandler.handleItem(TRANSIENT_UNAPPLIED_ITEM, TABLE_NAME, 0));
+			assertNull(isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
+			assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, TABLE_NAME, 0));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -248,7 +248,7 @@ ConsistentRead = true,
 		public virtual void handleItemThrowsExceptionForNonTransientAppliedItemWithNoCorrespondingTx()
 		{
 			doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
-			isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0);
+			isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -257,7 +257,7 @@ ConsistentRead = true,
 		{
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			when(mockTxItem.State).thenReturn(State.COMMITTED);
-			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
+			assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -266,10 +266,10 @@ ConsistentRead = true,
 		{
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			doReturn(UNLOCKED_ITEM).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
+			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
 			when(mockTxItem.State).thenReturn(State.PENDING);
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
-			assertEquals(UNLOCKED_ITEM, isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
+			assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0));
 			verify(isolationHandler).loadTransaction(TX_ID);
 		}
 
@@ -281,7 +281,7 @@ ConsistentRead = true,
 			doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
 			when(mockTxItem.State).thenReturn(State.PENDING);
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
-			isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0);
+			isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0);
 			verify(isolationHandler).loadTransaction(TX_ID);
 		}
 
@@ -290,7 +290,7 @@ ConsistentRead = true,
 		public virtual void handleItemRetriesWhenTransactionNotFound()
 		{
 			doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
-			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
+			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
 			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
 
 Item = NON_TRANSIENT_APPLIED_ITEM,)
@@ -298,7 +298,7 @@ Item = NON_TRANSIENT_APPLIED_ITEM,)
 			bool caughtException = false;
 			try
 			{
-				isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1);
+				isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1);
 			}
 			catch (TransactionException)
 			{
@@ -316,7 +316,7 @@ Item = NON_TRANSIENT_APPLIED_ITEM,)
 		{
 			doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
 			doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-			when(mockTxManager.createKeyMap(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
+			when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
 			when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult {
 
 Item = NON_TRANSIENT_APPLIED_ITEM,)
@@ -324,7 +324,7 @@ Item = NON_TRANSIENT_APPLIED_ITEM,)
 			bool caughtException = false;
 			try
 			{
-				isolationHandler.handleItem(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1);
+				isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1);
 			}
 			catch (TransactionException)
 			{

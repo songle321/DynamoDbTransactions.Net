@@ -42,8 +42,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <param name="tableName"> the table that contains the item </param>
 		/// <returns> the item itself, unless it is transient and not applied. </returns>
 //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: @Override public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> handleItem(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName)
-		public virtual Dictionary<string, AttributeValue> handleItem(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName)
+//ORIGINAL LINE: @Override public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> HandleItemAsync(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName)
+		public virtual Dictionary<string, AttributeValue> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName)
 		{
 			// If the item doesn't exist, it's not locked
 			if (item == null)

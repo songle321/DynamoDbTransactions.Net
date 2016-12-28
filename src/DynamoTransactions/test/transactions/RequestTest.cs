@@ -554,7 +554,7 @@ TableName = TABLE_NAME,
 			}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> getTableSchema(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
+//ORIGINAL LINE: @Override protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 			protected internal override List<KeySchemaElement> getTableSchema(string tableName)
 			{
 				return keySchema;
