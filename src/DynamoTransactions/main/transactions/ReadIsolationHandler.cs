@@ -19,26 +19,24 @@ using Amazon.DynamoDBv2.Model;
 // </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-	/// <summary>
-	/// An isolation handler takes an item and returns a version
-	/// of the item that can be read at the implemented isolaction
-	/// level.
-	/// </summary>
-	public interface ReadIsolationHandler
-	{
-/// <summary>
-		/// Returns a version of the item can be read at the isolation level implemented by
-		/// the handler. This is possibly null if the item is transient. It might not be latest
-		/// version if the isolation level is committed. </summary>
-		/// <param name="item"> The item to check </param>
-		/// <param name="attributesToGet"> The attributes to get from the table. If null or empty, will
-		///                        fetch all attributes. </param>
-		/// <param name="tableName"> The table that contains the item </param>
-		/// <returns> A version of the item that can be read at the isolation level. </returns>
-//JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-//ORIGINAL LINE: public java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> HandleItemAsync(final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item, final java.util.List<String> attributesToGet, final String tableName);
-		Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken);
+    /// <summary>
+    /// An isolation handler takes an item and returns a version
+    /// of the item that can be read at the implemented isolaction
+    /// level.
+    /// </summary>
+    public interface ReadIsolationHandler
+    {
+        /// <summary>
+        /// Returns a version of the item can be read at the isolation level implemented by
+        /// the handler. This is possibly null if the item is transient. It might not be latest
+        /// version if the isolation level is committed. </summary>
+        /// <param name="item"> The item to check </param>
+        /// <param name="attributesToGet"> The attributes to get from the table. If null or empty, will
+        ///                        fetch all attributes. </param>
+        /// <param name="tableName"> The table that contains the item </param>
+        /// <returns> A version of the item that can be read at the isolation level. </returns>
+        Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken);
 
-	}
+    }
 
 }

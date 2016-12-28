@@ -157,13 +157,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.PutItemResponse putItem(com.amazonaws.services.dynamodbv2.model.PutItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         public virtual PutItemResponse putItem(PutItemRequest request)
         {
-Request.PutItem wrappedRequest = new Request.PutItem();
+            Request.PutItem wrappedRequest = new Request.PutItem();
             wrappedRequest.Request = request;
             Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
             stripSpecialAttributes(item);
-            return new PutItemResponse {
-Attributes = item
-};
+            return new PutItemResponse
+            {
+                Attributes = item
+            };
         }
 
         /// <summary>
@@ -179,13 +180,14 @@ Attributes = item
         //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         public virtual UpdateItemResponse updateItem(UpdateItemRequest request)
         {
-Request.UpdateItem wrappedRequest = new Request.UpdateItem();
+            Request.UpdateItem wrappedRequest = new Request.UpdateItem();
             wrappedRequest.Request = request;
             Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
             stripSpecialAttributes(item);
-            return new UpdateItemResponse {
-Attributes = item
-};
+            return new UpdateItemResponse
+            {
+                Attributes = item
+            };
         }
 
         /// <summary>
@@ -201,13 +203,14 @@ Attributes = item
         //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.DeleteItemResponse deleteItem(com.amazonaws.services.dynamodbv2.model.DeleteItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         public virtual DeleteItemResponse deleteItem(DeleteItemRequest request)
         {
-Request.DeleteItem wrappedRequest = new Request.DeleteItem();
+            Request.DeleteItem wrappedRequest = new Request.DeleteItem();
             wrappedRequest.Request = request;
             Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
             stripSpecialAttributes(item);
-            return new DeleteItemResponse {
-Attributes = item
-};
+            return new DeleteItemResponse
+            {
+                Attributes = item
+            };
         }
 
         /// <summary>
@@ -224,13 +227,14 @@ Attributes = item
         //ORIGINAL LINE: public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         public virtual GetItemResponse getItem(GetItemRequest request)
         {
-Request.GetItem wrappedRequest = new Request.GetItem();
+            Request.GetItem wrappedRequest = new Request.GetItem();
             wrappedRequest.Request = request;
             Dictionary<string, AttributeValue> item = driveRequest(wrappedRequest);
             stripSpecialAttributes(item);
-            GetItemResponse result = new GetItemResponse {
-Item = item
-};
+            GetItemResponse result = new GetItemResponse
+            {
+                Item = item
+            };
             return result;
         }
 
@@ -584,7 +588,7 @@ Item = item
                     "Unable to commitAsync transaction after " + ITEM_COMMIT_ATTEMPTS + " attempts");
             }
             finally
-            { 
+            {
                 semaphore.Release();
             }
         }
@@ -762,39 +766,46 @@ Item = item
             try
             {
                 Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-                expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
+                expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+                {
+                    Value = new AttributeValue(txId)
+                };
 
                 if (request is Request.PutItem || request is Request.UpdateItem)
                 {
                     Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-                    updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
-                    updates[AttributeName.TRANSIENT.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
-                    updates[AttributeName.APPLIED.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
-                    updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
+                    updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate
+                    {
+                        Action = AttributeAction.DELETE
+                    };
+                    updates[AttributeName.TRANSIENT.ToString()] = new AttributeValueUpdate
+                    {
+                        Action = AttributeAction.DELETE
+                    };
+                    updates[AttributeName.APPLIED.ToString()] = new AttributeValueUpdate
+                    {
+                        Action = AttributeAction.DELETE
+                    };
+                    updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate
+                    {
+                        Action = AttributeAction.DELETE
+                    };
 
-                    UpdateItemRequest update = new UpdateItemRequest {
-TableName = request.TableName,
+                    UpdateItemRequest update = new UpdateItemRequest
+                    {
+                        TableName = request.TableName,
 .withKey(request.getKey(txManager))AttributeUpdates = updates,
-Expected = expected
-};
+                        Expected = expected
+                    };
                     await txManager.Client.UpdateItemAsync(update);
                 }
                 else if (request is Request.DeleteItem)
                 {
-                    DeleteItemRequest delete = new DeleteItemRequest {
-TableName = request.TableName,
+                    DeleteItemRequest delete = new DeleteItemRequest
+                    {
+                        TableName = request.TableName,
 .withKey(request.getKey(txManager))Expected = expected
-};
+                    };
                     await txManager.Client.DeleteItemAsync(delete);
                 }
                 else if (request is Request.GetItem)
@@ -898,15 +909,17 @@ TableName = request.TableName,
                 try
                 {
                     Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
+                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+                    {
+                        Value = new AttributeValue(txId)
+                    };
 
-                    PutItemRequest put = new PutItemRequest {
-TableName = tableName,
-Item = itemImage,
-Expected = expected
-};
+                    PutItemRequest put = new PutItemRequest
+                    {
+                        TableName = tableName,
+                        Item = itemImage,
+                        Expected = expected
+                    };
                     txManager.Client.putItem(put);
                 }
                 catch (ConditionalCheckFailedException)
@@ -920,18 +933,21 @@ Expected = expected
                 try
                 {
                     Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
-                    expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL)
-};
+                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+                    {
+                        Value = new AttributeValue(txId)
+                    };
+                    expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue
+                    {
+                        Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL)
+                    };
 
-                    DeleteItemRequest delete = new DeleteItemRequest {
-TableName = tableName,
-Key = key,
-Expected = expected
-};
+                    DeleteItemRequest delete = new DeleteItemRequest
+                    {
+                        TableName = tableName,
+                        Key = key,
+                        Expected = expected
+                    };
                     txManager.Client.deleteItem(delete);
                     return;
                 }
@@ -980,48 +996,56 @@ Expected = expected
         protected internal static void releaseReadLock(string txId, TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
         {
             Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
-            expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue {
-Exists = false
-};
-            expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue {
-Exists = false
-};
+            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+            {
+                Value = new AttributeValue(txId)
+            };
+            expected[AttributeName.TRANSIENT.ToString()] = new ExpectedAttributeValue
+            {
+                Exists = false
+            };
+            expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue
+            {
+                Exists = false
+            };
 
             try
             {
                 Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
-                updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
-                updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
+                updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate
+                {
+                    Action = AttributeAction.DELETE
+                };
+                updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate
+                {
+                    Action = AttributeAction.DELETE
+                };
 
-                UpdateItemRequest update = new UpdateItemRequest {
-TableName = tableName,
-AttributeUpdates = updates,
-Key = key,
-Expected = expected
-};
+                UpdateItemRequest update = new UpdateItemRequest
+                {
+                    TableName = tableName,
+                    AttributeUpdates = updates,
+                    Key = key,
+                    Expected = expected
+                };
                 txManager.Client.updateItem(update);
             }
             catch (ConditionalCheckFailedException)
             {
                 try
                 {
-                    expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue {
-S = BOOLEAN_TRUE_ATTR_VAL,
+                    expected[AttributeName.TRANSIENT.ToString()] = (new ExpectedAttributeValue()).withValue(new AttributeValue
+                    {
+                        S = BOOLEAN_TRUE_ATTR_VAL,
 
-});
+                    });
 
-                    DeleteItemRequest delete = new DeleteItemRequest {
-TableName = tableName,
-Key = key,
-Expected = expected
-};
+                    DeleteItemRequest delete = new DeleteItemRequest
+                    {
+                        TableName = tableName,
+                        Key = key,
+                        Expected = expected
+                    };
                     txManager.Client.deleteItem(delete);
                 }
                 catch (ConditionalCheckFailedException)
@@ -1042,7 +1066,7 @@ Expected = expected
         /// <param name="item"> </param>
         protected internal static void unlockItemUnsafe(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> item, string txId)
         {
-// 1) Ensure the transaction does not exist 
+            // 1) Ensure the transaction does not exist 
             try
             {
                 Transaction tx = new Transaction(txId, txManager, false);
@@ -1056,26 +1080,29 @@ Expected = expected
 
             // 2) Remove all transaction attributes and condition on txId equality
             Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
+            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+            {
+                Value = new AttributeValue(txId)
+            };
 
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>(1);
             foreach (string attrName in SPECIAL_ATTR_NAMES)
             {
-                updates[attrName] = new AttributeValueUpdate {
-Action = AttributeAction.DELETE
-};
+                updates[attrName] = new AttributeValueUpdate
+                {
+                    Action = AttributeAction.DELETE
+                };
             }
 
             Dictionary<string, AttributeValue> key = Request.getKeyFromItem(tableName, item, txManager);
 
-            UpdateItemRequest update = new UpdateItemRequest {
-TableName = tableName,
-AttributeUpdates = updates,
-Key = key,
-Expected = expected
-};
+            UpdateItemRequest update = new UpdateItemRequest
+            {
+                TableName = tableName,
+                AttributeUpdates = updates,
+                Key = key,
+                Expected = expected
+            };
 
             // Delete the item, and ignore conditional write failures
             try
@@ -1104,7 +1131,7 @@ Expected = expected
         //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> addRequest(Request callerRequest, boolean isRedrive, int numAttempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException, com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCompletedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         protected internal virtual Dictionary<string, AttributeValue> addRequest(Request callerRequest, bool isRedrive, int numAttempts)
         {
-// 1. Write the full caller request to the transaction item, but not if it's being re-driven.
+            // 1. Write the full caller request to the transaction item, but not if it's being re-driven.
             //    (In order to re-drive, the request must already be in the transaction item) 
             if (!isRedrive)
             {
@@ -1243,46 +1270,53 @@ Expected = expected
             //   - If we expect the item NOT to exist, we update both the transient attribute and the lock.
             // In both cases we expect the txid not to be set
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
-            updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.PUT,
-Value = new AttributeValue(txId)
-};
-            updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate {
-Action = AttributeAction.PUT,
-Value = txManager.CurrentTimeAttribute
-};
+            updates[AttributeName.TXID.ToString()] = new AttributeValueUpdate
+            {
+                Action = AttributeAction.PUT,
+                Value = new AttributeValue(txId)
+            };
+            updates[AttributeName.DATE.ToString()] = new AttributeValueUpdate
+            {
+                Action = AttributeAction.PUT,
+                Value = txManager.CurrentTimeAttribute
+            };
 
             Dictionary<string, ExpectedAttributeValue> expected;
             if (expectExists)
             {
                 expected = callerRequest.getExpectExists(txManager);
-                expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Exists = false
-};
+                expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+                {
+                    Exists = false
+                };
             }
             else
             {
                 expected = new Dictionary<string, ExpectedAttributeValue>(1);
-                updates.put(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate {
-Action = AttributeAction.PUT,
+                updates.put(AttributeName.TRANSIENT.ToString(), new AttributeValueUpdate
+                {
+                    Action = AttributeAction.PUT,
 
-}.withValue(new AttributeValue {
-S = BOOLEAN_TRUE_ATTR_VAL,
+                }.withValue(new AttributeValue
+                {
+                    S = BOOLEAN_TRUE_ATTR_VAL,
 
-}));
+                }));
             }
-            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Exists = false
-};
+            expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+            {
+                Exists = false
+            };
 
             // Do a conditional update on NO transaction id, and that the item DOES exist
-            UpdateItemRequest updateRequest = new UpdateItemRequest {
-TableName = callerRequest.TableName,
-Expected = expected,
-Key = key,
-ReturnValues = ReturnValue.ALL_NEW,
-AttributeUpdates = updates
-};
+            UpdateItemRequest updateRequest = new UpdateItemRequest
+            {
+                TableName = callerRequest.TableName,
+                Expected = expected,
+                Key = key,
+                ReturnValues = ReturnValue.ALL_NEW,
+                AttributeUpdates = updates
+            };
 
             string owner = null;
             bool nextExpectExists = false;
@@ -1373,12 +1407,14 @@ AttributeUpdates = updates
                 try
                 {
                     Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>();
-                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue {
-Value = new AttributeValue(txId)
-};
-                    expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue {
-Exists = false
-};
+                    expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
+                    {
+                        Value = new AttributeValue(txId)
+                    };
+                    expected[AttributeName.APPLIED.ToString()] = new ExpectedAttributeValue
+                    {
+                        Exists = false
+                    };
 
                     // TODO assert if the caller request contains any of our internally defined fields?
                     //      but we aren't copying the request object, so our retries might trigger the assertion.
@@ -1416,11 +1452,12 @@ Exists = false
                             update.AttributeUpdates = new Dictionary<string, AttributeValueUpdate>(1);
                         }
 
-                        update.AttributeUpdates.put(AttributeName.APPLIED.ToString(), new AttributeValueUpdate {
-Action = AttributeAction.PUT,
-Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL),
+                        update.AttributeUpdates.put(AttributeName.APPLIED.ToString(), new AttributeValueUpdate
+                        {
+                            Action = AttributeAction.PUT,
+                            Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL),
 
-});
+                        });
 
                         returnItem = txManager.Client.updateItem(update).Attributes;
                     }
@@ -1542,11 +1579,12 @@ Value = new AttributeValue(BOOLEAN_TRUE_ATTR_VAL),
 
         protected internal static Dictionary<string, AttributeValue> getItem(TransactionManager txManager, string tableName, Dictionary<string, AttributeValue> key)
         {
-            GetItemRequest getRequest = new GetItemRequest {
-TableName = tableName,
-ConsistentRead = true,
-Key = key
-};
+            GetItemRequest getRequest = new GetItemRequest
+            {
+                TableName = tableName,
+                ConsistentRead = true,
+                Key = key
+            };
             GetItemResponse getResult = txManager.Client.getItem(getRequest);
             return getResult.Item;
         }
@@ -1583,7 +1621,7 @@ Key = key
 
         public sealed class AttributeName
         {
-public static readonly AttributeName TXID = new AttributeName("TXID", InnerEnum.TXID, TX_ATTR_PREFIX + "Id");
+            public static readonly AttributeName TXID = new AttributeName("TXID", InnerEnum.TXID, TX_ATTR_PREFIX + "Id");
             public static readonly AttributeName TRANSIENT = new AttributeName("TRANSIENT", InnerEnum.TRANSIENT, TX_ATTR_PREFIX + "T");
             public static readonly AttributeName DATE = new AttributeName("DATE", InnerEnum.DATE, TX_ATTR_PREFIX + "D");
             public static readonly AttributeName APPLIED = new AttributeName("APPLIED", InnerEnum.APPLIED, TX_ATTR_PREFIX + "A");

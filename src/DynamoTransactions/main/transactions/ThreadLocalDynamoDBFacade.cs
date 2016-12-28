@@ -22,16 +22,16 @@ using Amazon.Runtime;
 // </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-	/// <summary>
-	/// Necessary to work around a limitation of the mapper. The mapper always gets
-	/// created with a fresh reflection cache, which is expensive to repopulate.
-	/// Using this class to route to a different facade for each request allows us to
-	/// reuse the mapper and its underlying cache for each call to the mapper from a
-	/// transaction or the transaction manager.
-	/// </summary>
-	public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB
-	{
-private readonly ThreadLocal<AmazonDynamoDBClient> backend = new ThreadLocal<AmazonDynamoDBClient>();
+    /// <summary>
+    /// Necessary to work around a limitation of the mapper. The mapper always gets
+    /// created with a fresh reflection cache, which is expensive to repopulate.
+    /// Using this class to route to a different facade for each request allows us to
+    /// reuse the mapper and its underlying cache for each call to the mapper from a
+    /// transaction or the transaction manager.
+    /// </summary>
+    public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB
+    {
+        private readonly ThreadLocal<IAmazonDynamoDB> backend = new ThreadLocal<IAmazonDynamoDB>();
 
         public IClientConfig Config
         {
@@ -41,21 +41,21 @@ private readonly ThreadLocal<AmazonDynamoDBClient> backend = new ThreadLocal<Ama
             }
         }
 
-	    internal IAmazonDynamoDB Backend
-		{
-			get
-			{
-				if (backend.Value== null)
-				{
-					throw new Exception("No backend to proxy");
-				}
-				return backend.Value;
-			}
-			set
-			{
-				backend.Value = value;
-			}
-		}
+        internal IAmazonDynamoDB Backend
+        {
+            get
+            {
+                if (backend.Value == null)
+                {
+                    throw new Exception("No backend to proxy");
+                }
+                return backend.Value;
+            }
+            set
+            {
+                backend.Value = value;
+            }
+        }
 
         public Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
