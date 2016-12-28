@@ -44,7 +44,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public readonly IDictionary<GetItemRequest, LinkedList<GetItemResult>> getRequestsToStub = new Dictionary<GetItemRequest, LinkedList<GetItemResult>>();
 
 		/// <summary>
-		/// Resets the client to the stock DynamoDB client (all requests will call DynamoDB)
+		/// Resets the client to the stock DynamoDB client (all requests will callAsync DynamoDB)
 		/// </summary>
 		public virtual void reset()
 		{

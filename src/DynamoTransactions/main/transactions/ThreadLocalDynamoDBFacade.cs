@@ -26,7 +26,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// Necessary to work around a limitation of the mapper. The mapper always gets
     /// created with a fresh reflection cache, which is expensive to repopulate.
     /// Using this class to route to a different facade for each request allows us to
-    /// reuse the mapper and its underlying cache for each call to the mapper from a
+    /// reuse the mapper and its underlying cache for each callAsync to the mapper from a
     /// transaction or the transaction manager.
     /// </summary>
     public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB

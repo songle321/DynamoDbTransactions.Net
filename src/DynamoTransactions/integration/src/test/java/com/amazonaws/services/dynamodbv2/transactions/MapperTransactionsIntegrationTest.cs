@@ -189,7 +189,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		{
 			ExampleHashKeyItem item1 = newItem();
 			Transaction transaction = manager.newTransaction();
-			transaction.delete(item1);
+			transaction.deleteAsync(item1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, transaction.Id, true, false);
 			transaction.rollback();
 			assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
@@ -209,12 +209,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t1 = manager.newTransaction();
 			Transaction t2 = manager.newTransaction();
 
-			ExampleHashKeyItem loadedItem = t1.load(item1);
+			ExampleHashKeyItem loadedItem = t1.loadAsync(item1);
 
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false); // we're not applying locks
 			assertNull(loadedItem);
 
-			t2.delete(item1);
+			t2.deleteAsync(item1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2.Id, true, false); // we're not applying deletes either
 
 			t2.commit();
@@ -249,11 +249,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			Transaction t1 = manager.newTransaction();
 
-			ExampleHashKeyItem loadedItem1 = t1.load(item1);
+			ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
 			assertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
 
-			ExampleHashKeyItem loadedItem2 = t1.load(item2);
+			ExampleHashKeyItem loadedItem2 = t1.loadAsync(item2);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item2.Key, t1.Id, true, false);
 			assertNull(loadedItem2);
@@ -270,14 +270,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		public virtual void getItemWithDelete()
 		{
 			Transaction t1 = manager.newTransaction();
-			ExampleHashKeyItem loadedItem1 = t1.load(hashItem0);
+			ExampleHashKeyItem loadedItem1 = t1.loadAsync(hashItem0);
 			assertEquals(hashItem0.ExpectedValues, loadedItem1.ExpectedValues);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, loadedItem1.ExpectedValues, t1.Id, false, false);
 
-			t1.delete(hashItem0);
+			t1.deleteAsync(hashItem0);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
 
-			ExampleHashKeyItem loadedItem2 = t1.load(hashItem0);
+			ExampleHashKeyItem loadedItem2 = t1.loadAsync(hashItem0);
 			assertNull(loadedItem2);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
 
@@ -292,11 +292,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t1 = manager.newTransaction();
 			ExampleHashKeyItem item1 = newItem();
 
-			ExampleHashKeyItem loadedItem1 = t1.load(item1);
+			ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1);
 			assertNull(loadedItem1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
-			ExampleHashKeyItem loadedItem2 = t1.load(item1);
+			ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1);
 			assertNull(loadedItem2);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
@@ -313,14 +313,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			ExampleHashKeyItem item1 = newItem();
 			item1.Something = "wef";
 
-			ExampleHashKeyItem loadedItem1 = t1.load(item1);
+			ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1);
 			assertNull(loadedItem1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
 			t1.save(item1);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
-			ExampleHashKeyItem loadedItem2 = t1.load(item1);
+			ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1);
 			assertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
@@ -530,15 +530,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			// update the item to version 2
 			Transaction t2 = manager.newTransaction();
-			ExampleVersionedHashKeyItem item2 = t2.load(item1);
+			ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1);
 			t2.save(item2);
 			t2.commit();
 
-			// try to delete with an outdated view of the item
+			// try to deleteAsync with an outdated view of the item
 			Transaction t3 = manager.newTransaction();
 			try
 			{
-				t3.delete(item1);
+				t3.deleteAsync(item1);
 				fail();
 			}
 			catch (ConditionalCheckFailedException)
@@ -565,12 +565,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			// update the item to version 2 and save
 			Transaction t2 = manager.newTransaction();
-			ExampleVersionedHashKeyItem item2 = t2.load(item1);
+			ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1);
 			t2.save(item2);
 			t2.commit();
 
 			Transaction t3 = manager.newTransaction();
-			t3.load(item1);
+			t3.loadAsync(item1);
 			try
 			{
 				t3.save(item1);
@@ -598,17 +598,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			t1.save(item1);
 			t1.commit();
 
-			// start to delete the item
+			// start to deleteAsync the item
 			Transaction t2 = manager.newTransaction();
-			t2.delete(item1);
+			t2.deleteAsync(item1);
 
 			// update the item to version 2
 			Transaction t3 = manager.newTransaction();
-			ExampleVersionedHashKeyItem item2 = t3.load(item1);
+			ExampleVersionedHashKeyItem item2 = t3.loadAsync(item1);
 			t3.save(item2);
 			t3.commit();
 
-			// try to commit the delete
+			// try to commit the deleteAsync
 			try
 			{
 				t2.commit();

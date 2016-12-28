@@ -46,7 +46,7 @@ private readonly Transaction txn;
 			Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
 			checkExpectedValues(request.TableName, request.Key, expectedValues);
 
-			// conditional checks are handled by the above call
+			// conditional checks are handled by the above callAsync
 			request.Expected = null;
 			return await txn.DeleteItemAsync(request, cancellationToken);
 		}
@@ -65,7 +65,7 @@ private readonly Transaction txn;
 			Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
 			checkExpectedValues(request.TableName, Request.getKeyFromItem(request.TableName, request.Item, txManager), expectedValues);
 
-			// conditional checks are handled by the above call
+			// conditional checks are handled by the above callAsync
 			request.Expected = null;
 			return txn.putItemAsync(request);
 		}
@@ -77,7 +77,7 @@ private readonly Transaction txn;
 			Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
 			checkExpectedValues(request.TableName, request.Key, expectedValues);
 
-			// conditional checks are handled by the above call
+			// conditional checks are handled by the above callAsync
 			request.Expected = null;
 			return txn.updateItemAsync(request);
 		}

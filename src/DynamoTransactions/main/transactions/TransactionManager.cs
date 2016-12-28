@@ -209,7 +209,7 @@ TableName = tableName,
                 case Transaction.IsolationLevel.COMMITTED:
                     return readCommittedIsolationHandler;
                 case Transaction.IsolationLevel.READ_LOCK:
-                    throw new System.ArgumentException("Cannot call GetItemAsync at the READ_LOCK isolation level outside of a transaction. Call GetItemAsync on a transaction directly instead.");
+                    throw new System.ArgumentException("Cannot callAsync GetItemAsync at the READ_LOCK isolation level outside of a transaction. Call GetItemAsync on a transaction directly instead.");
                 default:
                     throw new System.ArgumentException("Unrecognized isolation level: " + isolationLevel);
             }

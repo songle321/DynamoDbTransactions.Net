@@ -409,7 +409,7 @@ using com.amazonaws.services.dynamodbv2.util;
 				.withKey(key1).withTableName(EXAMPLE_TABLE_NAME)).Item;
 			print("Item1: " + item1);
 
-			// Now call UpdateItem to add a new attribute.
+			// Now callAsync UpdateItem to add a new attribute.
 			// Notice that the library supports ReturnValues in writes
 			print("Updating Item1");
 			IDictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
@@ -492,7 +492,7 @@ using com.amazonaws.services.dynamodbv2.util;
 			keyItem.ItemId = "Item1";
 
 			// Performs a GetItem request on the transaction
-			ExampleItem item = t1.load(keyItem);
+			ExampleItem item = t1.loadAsync(keyItem);
 			if (item != null)
 			{
 				print("Item1: " + item.Value);
