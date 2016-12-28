@@ -118,15 +118,15 @@ using com.amazonaws.services.dynamodbv2.util;
 			IList<KeySchemaElement> keySchema = Arrays.asList((new KeySchemaElement()).withAttributeName(EXAMPLE_TABLE_HASH_KEY).withKeyType(KeyType.HASH));
 			ProvisionedThroughput provisionedThroughput = (new ProvisionedThroughput()).withReadCapacityUnits(1L).withWriteCapacityUnits(1L);
 
-			tableHelper.verifyOrCreateTable(EXAMPLE_TABLE_NAME, attributeDefinitions, keySchema, null, provisionedThroughput, null);
+			tableHelper.verifyOrCreateTableAsync(EXAMPLE_TABLE_NAME, attributeDefinitions, keySchema, null, provisionedThroughput, null);
 
 			// 4. Wait for tables to be created
 			print("Waiting for table to become ACTIVE: " + EXAMPLE_TABLE_NAME);
-			tableHelper.waitForTableActive(EXAMPLE_TABLE_NAME, 5 * 60L);
+			tableHelper.waitForTableActiveAsync(EXAMPLE_TABLE_NAME, 5 * 60L);
 			print("Waiting for table to become ACTIVE: " + TX_TABLE_NAME);
-			tableHelper.waitForTableActive(TX_TABLE_NAME, 5 * 60L);
+			tableHelper.waitForTableActiveAsync(TX_TABLE_NAME, 5 * 60L);
 			print("Waiting for table to become ACTIVE: " + TX_IMAGES_TABLE_NAME);
-			tableHelper.waitForTableActive(TX_IMAGES_TABLE_NAME, 5 * 60L);
+			tableHelper.waitForTableActiveAsync(TX_IMAGES_TABLE_NAME, 5 * 60L);
 		}
 
 		/// <summary>

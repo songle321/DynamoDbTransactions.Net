@@ -902,7 +902,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, AttributeValue> itemImage = null;
             if (rid != null)
             {
-                itemImage = txItem.loadItemImageAsync(rid.Value);
+                itemImage = await txItem.loadItemImageAsync(rid.Value);
             }
 
             if (itemImage != null)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 
@@ -33,9 +34,9 @@ private readonly AmazonDynamoDBClient client;
 			this.client = client;
 		}
 
-		public virtual string verifyTableExists(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
+		public virtual async Task<string> verifyTableExistsAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
 		{
-			DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest(tableName));
+			DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest(tableName));
 			if (!(new HashSet<AttributeDefinition>(definitions)).Equals(new HashSet<AttributeDefinition>(describe.Table.AttributeDefinitions)))
 			{
 				throw new ResourceInUseException("Table " + tableName + " had the wrong AttributesToGet." + " Expected: " + definitions + " " + " Was: " + describe.Table.AttributeDefinitions);
@@ -93,8 +94,8 @@ private readonly AmazonDynamoDBClient client;
 		/// <param name="waitTimeSeconds"> </param>
 		/// <exception cref="InterruptedException">  </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void verifyOrCreateTable(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput, Nullable<long> waitTimeSeconds) throws InterruptedException
-		public virtual void verifyOrCreateTable(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
+//ORIGINAL LINE: public void verifyOrCreateTableAsync(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput, Nullable<long> waitTimeSeconds) throws InterruptedException
+		public virtual async Task verifyOrCreateTableAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
 		{
 if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			{
@@ -104,29 +105,27 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			string status = null;
 			try
 			{
-				status = verifyTableExists(tableName, definitions, keySchema, localIndexes);
+				status = await verifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
 			}
 			catch (ResourceNotFoundException)
 			{
-				status = client.CreateTableAsync(new CreateTableRequest
+				status = (await client.CreateTableAsync(new CreateTableRequest
 				{
 				    TableName = tableName,
                     AttributeDefinitions = definitions,
                     KeySchema = keySchema,
                     LocalSecondaryIndexes = localIndexes,
                     ProvisionedThroughput = provisionedThroughput
-				}).TableDescription.TableStatus;
+				})).TableDescription.TableStatus;
 			}
 
 			if (waitTimeSeconds != null && !TableStatus.ACTIVE.ToString().Equals(status))
 			{
-				waitForTableActive(tableName, definitions, keySchema, localIndexes, waitTimeSeconds.Value);
+				await waitForTableActiveAsync(tableName, definitions, keySchema, localIndexes, waitTimeSeconds.Value);
 			}
 		}
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void waitForTableActive(String tableName, long waitTimeSeconds) throws InterruptedException
-		public virtual void waitForTableActive(string tableName, long waitTimeSeconds)
+		public virtual async Task waitForTableActiveAsync(string tableName, long waitTimeSeconds)
 		{
 			if (waitTimeSeconds < 0)
 			{
@@ -137,7 +136,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			long elapsedMs = 0;
 			do
 			{
-				DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
+				DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest
 				{
 				    TableName = tableName
 				});
@@ -157,9 +156,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			throw new ResourceInUseException("Table " + tableName + " did not become ACTIVE after " + waitTimeSeconds + " seconds.");
 		}
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void waitForTableActive(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, long waitTimeSeconds) throws InterruptedException
-		public virtual void waitForTableActive(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
+		public virtual async Task waitForTableActiveAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
 		{
 if (waitTimeSeconds < 0)
 			{
@@ -170,7 +167,7 @@ if (waitTimeSeconds < 0)
 			long elapsedMs = 0;
 			do
 			{
-				string status = verifyTableExists(tableName, definitions, keySchema, localIndexes);
+				string status = await verifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
 				if (TableStatus.ACTIVE.ToString().Equals(status))
 				{
 					return;
@@ -187,8 +184,8 @@ if (waitTimeSeconds < 0)
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: public void waitForTableDeleted(String tableName, long waitTimeSeconds) throws InterruptedException
-		public virtual void waitForTableDeleted(string tableName, long waitTimeSeconds)
+//ORIGINAL LINE: public void waitForTableDeletedAsync(String tableName, long waitTimeSeconds) throws InterruptedException
+		public virtual async Task waitForTableDeletedAsync(string tableName, long waitTimeSeconds)
 		{
 if (waitTimeSeconds < 0)
 			{
@@ -201,7 +198,7 @@ if (waitTimeSeconds < 0)
 			{
 				try
 				{
-					DescribeTableResponse describe = client.DescribeTableAsync(new DescribeTableRequest
+					DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest
 					{
 					    TableName = tableName
 					});

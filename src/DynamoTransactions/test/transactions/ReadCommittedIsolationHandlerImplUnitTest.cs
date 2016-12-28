@@ -182,7 +182,7 @@ ConsistentRead = true
 		public virtual void getOldCommittedItemThrowsExceptionIfNoLockingRequestExists()
 		{
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(null);
-			isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
+			isolationHandler.GetOldCommittedItemAsync(mockTx, TABLE_NAME, KEY);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -192,7 +192,7 @@ ConsistentRead = true
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			when(mockRequest.Rid).thenReturn(RID);
 			when(mockTxItem.loadItemImageAsync(RID)).thenReturn(null);
-			isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
+			isolationHandler.GetOldCommittedItemAsync(mockTx, TABLE_NAME, KEY);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -202,7 +202,7 @@ ConsistentRead = true
 			when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 			when(mockRequest.Rid).thenReturn(RID);
 			when(mockTxItem.loadItemImageAsync(RID)).thenReturn(UNLOCKED_ITEM);
-			Dictionary<string, AttributeValue> result = isolationHandler.getOldCommittedItem(mockTx, TABLE_NAME, KEY);
+			Dictionary<string, AttributeValue> result = isolationHandler.GetOldCommittedItemAsync(mockTx, TABLE_NAME, KEY);
 			assertEquals(UNLOCKED_ITEM, result);
 		}
 

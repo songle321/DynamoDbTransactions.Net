@@ -85,11 +85,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <param name="tableName"> The table that contains the item </param>
         /// <param name="key"> The item's key </param>
         /// <returns> a previously committed version of the item </returns>
-        protected internal virtual Dictionary<string, AttributeValue> getOldCommittedItem(Transaction lockingTx, string tableName, Dictionary<string, AttributeValue> key)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> GetOldCommittedItemAsync(Transaction lockingTx, string tableName, Dictionary<string, AttributeValue> key)
         {
             Request lockingRequest = lockingTx.TxItem.getRequestForKey(tableName, key);
             txAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
-            Dictionary<string, AttributeValue> oldItem = lockingTx.TxItem.loadItemImageAsync(lockingRequest.Rid.Value);
+            Dictionary<string, AttributeValue> oldItem = await lockingTx.TxItem.loadItemImageAsync(lockingRequest.Rid.Value);
             if (oldItem == null)
             {
                 if (LOG.DebugEnabled)
@@ -153,7 +153,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     {
                         request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
                     }
-                    currentItem = txManager.Client.GetItemAsync(request, cancellationToken).Item;
+                    currentItem = (await txManager.Client.GetItemAsync(request, cancellationToken)).Item;
                 }
 
                 // 1. Return the item if it isn't locked (or if it's locked, but not applied yet)
@@ -182,7 +182,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         {
                             request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
                         }
-                        return getOldCommittedItem(lockingTx, tableName, request.Key);
+                        return await GetOldCommittedItemAsync(lockingTx, tableName, request.Key);
                     }
                     catch (UnknownCompletedTransactionException e2)
                     {

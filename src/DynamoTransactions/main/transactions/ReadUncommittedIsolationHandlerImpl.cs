@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2.Model;
 using static com.amazonaws.services.dynamodbv2.transactions.Transaction;
 // <summary>
@@ -35,7 +37,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///                        fetch all attributes. </param>
         /// <param name="tableName"> the table that contains the item </param>
         /// <returns> the item itself, unless it is transient and not applied. </returns>
-        public virtual Dictionary<string, AttributeValue> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName)
+        public virtual async Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken)
         {
             // If the item doesn't exist, it's not locked
             if (item == null)
