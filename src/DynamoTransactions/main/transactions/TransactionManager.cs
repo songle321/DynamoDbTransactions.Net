@@ -271,7 +271,7 @@ TableName = tableName,
         //ORIGINAL LINE: public static void verifyOrCreateTransactionTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
         public static void verifyOrCreateTransactionTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            (new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
 ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
@@ -282,7 +282,7 @@ ReadCapacityUnits = readCapacityUnits,
         //ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
         public static void verifyOrCreateTransactionImagesTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            (new TableHelper(client)).verifyOrCreateTable(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
 ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
@@ -299,13 +299,13 @@ ReadCapacityUnits = readCapacityUnits,
         /// <exception cref="ResourceNotFoundException"> if the table does not exist </exception>
         public static void verifyTransactionTablesExist(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
         {
-            string state = (new TableHelper(client)).verifyTableExists(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
+            string state = (new TableHelper(client)).verifyTableExistsAsync(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionTableName + " is not ACTIVE");
             }
 
-            state = (new TableHelper(client)).verifyTableExists(transactionImagesTableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null);
+            state = (new TableHelper(client)).verifyTableExistsAsync(transactionImagesTableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionImagesTableName + " is not ACTIVE");
