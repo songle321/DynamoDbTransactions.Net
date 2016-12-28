@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -99,8 +100,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 AttributesToGet = expectedValues.Keys,
 Key = itemKey,
-TableName = tableName,)
-};
+TableName = tableName
+});
 				Dictionary<string, AttributeValue> item = result.Item;
 				try
 				{
@@ -150,7 +151,7 @@ TableName = tableName,)
 		{
 			if (expected.N != null)
 			{
-				return actual.N != null && (new decimal(expected.N)).CompareTo(new decimal(actual.N)) == 0;
+				return actual.N != null && (decimal.Parse(expected.N)).CompareTo(decimal.Parse(actual.N)) == 0;
 			}
 			else if (expected.S != null || expected.B != null)
 			{
@@ -163,163 +164,14 @@ TableName = tableName,)
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(BatchGetItemRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchWriteItemResponse batchWriteItem(com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchWriteItemResponse batchWriteItem(BatchWriteItemRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.CreateTableResponse createTable(com.amazonaws.services.dynamodbv2.model.CreateTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override CreateTableResponse createTable(CreateTableRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteTableResponse deleteTable(com.amazonaws.services.dynamodbv2.model.DeleteTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteTableResponse deleteTable(DeleteTableRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(com.amazonaws.services.dynamodbv2.model.DescribeTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResponse describeTable(DescribeTableRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-		public override ResponseMetadata getCachedResponseMetadata(AmazonWebServiceRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables() throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables()
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(com.amazonaws.services.dynamodbv2.model.ListTablesRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(ListTablesRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.QueryResponse query(com.amazonaws.services.dynamodbv2.model.QueryRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override QueryResponse query(QueryRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(com.amazonaws.services.dynamodbv2.model.ScanRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(ScanRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public void setEndpoint(String arg0) throws IllegalArgumentException
-		public override string Endpoint
-		{
-			set
-			{
-				throw new System.NotSupportedException("Use the underlying client instance instead");
-			}
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public void setRegion(com.amazonaws.regions.Region arg0) throws IllegalArgumentException
-		public override Region Region
-		{
-			set
-			{
-				throw new System.NotSupportedException("Use the underlying client instance instead");
-			}
-		}
-
-		public override void shutdown()
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateTableResponse updateTable(com.amazonaws.services.dynamodbv2.model.UpdateTableRequest arg0) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateTableResponse updateTable(UpdateTableRequest arg0)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, List<string> attributesToGet)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, Dictionary<string, Condition> scanFilter)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ScanResponse scan(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateTableResponse updateTable(String tableName, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateTableResponse updateTable(string tableName, ProvisionedThroughput provisionedThroughput)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DeleteTableResponse deleteTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DeleteTableResponse deleteTable(string tableName)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchWriteItemResponse batchWriteItem(java.util.Map<String, java.util.List<com.amazonaws.services.dynamodbv2.model.WriteRequest>> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchWriteItemResponse batchWriteItem(Dictionary<string, List<WriteRequest>> requestItems)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.DescribeTableResponse describeTable(String tableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override DescribeTableResponse describeTable(string tableName)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse GetItemAsync(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
 		public override GetItemResponse getItem(string tableName, Dictionary<string, AttributeValue> key)
 		{
 			return getItem(new GetItemRequest {
 
 TableName = tableName,
-Key = key,)
-};
+Key = key
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -330,8 +182,8 @@ Key = key,)
 
 TableName = tableName,
 Key = key,
-ConsistentRead = consistentRead,)
-};
+ConsistentRead = consistentRead ?? false
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -341,8 +193,8 @@ ConsistentRead = consistentRead,)
 			return deleteItem(new DeleteItemRequest {
 
 TableName = tableName,
-Key = key,)
-};
+Key = key
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -353,8 +205,8 @@ Key = key,)
 
 TableName = tableName,
 Key = key,
-ReturnValues = returnValues,)
-};
+ReturnValues = returnValues
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -371,8 +223,8 @@ ReturnValues = returnValues,)
 			return putItem(new PutItemRequest {
 
 TableName = tableName,
-Item = item,)
-};
+Item = item
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -383,29 +235,8 @@ Item = item,)
 
 TableName = tableName,
 Item = item,
-ReturnValues = returnValues,)
-};
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(String exclusiveStartTableName) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(string exclusiveStartTableName)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(String exclusiveStartTableName, Nullable<int> limit) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(string exclusiveStartTableName, int? limit)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ListTablesResponse listTables(Nullable<int> limit) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override ListTablesResponse listTables(int? limit)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
+ReturnValues = returnValues
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -416,8 +247,8 @@ ReturnValues = returnValues,)
 
 TableName = tableName,
 Key = key,
-AttributeUpdates = attributeUpdates,)
-};
+AttributeUpdates = attributeUpdates
+});
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
@@ -429,34 +260,8 @@ AttributeUpdates = attributeUpdates,)
 TableName = tableName,
 Key = key,
 AttributeUpdates = attributeUpdates,
-ReturnValues = returnValues,)
-};
+ReturnValues = returnValues
+});
 		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems, String returnConsumedCapacity) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(Dictionary<string, KeysAndAttributes> requestItems, string returnConsumedCapacity)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse batchGetItem(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override BatchGetItemResponse batchGetItem(Dictionary<string, KeysAndAttributes> requestItems)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-		public override DescribeLimitsResponse describeLimits(DescribeLimitsRequest request)
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
-		public override AmazonDynamoDBWaiters waiters()
-		{
-			throw new System.NotSupportedException("Use the underlying client instance instead");
-		}
-
 	}
-
 }
