@@ -1,141 +1,188 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using Amazon.DynamoDBv2.Model;
+using Xunit;
 
-/// <summary>
-/// Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-using Test = org.junit.Test;
+    public class TransactionDynamoDbFacadeTest
+    {
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void testCheckExpectedStringValueWithMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedStringValueWithMatchingItem()
+        {
+            var item = new Dictionary<string, AttributeValue> { { "Foo", new AttributeValue("Bar") } };
+            var expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue("Bar"))}
+            };
 
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using ConditionalCheckFailedException = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
-	using ExpectedAttributeValue = com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            // no exception expected
+        }
 
-	public class TransactionDynamoDBFacadeTest
-	{
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void testCheckExpectedStringValueWithMatchingItem()
-		public virtual void testCheckExpectedStringValueWithMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("Bar")));
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedStringValueWithNonMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedStringValueWithNonMatchingItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue("Bar")}
+            };
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue("NotBar"))}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-			// no exception expected
-		}
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+        }
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedStringValueWithNonMatchingItem()
-		public virtual void testCheckExpectedStringValueWithNonMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("Bar"));
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue("NotBar")));
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void testCheckExpectedBinaryValueWithMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedBinaryValueWithMatchingItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {B = new MemoryStream(new byte[] {1, 127, 255})}}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-		}
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {B = new MemoryStream(new byte[] {1, 127, 255})})}
+            };
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void testCheckExpectedBinaryValueWithMatchingItem()
-		public virtual void testCheckExpectedBinaryValueWithMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127}))));
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-			// no exception expected
-		}
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            // no exception expected
+        }
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedBinaryValueWithNonMatchingItem()
-		public virtual void testCheckExpectedBinaryValueWithNonMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", (new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {1, 127, (sbyte)-127})));
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue((new AttributeValue()).withB(ByteBuffer.wrap(new sbyte[] {0, 127, (sbyte)-127}))));
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedBinaryValueWithNonMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedBinaryValueWithNonMatchingItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {B = new MemoryStream(new byte[] {1, 127, 255})}}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-		}
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {B = new MemoryStream(new byte[] {0, 127, 255})})}
+            };
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingItem()
-		public virtual void testCheckExpectedNumericValueWithMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-N = "3.14",)
-};
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-N = "3.14",))
-};
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+        }
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-			// no exception expected
-		}
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedNumericValueWithMatchingItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {N = "3.14"}}
+            };
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
-		public virtual void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-N = "3.140",)
-};
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-N = "3.14",))
-};
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-			// no exception expected
-		}
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            // no exception expected
+        }
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithNonMatchingItem()
-		public virtual void testCheckExpectedNumericValueWithNonMatchingItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-N = "3.14",)
-};
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-N = "12",))
-};
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void testCheckExpectedNumericValueWithMatchingNotStringEqualItem()
+        [Fact]
+        public virtual void TestCheckExpectedNumericValueWithMatchingNotStringEqualItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {N = "3.140"}}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-		}
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
+            };
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithStringTypedItem()
-		public virtual void testCheckExpectedNumericValueWithStringTypedItem()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue("3.14"));
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-N = "3.14",))
-};
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            // no exception expected
+        }
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-		}
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithNonMatchingItem()
+        [Fact]
+        public virtual void TestCheckExpectedNumericValueWithNonMatchingItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {N = "3.14"}}
+            };
 
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test(expected = IllegalArgumentException.class) public void testCheckExpectedInvalidNumericValue()
-		public virtual void testCheckExpectedInvalidNumericValue()
-		{
-			Dictionary<string, AttributeValue> item = Collections.singletonMap("Foo", new AttributeValue {
-N = "1.1",)
-};
-			Dictionary<string, ExpectedAttributeValue> expected = Collections.singletonMap("Foo", new ExpectedAttributeValue(new AttributeValue {
-N = "!!.!!",))
-};
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "12"})}
+            };
 
-			TransactionDynamoDBFacade.CheckExpectedValuesAsync(expected, item);
-		}
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+        }
 
-	}
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException.class) public void testCheckExpectedNumericValueWithStringTypedItem()
+        [Fact]
+        public virtual void TestCheckExpectedNumericValueWithStringTypedItem()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue("3.14")}
+            };
+
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
+            };
+
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test(expected = IllegalArgumentException.class) public void testCheckExpectedInvalidNumericValue()
+        [Fact]
+        public virtual void TestCheckExpectedInvalidNumericValue()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>
+            {
+                {"Foo", new AttributeValue {N = "1.1"}}
+            };
+
+            Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>
+            {
+                {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "!!.!!"})}
+            };
+
+            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+        }
+
+    }
 
 }

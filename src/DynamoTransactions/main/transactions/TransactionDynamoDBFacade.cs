@@ -209,7 +209,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///            The actual values. </param>
         /// <exception cref="ConditionalCheckFailedException">
         ///             Thrown if the values do not match the expected values. </exception>
-        public static void checkExpectedValuesAsync(Dictionary<string, ExpectedAttributeValue> expectedValues, Dictionary<string, AttributeValue> item)
+        public static async Task checkExpectedValuesAsync(Dictionary<string, ExpectedAttributeValue> expectedValues, Dictionary<string, AttributeValue> item)
         {
             foreach (KeyValuePair<string, ExpectedAttributeValue> entry in expectedValues.SetOfKeyValuePairs())
             {
