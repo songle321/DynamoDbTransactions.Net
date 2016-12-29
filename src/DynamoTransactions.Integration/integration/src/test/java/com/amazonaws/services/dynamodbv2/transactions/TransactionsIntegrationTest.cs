@@ -1,59 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
+using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 
-/// <summary>
-/// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+using static DynamoTransactions.Integration.AssertStatic;
+
+// <summary>
+// Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
+    using DynamoTransactions;
+    using After = org.junit.After;
+    using Before = org.junit.Before;
+    using Test = org.junit.Test;
 
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.assertEquals;
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.assertNull;
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.assertTrue;
-//JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
-//	import static org.junit.Assert.fail;
-
-
-	using AttributeAction = com.amazonaws.services.dynamodbv2.model.AttributeAction;
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using DeleteItemRequest = com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using ReturnValue = com.amazonaws.services.dynamodbv2.model.ReturnValue;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using DeleteItem = com.amazonaws.services.dynamodbv2.transactions.Request.DeleteItem;
-	using GetItem = com.amazonaws.services.dynamodbv2.transactions.Request.GetItem;
-	using AttributeName = com.amazonaws.services.dynamodbv2.transactions.Transaction.AttributeName;
-	using FailedYourRequestException = com.amazonaws.services.dynamodbv2.transactions.FailingAmazonDynamoDBClient.FailedYourRequestException;
-	using IsolationLevel = com.amazonaws.services.dynamodbv2.transactions.Transaction.IsolationLevel;
-	using DuplicateRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException;
-	using InvalidRequestException = com.amazonaws.services.dynamodbv2.transactions.exceptions.InvalidRequestException;
-	using TransactionCommittedException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionCommittedException;
-	using TransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException;
-	using TransactionNotFoundException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionNotFoundException;
-	using TransactionRolledBackException = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionRolledBackException;
-	using UnknownCompletedTransactionException = com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException;
-
-	using After = org.junit.After;
-	using Before = org.junit.Before;
-	using Test = org.junit.Test;
-
-	public class TransactionsIntegrationTest : IntegrationTest
+    public class TransactionsIntegrationTest : IntegrationTest
 	{
 
 		private const int MAX_ITEM_SIZE_BYTES = 1024 * 400; // 400 KB
@@ -87,8 +64,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t = manager.newTransaction();
 			key0 = newKey(INTEG_HASH_TABLE_NAME);
 			item0 = new Dictionary<string, AttributeValue>(key0);
-			item0.put("s_someattr", new AttributeValue("val"));
-			item0.put("ss_otherattr", (new AttributeValue()).withSS("one", "two"));
+			item0.Add("s_someattr", new AttributeValue("val"));
+			item0.Add("ss_otherattr", (new AttributeValue()).withSS("one", "two"));
 			IDictionary<string, AttributeValue> putResponse = t.putItem(new PutItemRequest()
 				.withTableName(INTEG_HASH_TABLE_NAME).withItem(item0).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 			assertNull(putResult);
@@ -329,7 +306,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
@@ -355,7 +332,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -383,7 +360,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1).withReturnValues(ReturnValue.ALL_OLD)).Attributes;
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
@@ -408,11 +385,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
 			{
-				if (request is GetItem || request is DeleteItem)
+				if (request is Request.GetItem || request is Request.DeleteItem)
 				{
 					return base.applyAndKeepLock(request, lockedItem);
 				}
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -483,7 +460,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key1), IsolationLevel.UNCOMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key1), Transaction.IsolationLevel.UNCOMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item1, item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
@@ -503,7 +480,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.UNCOMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.UNCOMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item0, item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
@@ -527,7 +504,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key1), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key1), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNull(item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
@@ -546,7 +523,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item0, item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
@@ -571,7 +548,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item0, item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
@@ -579,7 +556,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			t1.commit();
 
 			item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item1, item);
 		}
@@ -603,7 +580,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			t1.commit();
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item1, item);
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
@@ -640,12 +617,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
 			dynamodb.getRequestsToTreatAsDeleted.add(new GetItemRequest()
-				.withTableName(manager.ItemImageTableName).addKeyEntry(AttributeName.IMAGE_ID.ToString(), new AttributeValue(t1.TxItem.txId + "#" + 1)).withConsistentRead(true));
+				.withTableName(manager.ItemImageTableName).addKeyEntry(Transaction.AttributeName.IMAGE_ID.ToString(), new AttributeValue(t1.TxItem.txId + "#" + 1)).withConsistentRead(true));
 
 			try
 			{
 				manager.getItem(new GetItemRequest()
-					.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+					.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 				fail("Should have thrown an exception.");
 			}
 			catch (TransactionException e)
@@ -674,7 +651,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-			GetItemRequest txItemRequest = (new GetItemRequest()).withTableName(manager.TransactionTableName).addKeyEntry(AttributeName.TXID.ToString(), new AttributeValue(t1.TxItem.txId)).withConsistentRead(true);
+			GetItemRequest txItemRequest = (new GetItemRequest()).withTableName(manager.TransactionTableName).addKeyEntry(Transaction.AttributeName.TXID.ToString(), new AttributeValue(t1.TxItem.txId)).withConsistentRead(true);
 
 			//Save the copy of the transaction before commit. 
 			GetItemResponse uncommittedTransaction = dynamodb.getItem(txItemRequest);
@@ -682,13 +659,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			t1.commit();
 			assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-			dynamodb.getRequestsToStub.put(txItemRequest, new LinkedList<GetItemResult>(Collections.singletonList(uncommittedTransaction)));
+			dynamodb.getRequestsToStub.Add(txItemRequest, new LinkedList<GetItemResult>(Collections.singletonList(uncommittedTransaction)));
 			//Stub out the image so it appears deleted
 			dynamodb.getRequestsToTreatAsDeleted.add(new GetItemRequest()
-				.withTableName(manager.ItemImageTableName).addKeyEntry(AttributeName.IMAGE_ID.ToString(), new AttributeValue(t1.TxItem.txId + "#" + 1)).withConsistentRead(true));
+				.withTableName(manager.ItemImageTableName).addKeyEntry(Transaction.AttributeName.IMAGE_ID.ToString(), new AttributeValue(t1.TxItem.txId + "#" + 1)).withConsistentRead(true));
 
 			IDictionary<string, AttributeValue> item = manager.getItem(new GetItemRequest()
-				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), IsolationLevel.COMMITTED).Item;
+				.withTableName(INTEG_HASH_TABLE_NAME).withKey(key0), Transaction.IsolationLevel.COMMITTED).Item;
 			assertNoSpecialAttributes(item);
 			assertEquals(item1, item);
 		}
@@ -1158,7 +1135,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				commitFailingTransaction.commit();
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1186,7 +1163,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void unlockItemAfterCommit(Request request)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1243,7 +1220,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				rollbackFailingTransaction.rollback();
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1273,7 +1250,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void rollbackItemAndReleaseLock(Request request)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1304,7 +1281,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void doRollback()
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1335,7 +1312,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void doCommit()
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1397,7 +1374,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1));
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1440,7 +1417,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1466,7 +1443,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				t1.updateItem(update);
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1507,7 +1484,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			protected internal override IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
 			{
 				base.applyAndKeepLock(request, lockedItem);
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1529,7 +1506,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1));
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1570,7 +1547,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override IDictionary<string, AttributeValue> applyAndKeepLock(Request request, IDictionary<string, AttributeValue> lockedItem)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1595,7 +1572,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item0a));
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 
@@ -1618,7 +1595,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void saveItemImage(Request callerRequest, IDictionary<string, AttributeValue> item)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -1846,7 +1823,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				t1.putItem(new PutItemRequest()
 					.withTableName(INTEG_HASH_TABLE_NAME).withItem(item1));
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 				caughtFailedYourRequestException.release();
 			}
@@ -1911,7 +1888,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 			protected internal override void releaseReadLock(string tableName, IDictionary<string, AttributeValue> key)
 			{
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 
@@ -2298,7 +2275,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			Transaction t1 = manager.newTransaction();
 			IDictionary<string, AttributeValue> key = newKey(INTEG_HASH_TABLE_NAME);
 			IDictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>(key);
-			item[AttributeName.TXID.ToString()] = new AttributeValue("asdf");
+			item[Transaction.AttributeName.TXID.ToString()] = new AttributeValue("asdf");
 
 			try
 			{
@@ -2311,7 +2288,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				assertTrue(e.Message.contains("must not contain the reserved"));
 			}
 
-			item[AttributeName.TRANSIENT.ToString()] = new AttributeValue("asdf");
+			item[Transaction.AttributeName.TRANSIENT.ToString()] = new AttributeValue("asdf");
 			item.Remove(Transaction.AttributeName.TXID.ToString());
 
 			try
@@ -2325,8 +2302,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				assertTrue(e.Message.contains("must not contain the reserved"));
 			}
 
-			item[AttributeName.APPLIED.ToString()] = new AttributeValue("asdf");
-			item.Remove(AttributeName.TRANSIENT.ToString());
+			item[Transaction.AttributeName.APPLIED.ToString()] = new AttributeValue("asdf");
+			item.Remove(Transaction.AttributeName.TRANSIENT.ToString());
 
 			try
 			{
@@ -2376,7 +2353,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				t1.updateItem(callerRequest);
 				fail();
 			}
-			catch (FailedYourRequestException)
+			catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
 			{
 			}
 			assertItemNotLocked(INTEG_HASH_TABLE_NAME, callerRequest.Key, false);
@@ -2410,7 +2387,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			protected internal override IDictionary<string, AttributeValue> lockItem(Request callerRequest, bool expectExists, int attempts)
 			{
 
-				throw new FailedYourRequestException();
+				throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
 			}
 		}
 

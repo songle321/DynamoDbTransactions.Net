@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 
 /// <summary>
 /// Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -17,27 +19,6 @@
 
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-	using AttributeValue = com.amazonaws.services.dynamodbv2.model.AttributeValue;
-	using AttributeValueUpdate = com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
-	using BatchGetItemRequest = com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
-	using BatchGetItemResponse = com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse;
-	using ComparisonOperator = com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
-	using Condition = com.amazonaws.services.dynamodbv2.model.Condition;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using KeysAndAttributes = com.amazonaws.services.dynamodbv2.model.KeysAndAttributes;
-	using PutItemRequest = com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-	using QueryRequest = com.amazonaws.services.dynamodbv2.model.QueryRequest;
-	using QueryResponse = com.amazonaws.services.dynamodbv2.model.QueryResult;
-	using ScanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest;
-	using ScanResponse = com.amazonaws.services.dynamodbv2.model.ScanResult;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using After = org.junit.After;
-	using Before = org.junit.Before;
-	using Test = org.junit.Test;
-
-
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
 //	import static org.junit.Assert.assertEquals;
 //JAVA TO C# CONVERTER TODO TASK: This Java 'import static' statement cannot be converted to C#:
@@ -69,9 +50,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			committedFacade = new TransactionManagerDynamoDBFacade(manager, Transaction.IsolationLevel.COMMITTED);
 			key0 = newKey(INTEG_HASH_TABLE_NAME);
 			item0 = new Dictionary<string, AttributeValue>(key0);
-			item0.put("s_someattr", new AttributeValue("val"));
+			item0.Add("s_someattr", new AttributeValue("val"));
 			item0Filtered = new Dictionary<string, AttributeValue>(item0);
-			item0.put("attr_not_to_get", new AttributeValue("val_not_to_get"));
+			item0.Add("attr_not_to_get", new AttributeValue("val_not_to_get"));
 			attributesToGet = Arrays.asList(ID_ATTRIBUTE, "s_someattr"); // not including attr_not_to_get
 			update = Collections.singletonMap("s_someattr", (new AttributeValueUpdate()).withValue(new AttributeValue("val2")));
 			item0Updated = new Dictionary<string, AttributeValue>(item0);
