@@ -88,9 +88,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Item = item0,
                 ReturnValues = ReturnValue.ALL_OLD,
 
-            }).Attributes;
-            assertNull(putResult);
-            t.commitAsync();
+            }).Result.Attributes;
+            assertNull(putResponse);
+            t.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0, true);
         }
 
@@ -106,7 +106,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Key = key0,
 
             });
-            t.commitAsync();
+            t.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, false);
         }
 
@@ -124,7 +124,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             };
             transaction.deleteItemAsync(deleteRequest);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, transaction.Id, true, false);
-            transaction.rollbackAsync();
+            transaction.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             transaction.deleteAsync(long.MaxValue);
         }
@@ -164,11 +164,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t2.Id, true, false); // we're not applying deletes either
             assertNull(deleteResult); // return values is null in the request
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             try
             {
-                t1.commitAsync();
+                t1.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
@@ -198,9 +198,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 ReturnValues = ReturnValue.ALL_OLD,
 
             }).Attributes;
-            assertNull(putResult);
+            assertNull(putResponse);
 
-            t0.commitAsync();
+            t0.commitAsync().Wait();
 
             Transaction t1 = manager.newTransaction();
 
@@ -223,7 +223,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, t1.Id, true, false);
             assertNull(getResult2);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue);
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
@@ -261,7 +261,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertNull(getResult2);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -282,7 +282,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(item1, getResult1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, t1.Id, false, false);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0, true);
         }
@@ -312,7 +312,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertNull(getResult2);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
         }
@@ -354,7 +354,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(getResult2, item1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -395,7 +395,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(getResult2, item1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item1, true);
         }
@@ -439,7 +439,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(getResult1, item1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -506,7 +506,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             }).Item;
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
-            t2.commitAsync();
+            t2.commitAsync().Wait();
             assertEquals(item1, getResult2);
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
@@ -564,7 +564,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
             assertEquals(item1, updateResponse);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -601,7 +601,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0a, t1.Id, false, true);
             assertEquals(item0a, updateResponse);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0a, true);
         }
@@ -635,7 +635,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(item1, item);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -663,7 +663,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(item0, item);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -694,7 +694,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertNull(item);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -722,7 +722,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(item0, item);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -760,7 +760,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertEquals(item0, item);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             item = manager.GetItemAsync(new GetItemRequest
             {
@@ -797,7 +797,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             Dictionary<string, AttributeValue> item = manager.GetItemAsync(new GetItemRequest
             {
@@ -911,7 +911,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             //Save the copy of the transaction before commit. 
             GetItemResponse uncommittedTransaction = dynamodb.GetItemAsync(txItemRequest);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
             dynamodb.getRequestsToStub.Add(txItemRequest, new LinkedList<GetItemResult>(Collections.singletonList(uncommittedTransaction)));
@@ -971,7 +971,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
             assertNull(putResult1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -994,7 +994,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
             assertEquals(putResult1, item0);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item1, true);
         }
@@ -1025,7 +1025,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
             assertNull(result1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -1055,7 +1055,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
             assertEquals(result1, item0);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item1, true);
         }
@@ -1086,7 +1086,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
             assertEquals(result1, item1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
         }
@@ -1116,7 +1116,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
             assertEquals(result1, item1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item1, true);
         }
@@ -1138,7 +1138,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, key1, t1.Id, true, false);
             assertNull(result1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
         }
@@ -1159,7 +1159,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
             assertEquals(item0, result1);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, false);
         }
@@ -1188,7 +1188,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }.withItem(new Dictionary<string, AttributeValue>(t1Item)));
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1Item, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, t1Item, true);
 
             // Begin t2
@@ -1215,14 +1215,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }.withItem(new Dictionary<string, AttributeValue>(t3Item)));
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t3Item, t3.Id, false, true);
 
-            t3.commitAsync();
+            t3.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, t3Item, true);
 
             // Ensure t2 rolled back
             try
             {
-                t2.commitAsync();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
@@ -1261,7 +1261,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key, true);
 
@@ -1292,7 +1292,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                t2.commitAsync();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (AmazonServiceException e)
@@ -1303,7 +1303,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key, t2.Id, false, false);
 
-            t2.rollbackAsync();
+            t2.rollbackAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key, true);
 
@@ -1317,7 +1317,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
             Transaction t1 = manager.newTransaction();
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             DeleteItemRequest deleteRequest = new DeleteItemRequest
             {
@@ -1352,7 +1352,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                t2.rollbackAsync();
+                t2.rollbackAsync().Wait();
                 fail();
             }
             catch (TransactionCommittedException)
@@ -1369,7 +1369,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
             Transaction t1 = manager.newTransaction();
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
 
             DeleteItemRequest deleteRequest = new DeleteItemRequest
             {
@@ -1404,7 +1404,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                t2.commitAsync();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
@@ -1414,7 +1414,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
 
             Transaction t3 = manager.resumeTransaction(t1.Id);
-            t3.rollbackAsync();
+            t3.rollbackAsync().Wait();
 
             Transaction t4 = manager.resumeTransaction(t1.Id);
 
@@ -1441,12 +1441,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             Transaction t1 = manager.newTransaction();
             Transaction t2 = manager.resumeTransaction(t1.Id);
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue);
 
             try
             {
-                t2.commitAsync();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (UnknownCompletedTransactionException)
@@ -1474,7 +1474,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             });
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue);
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item, true);
@@ -1504,7 +1504,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                commitFailingTransaction.commitAsync();
+                commitFailingTransaction.commitAsync().Wait();
                 fail();
             }
             catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
@@ -1514,12 +1514,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item, t2.Id, false, true);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, key2, t2.Id, true, false);
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, false);
 
-            commitFailingTransaction.commitAsync();
+            commitFailingTransaction.commitAsync().Wait();
 
             t2.deleteAsync(long.MaxValue);
         }
@@ -1568,7 +1568,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             });
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue);
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
@@ -1609,7 +1609,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                rollbackFailingTransaction.rollbackAsync();
+                rollbackFailingTransaction.rollbackAsync().Wait();
                 fail();
             }
             catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
@@ -1620,13 +1620,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, item2, t2.Id, false, false);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key3, key3, t2.Id, true, false);
 
-            t2.rollbackAsync();
+            t2.rollbackAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, item2, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key3, false);
 
-            rollbackFailingTransaction.rollbackAsync();
+            rollbackFailingTransaction.rollbackAsync().Wait();
 
             t2.deleteAsync(long.MaxValue);
         }
@@ -1662,8 +1662,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, key1, t1.Id, true, true);
 
-            t1.rollbackAsync();
-            rollbackFailingTransaction.rollbackAsync();
+            t1.rollbackAsync().Wait();
+            rollbackFailingTransaction.rollbackAsync().Wait();
         }
 
         private class TransactionAnonymousInnerClass3 : Transaction
@@ -1697,8 +1697,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, key1, t1.Id, true, true);
 
-            t1.commitAsync();
-            commitFailingTransaction.commitAsync();
+            t1.commitAsync().Wait();
+            commitFailingTransaction.commitAsync().Wait();
         }
 
         private class TransactionAnonymousInnerClass4 : Transaction
@@ -1752,7 +1752,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, t1.Id, true, false);
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key2, null, false);
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, false);
@@ -1808,7 +1808,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key2, null, false);
 
             Transaction t3 = manager.resumeTransaction(t1.Id);
-            t3.commitAsync();
+            t3.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, false);
@@ -1816,7 +1816,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key1, null, false);
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key2, null, false);
 
-            t3.commitAsync();
+            t3.commitAsync().Wait();
 
             t3.deleteAsync(long.MaxValue);
             assertTransactionDeleted(t2);
@@ -1890,7 +1890,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, t1.Id, true, false);
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key2, null, false);
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, false);
@@ -1962,7 +1962,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertOldItemImage(t1.Id, INTEG_HASH_TABLE_NAME, key2, null, false);
 
             Transaction t3 = manager.resumeTransaction(t1.Id);
-            t3.rollbackAsync();
+            t3.rollbackAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, false);
@@ -2021,7 +2021,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
             // Roll back, and ensure the item was reverted correctly
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0, true);
         }
@@ -2086,7 +2086,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             Transaction t2 = manager.resumeTransaction(t1.Id);
-            t2.rollbackAsync();
+            t2.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
 
             barrier.release(100);
@@ -2112,7 +2112,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1a, t3.Id, true, true);
-            t3.commitAsync();
+            t3.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1a, true);
         }
 
@@ -2190,7 +2190,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             Transaction t2 = manager.resumeTransaction(t1.Id);
-            t2.rollbackAsync();
+            t2.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             assertTrue(t2.deleteAsync(long.MinValue)); // This is the key difference with shouldNotApplyAfterRollback
 
@@ -2216,7 +2216,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1a, t3.Id, true, true);
-            t3.commitAsync();
+            t3.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1a, true);
         }
 
@@ -2295,7 +2295,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             Transaction t2 = manager.resumeTransaction(t1.Id);
-            t2.rollbackAsync();
+            t2.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             assertTrue(t2.deleteAsync(long.MinValue));
 
@@ -2321,7 +2321,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1a, t3.Id, true, true);
-            t3.commitAsync();
+            t3.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1a, true);
         }
 
@@ -2551,7 +2551,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, true);
 
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
 
             t1.deleteAsync(long.MaxValue);
@@ -2572,7 +2572,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             });
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, key1, true);
             t1.deleteAsync(long.MaxValue);
         }
@@ -2598,7 +2598,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 assertTrue(e.Message, e.Message.contains("TableName must not be null"));
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
             t1.deleteAsync(long.MaxValue);
         }
@@ -2608,7 +2608,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void emptyTransaction()
         {
             Transaction t1 = manager.newTransaction();
-            t1.commitAsync();
+            t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue);
             assertTransactionDeleted(t1);
         }
@@ -2631,7 +2631,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 assertTrue(e.Message, e.Message.contains("The request key cannot be empty"));
             }
-            t1.rollbackAsync();
+            t1.rollbackAsync().Wait();
             t1.deleteAsync(long.MaxValue);
         }
 
@@ -2668,7 +2668,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1, true);
 
@@ -2714,7 +2714,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, item2, t2.Id, true, true);
 
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1a, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key2, item2, true);
@@ -2743,7 +2743,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key, item, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key, item, true);
         }
@@ -2771,7 +2771,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key, item, t1.Id, true, true);
 
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key, item, true);
         }
@@ -2885,12 +2885,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // The non-failing manager
             Transaction t2 = manager.resumeTransaction(t1.Id);
-            t2.commitAsync();
+            t2.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, callerRequest.Key, true);
 
             // If this attempted to apply again, this would fail because of the failing client
-            t1.commitAsync();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, callerRequest.Key, true);
 
@@ -2941,7 +2941,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
             catch (DuplicateRequestException)
             {
-                transaction.rollbackAsync();
+                transaction.rollbackAsync().Wait();
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key, false);
             transaction.deleteAsync(long.MaxValue);
