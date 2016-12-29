@@ -81,9 +81,9 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         private readonly ReadUncommittedIsolationHandlerImpl readUncommittedIsolationHandler;
         private readonly ReadCommittedIsolationHandlerImpl readCommittedIsolationHandler;
 
-        //public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, DynamoDBContext.DEFAULT)
-        //{
-        //}
+        public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, new DynamoDBContextConfig())
+        {
+        }
 
         public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName, DynamoDBContextConfig config)
         {
