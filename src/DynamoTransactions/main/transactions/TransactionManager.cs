@@ -110,7 +110,7 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
-        protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken)
+        protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken)
         {
             List<KeySchemaElement> schema = tableSchemaCache[tableName];
             if (schema == null)
@@ -127,7 +127,7 @@ TableName = tableName,
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
         //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> createKeyMap(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-        protected internal virtual async Task<Dictionary<string, AttributeValue>> CreateKeyMapAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> CreateKeyMapAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken = default(CancellationToken)
         {
             if (string.ReferenceEquals(tableName, null))
             {
@@ -215,7 +215,7 @@ TableName = tableName,
             }
         }
 
-        public virtual async Task<GetItemResponse> GetItemAsync(GetItemRequest request, Transaction.IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        public virtual async Task<GetItemResponse> GetItemAsync(GetItemRequest request, Transaction.IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (request.AttributesToGet != null)
             {

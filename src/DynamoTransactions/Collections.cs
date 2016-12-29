@@ -7,6 +7,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     {
         public static Dictionary<TKey, TValue> singletonMap<TKey, TValue>(TKey id,
                 TValue attributeValue)
-            => new Dictionary<TKey, TValue> {{id, attributeValue}};
+            => new Dictionary<TKey, TValue> { { id, attributeValue } };
+    
+        public static List<TValue> singletonList<TValue>(TValue attributeValue)
+            => new List<TValue> { attributeValue };
     }
 }
