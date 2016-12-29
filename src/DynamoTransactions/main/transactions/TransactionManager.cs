@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Util;
 using com.amazonaws.services.dynamodbv2.util;
+using DynamoDBContextConfig = Amazon.DynamoDBv2.DataModel.DynamoDBContextConfig;
 
 // <summary>
 // Copyright 2013-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -30,7 +32,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// </summary>
     public class TransactionManager
     {
-private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
+        private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
         private static readonly List<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
 
         private static readonly List<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
@@ -110,14 +112,14 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
-        protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken)
+        protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<KeySchemaElement> schema = tableSchemaCache[tableName];
             if (schema == null)
             {
                 DescribeTableResponse result = await client.DescribeTableAsync(new DescribeTableRequest
                 {
-TableName = tableName,
+                    TableName = tableName,
                 }, cancellationToken);
                 schema = result.Table.KeySchema;
                 tableSchemaCache[tableName] = schema;
@@ -127,7 +129,7 @@ TableName = tableName,
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
         //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> createKeyMap(final String tableName, final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> item)
-        protected internal virtual async Task<Dictionary<string, AttributeValue>> CreateKeyMapAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken = default(CancellationToken)
+        protected internal virtual async Task<Dictionary<string, AttributeValue>> CreateKeyMapAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.ReferenceEquals(tableName, null))
             {
@@ -273,18 +275,18 @@ TableName = tableName,
         {
             (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
-ReadCapacityUnits = readCapacityUnits,
+                ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
             }, waitTimeSeconds);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-        public static void verifyOrCreateTransactionImagesTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+        //ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTableAsync(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
+        public static async Task verifyOrCreateTransactionImagesTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            await (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
-ReadCapacityUnits = readCapacityUnits,
+                ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
             }, waitTimeSeconds);
         }
@@ -297,15 +299,15 @@ ReadCapacityUnits = readCapacityUnits,
         /// <param name="transactionImagesTableName"> </param>
         /// <exception cref="ResourceInUseException"> if the table exists but has the wrong schema </exception>
         /// <exception cref="ResourceNotFoundException"> if the table does not exist </exception>
-        public static void verifyTransactionTablesExist(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
+        public static async Task verifyTransactionTablesExistAsync(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
         {
-            string state = (new TableHelper(client)).verifyTableExistsAsync(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
+            string state = await (new TableHelper(client)).verifyTableExistsAsync(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionTableName + " is not ACTIVE");
             }
 
-            state = (new TableHelper(client)).verifyTableExistsAsync(transactionImagesTableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null);
+            state = await (new TableHelper(client)).verifyTableExistsAsync(transactionImagesTableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionImagesTableName + " is not ACTIVE");
@@ -324,13 +326,13 @@ ReadCapacityUnits = readCapacityUnits,
         {
             get
             {
-                return new AttributeValue { N = new double?(CurrentTime).ToString()};
+                return new AttributeValue { N = new double?(CurrentTime).ToString() };
             }
         }
 
         private class AttributeDefinitionComparator : IComparer<AttributeDefinition>
         {
-public virtual int Compare(AttributeDefinition arg0, AttributeDefinition arg1)
+            public virtual int Compare(AttributeDefinition arg0, AttributeDefinition arg1)
             {
                 if (arg0 == null)
                 {

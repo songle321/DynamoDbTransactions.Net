@@ -450,7 +450,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				 */
 
                 // basic validation
-                clientRequest.validate(txId, txManager);
+                clientRequest.validateAsync(txId, txManager);
 
                 // Don't mutate the caller's request.
                 Request requestCopy = Request.deserialize(txId, Request.serialize(txId, clientRequest));
@@ -751,7 +751,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             // Clean up the old item images
             foreach (Request request in txItem.Requests)
             {
-                txItem.deleteItemImage(request.Rid.Value);
+                txItem.deleteItemImage(request.Rid);
             }
 
             await completeAsync(TransactionItem.State.COMMITTED);
@@ -801,7 +801,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     UpdateItemRequest update = new UpdateItemRequest
                     {
                         TableName = request.TableName,
-                        Key = request.getKey(txManager),
+                        Key = await request.getKeyAsync(txManager),
                         AttributeUpdates = updates,
                         Expected = expected
                     };
@@ -812,14 +812,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     DeleteItemRequest delete = new DeleteItemRequest
                     {
                         TableName = request.TableName,
-                        Key = request.getKey(txManager),
+                        Key = await request.getKeyAsync(txManager),
                         Expected = expected
                     };
                     await txManager.Client.DeleteItemAsync(delete);
                 }
                 else if (request is Request.GetItem)
                 {
-                    releaseReadLockAsync(request.TableName, request.getKey(txManager));
+                    releaseReadLockAsync(request.TableName, await request.getKeyAsync(txManager));
                 }
                 else
                 {
@@ -854,7 +854,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 await rollbackItemAndReleaseLockAsync(request);
 
                 // 2. Delete the old item image, we don't need it anymore
-                txItem.deleteItemImage(request.Rid.Value);
+                txItem.deleteItemImage(request.Rid);
             }
 
             await completeAsync(TransactionItem.State.ROLLED_BACK);
@@ -872,7 +872,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <param name="request"> </param>
         protected internal virtual async Task rollbackItemAndReleaseLockAsync(Request request)
         {
-            await rollbackItemAndReleaseLockAsync(request.TableName, request.getKey(txManager), request is Request.GetItem, request.Rid);
+            await rollbackItemAndReleaseLockAsync(request.TableName, await request.getKeyAsync(txManager), request is Request.GetItem, request.Rid);
         }
 
         protected internal virtual async Task rollbackItemAndReleaseLockAsync(string tableName, Dictionary<string, AttributeValue> key, bool? isGet, int? rid)
@@ -1102,7 +1102,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 };
             }
 
-            Dictionary<string, AttributeValue> key = Request.getKeyFromItemAsync(tableName, item, txManager);
+            Dictionary<string, AttributeValue> key = await Request.getKeyFromItemAsync(tableName, item, txManager);
 
             UpdateItemRequest update = new UpdateItemRequest
             {
@@ -1205,7 +1205,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
             catch (TransactionNotFoundException e)
             {
-                await releaseReadLockAsync(callerRequest.TableName, callerRequest.getKey(txManager));
+                await releaseReadLockAsync(callerRequest.TableName, await callerRequest.getKeyAsync(txManager));
                 throw e;
             }
             switch (txItem.getState())
@@ -1239,7 +1239,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             if (isRequestSaveable(callerRequest, item) && !item.ContainsKey(AttributeName.APPLIED.ToString()))
             {
-                txItem.saveItemImage(item, callerRequest.Rid.Value);
+                txItem.saveItemImage(item, callerRequest.Rid);
             }
         }
 
@@ -1266,7 +1266,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: protected java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> lockItemAsync(Request callerRequest, boolean expectExists, int attempts) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.ItemNotLockedException, com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException
         protected internal virtual async Task<Dictionary<string, AttributeValue>> lockItemAsync(Request callerRequest, bool expectExists, int attempts)
         {
-            Dictionary<string, AttributeValue> key = callerRequest.getKey(txManager);
+            Dictionary<string, AttributeValue> key = await callerRequest.getKeyAsync(txManager);
 
             if (attempts <= 0)
             {
@@ -1292,7 +1292,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, ExpectedAttributeValue> expected;
             if (expectExists)
             {
-                expected = callerRequest.getExpectExists(txManager);
+                expected = await callerRequest.getExpectExists(txManager);
                 expected[AttributeName.TXID.ToString()] = new ExpectedAttributeValue
                 {
                     Exists = false
@@ -1495,7 +1495,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             else if (request is Request.GetItem)
             {
                 GetItemRequest getRequest = ((Request.GetItem)request).Request;
-                Request lockingRequest = txItem.getRequestForKey(request.TableName, request.getKey(txManager));
+                Request lockingRequest = txItem.getRequestForKey(request.TableName, await request.getKeyAsync(txManager));
                 if (lockingRequest is Request.DeleteItem)
                 {
                     return null; // If the item we're getting is deleted in this transaction
@@ -1530,7 +1530,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_OLD from the request
                 }
-                returnItem = await txItem.loadItemImageAsync(request.Rid.Value);
+                returnItem = await txItem.loadItemImageAsync(request.Rid);
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the old copy of the image is missing");
@@ -1543,7 +1543,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     return returnItem; // If the apply write succeeded, we have the ALL_NEW from the request
                 }
-                returnItem = await getItemAsync(request.TableName, request.getKey(txManager));
+                returnItem = await getItemAsync(request.TableName, await request.getKeyAsync(txManager));
                 if (returnItem == null)
                 {
                     throw new UnknownCompletedTransactionException(txId, "Transaction must have completed since the item no longer exists");

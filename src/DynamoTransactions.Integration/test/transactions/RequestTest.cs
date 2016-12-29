@@ -117,7 +117,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = TABLE_NAME,
                 Item = item
             };
-            r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+            r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -283,7 +283,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = TABLE_NAME,
                 Key = item,)
         };
-        r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+        r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
     //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -298,7 +298,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             TableName = TABLE_NAME,
             Key = item,)
     };
-    r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+    r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -313,7 +313,7 @@ public virtual void validLock()
         TableName = TABLE_NAME,
         Key = item,)
 };
-r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -514,7 +514,7 @@ private void invalidRequestTest(PutItemRequest request, string expectedException
     r.Request = request;
     try
     {
-        r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+        r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
         fail();
     }
     catch (InvalidRequestException e)
@@ -529,7 +529,7 @@ private void invalidRequestTest(UpdateItemRequest request, string expectedExcept
     r.Request = request;
     try
     {
-        r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+        r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
         fail();
     }
     catch (InvalidRequestException e)
@@ -544,7 +544,7 @@ private void invalidRequestTest(DeleteItemRequest request, string expectedExcept
     r.Request = request;
     try
     {
-        r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+        r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
         fail();
     }
     catch (InvalidRequestException e)

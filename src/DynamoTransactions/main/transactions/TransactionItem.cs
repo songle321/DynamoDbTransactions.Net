@@ -73,84 +73,169 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		public TransactionItem(Dictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
 		{
-		}
+        }
 
-		/// <summary>
-		/// Either inserts a new transaction, reads it from the database, or initializes from a previously read transaction item.
-		/// </summary>
-		/// <param name="txId"> </param>
-		/// <param name="txManager"> </param>
-		/// <param name="insert"> </param>
-		/// <param name="txItem"> A previously read transaction item (must include all of the attributes from the item). May not be specified with txId. </param>
-		/// <exception cref="TransactionNotFoundException"> </exception>
-		protected internal TransactionItem(string txId, TransactionManager txManager, bool insert, Dictionary<string, AttributeValue> txItem)
-		{
-			this.txManager = txManager;
+        /// <summary>
+        /// Either inserts a new transaction, reads it from the database, or initializes from a previously read transaction item.
+        /// </summary>
+        /// <param name="txId"> </param>
+        /// <param name="txManager"> </param>
+        /// <param name="insert"> </param>
+        /// <param name="txItem"> A previously read transaction item (must include all of the attributes from the item). May not be specified with txId. </param>
+        /// <exception cref="TransactionNotFoundException"> </exception>
+        protected internal TransactionItem(string txId, TransactionManager txManager, bool insert, Dictionary<string, AttributeValue> txItem)
+        {
+            this.txManager = txManager;
 
-			// Initialize txId, txKey, and txItem
-			if (!string.ReferenceEquals(txId, null))
-			{
-				// Validate mutual exclusivity of inputs
-				if (txItem != null)
-				{
-					throw new TransactionException(txId, "When providing txId, txItem must be null");
-				}
-				this.txId = txId;
-				Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
-				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
-				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
-				if (insert)
-				{
-					this.txItem = this.insert();
-				}
-				else
-				{
-					this.txItem = await getAsync();
-					if (this.txItem == null)
-					{
-						throw new TransactionNotFoundException(this.txId);
-					}
-				}
-			}
-			else if (txItem != null)
-			{
-				// Validate mutual exclusivity of inputs
-				if (insert)
-				{
-					throw new TransactionException(txId, "When providing a txItem, insert must be false");
-				}
-				this.txItem = txItem;
-				if (!isTransactionItem(txItem))
-				{
-					throw new TransactionException(txId, "txItem is not a transaction item");
-				}
-				this.txId = txItem[Transaction.AttributeName.TXID.ToString()].S;
-				Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
-				txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
-				this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
-			}
-			else
-			{
-				throw new TransactionException(null, "Either txId or txItem must be specified");
-			}
+            // Initialize txId, txKey, and txItem
+            if (!string.ReferenceEquals(txId, null))
+            {
+                // Validate mutual exclusivity of inputs
+                if (txItem != null)
+                {
+                    throw new TransactionException(txId, "When providing txId, txItem must be null");
+                }
+                this.txId = txId;
+                Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+                txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
+                this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
+                if (insert)
+                {
+                    this.txItem = this.insert();
+                }
+                else
+                {
+                    this.txItem = getAsync().Result;
+                    if (this.txItem == null)
+                    {
+                        throw new TransactionNotFoundException(this.txId);
+                    }
+                }
+            }
+            else if (txItem != null)
+            {
+                // Validate mutual exclusivity of inputs
+                if (insert)
+                {
+                    throw new TransactionException(txId, "When providing a txItem, insert must be false");
+                }
+                this.txItem = txItem;
+                if (!isTransactionItem(txItem))
+                {
+                    throw new TransactionException(txId, "txItem is not a transaction item");
+                }
+                this.txId = txItem[Transaction.AttributeName.TXID.ToString()].S;
+                Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+                txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(this.txId);
+                this.txKey = new Dictionary<string, AttributeValue>(txKeyMap);
+            }
+            else
+            {
+                throw new TransactionException(null, "Either txId or txItem must be specified");
+            }
 
-			// Initialize the version
-			AttributeValue txVersionVal = this.txItem[Transaction.AttributeName.VERSION.ToString()];
-			if (txVersionVal == null || txVersionVal.N == null)
-			{
-				throw new TransactionException(this.txId, "Version number is not present in TX record");
-			}
-			version = int.Parse(txVersionVal.N);
+            // Initialize the version
+            AttributeValue txVersionVal = this.txItem[Transaction.AttributeName.VERSION.ToString()];
+            if (txVersionVal == null || txVersionVal.N == null)
+            {
+                throw new TransactionException(this.txId, "Version number is not present in TX record");
+            }
+            version = int.Parse(txVersionVal.N);
 
-			// Build the requests structure
-			loadRequests();
-		}
+            // Build the requests structure
+            loadRequests();
+        }
 
-		/// <summary>
-		/// Inserts a new transaction item into the table.  Assumes txKey is already initialized. </summary>
-		/// <returns> the txItem </returns>
-		/// <exception cref="TransactionException"> if the transaction already exists </exception>
-		private Dictionary<string, AttributeValue> insert()
+
+
+        private TransactionItem(TransactionManager txManager, string txId, Dictionary<string, AttributeValue> txKey)
+        {
+            this.txManager = txManager;
+            this.txId = txId;
+            this.txKey = txKey;
+        }
+
+        /// <summary>
+        /// Either inserts a new transaction, reads it from the database, or initializes from a previously read transaction item.
+        /// </summary>
+        /// <param name="txId"> </param>
+        /// <param name="txManager"> </param>
+        /// <param name="insert"> </param>
+        /// <param name="txItem"> A previously read transaction item (must include all of the attributes from the item). May not be specified with txId. </param>
+        /// <exception cref="TransactionNotFoundException"> </exception>
+        protected internal static async Task<TransactionItem> CreateAsync(string txId, TransactionManager txManager, bool insert, Dictionary<string, AttributeValue> txItem)
+        {
+            TransactionItem transactionItem;
+
+            // Initialize txId, txKey, and txItem
+            if (!string.ReferenceEquals(txId, null))
+            {
+                // Validate mutual exclusivity of inputs
+                if (txItem != null)
+                {
+                    throw new TransactionException(txId, "When providing txId, txItem must be null");
+                }
+                Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+                txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(txId);
+                var newTxKey = new Dictionary<string, AttributeValue>(txKeyMap);
+
+                transactionItem = new TransactionItem(txManager, txId, newTxKey);
+
+                if (insert)
+                {
+                    transactionItem.txItem = transactionItem.insert();
+                }
+                else
+                {
+                    transactionItem.txItem = await getTransactionItemAsync(txManager, newTxKey);
+                    if (transactionItem.txItem == null)
+                    {
+                        throw new TransactionNotFoundException(transactionItem.txId);
+                    }
+                }
+            }
+            else if (txItem != null)
+            {
+                // Validate mutual exclusivity of inputs
+                if (insert)
+                {
+                    throw new TransactionException(txId, "When providing a txItem, insert must be false");
+                }
+                if (!isTransactionItem(txItem))
+                {
+                    throw new TransactionException(txId, "txItem is not a transaction item");
+                }
+
+                var newTxId = txItem[Transaction.AttributeName.TXID.ToString()].S;
+                Dictionary<string, AttributeValue> txKeyMap = new Dictionary<string, AttributeValue>(1);
+                txKeyMap[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(newTxId);
+                var newTxKey = new Dictionary<string, AttributeValue>(txKeyMap);
+                transactionItem = new TransactionItem(txManager, newTxId, newTxKey);
+                transactionItem.txItem = txItem;
+            }
+            else
+            {
+                throw new TransactionException(null, "Either txId or txItem must be specified");
+            }
+
+            // Initialize the version
+            AttributeValue txVersionVal = transactionItem.txItem[Transaction.AttributeName.VERSION.ToString()];
+            if (txVersionVal == null || txVersionVal.N == null)
+            {
+                throw new TransactionException(transactionItem.txId, "Version number is not present in TX record");
+            }
+            transactionItem.version = int.Parse(txVersionVal.N);
+
+            // Build the requests structure
+            transactionItem.loadRequests();
+            return transactionItem;
+        }
+
+        /// <summary>
+        /// Inserts a new transaction item into the table.  Assumes txKey is already initialized. </summary>
+        /// <returns> the txItem </returns>
+        /// <exception cref="TransactionException"> if the transaction already exists </exception>
+        private Dictionary<string, AttributeValue> insert()
 		{
 			Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
 			item[Transaction.AttributeName.STATE.ToString()] = new AttributeValue(STATE_PENDING);
@@ -178,27 +263,36 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				throw new TransactionException("Failed to create new transaction with id " + txId, e);
 			}
-		}
+        }
 
-		/// <summary>
-		/// Fetches this transaction item from the tx table.  Uses consistent read.
-		/// </summary>
-		/// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
-		private async Task<Dictionary<string, AttributeValue>> getAsync()
-		{
-			GetItemRequest getRequest = new GetItemRequest
-			{
-			    TableName = txManager.TransactionTableName,
+        /// <summary>
+        /// Fetches this transaction item from the tx table.  Uses consistent read.
+        /// </summary>
+        /// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
+        private async Task<Dictionary<string, AttributeValue>> getAsync()
+        {
+            return await getTransactionItemAsync(txManager, txKey);
+        }
+
+        /// <summary>
+        /// Fetches this transaction item from the tx table.  Uses consistent read.
+        /// </summary>
+        /// <returns> the latest copy of the transaction item, or null if it has been completed (and deleted)  </returns>
+        private static async Task<Dictionary<string, AttributeValue>> getTransactionItemAsync(TransactionManager txManager, Dictionary<string, AttributeValue> txKey)
+        {
+            GetItemRequest getRequest = new GetItemRequest
+            {
+                TableName = txManager.TransactionTableName,
                 Key = txKey.ToDictionary(x => x.Key, x => x.Value),
                 ConsistentRead = true
-			};
-			return (await txManager.Client.GetItemAsync(getRequest)).Item;
-		}
+            };
+            return (await txManager.Client.GetItemAsync(getRequest)).Item;
+        }
 
-		/// <summary>
-		/// Gets the version of the transaction image currently loaded.  Useful for determining if the item has changed when committing the transaction.
-		/// </summary>
-		public virtual int Version
+        /// <summary>
+        /// Gets the version of the transaction image currently loaded.  Useful for determining if the item has changed when committing the transaction.
+        /// </summary>
+        public virtual int Version
 		{
 			get
 			{
@@ -320,7 +414,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		        // 1. Ensure the request is unique (modifies the internal data structure if it is unique)
 		        //    However, do not not short circuit.  If we're doing a read in a resumed transaction, it's important to ensure we're returning
 		        //    any writes that happened before. 
-		        addRequestToMap(callerRequest);
+		        addRequestToMapAsync(callerRequest);
 
 		        callerRequest.Rid = version;
 
@@ -379,10 +473,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		        {
 		            if ("ValidationException".Equals(e.ErrorCode))
 		            {
-		                removeRequestFromMap(callerRequest);
+		                removeRequestFromMapAsync(callerRequest);
 		                throw new InvalidRequestException(
 		                    "The amount of data in the transaction cannot exceed the DynamoDB item size limit", txId,
-		                    callerRequest.TableName, callerRequest.getKey(txManager), callerRequest);
+		                    callerRequest.TableName, await callerRequest.getKeyAsync(txManager), callerRequest);
 		            }
 		            else
 		            {
@@ -409,7 +503,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				Request request = Request.deserialize(txId, rawRequest);
 				// TODO don't make strings out of the PK all the time, also dangerous if behavior of toString changes!
-				addRequestToMap(request);
+				addRequestToMapAsync(request);
 			}
 		}
 
@@ -422,9 +516,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <returns> true if the request was added, false if not (isn't added if it's a read where there is already a write) </returns>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: private boolean addRequestToMap(Request request) throws com.amazonaws.services.dynamodbv2.transactions.exceptions.DuplicateRequestException
-		private bool addRequestToMap(Request request)
+		private async Task<bool> addRequestToMapAsync(Request request)
 		{
-			Dictionary<string, AttributeValue> key = request.getKey(txManager);
+			Dictionary<string, AttributeValue> key = await request.getKeyAsync(txManager);
 			ImmutableKey immutableKey = new ImmutableKey(key);
 
 			Dictionary<ImmutableKey, Request> pkToRequestMap = requestsMap[request.TableName];
@@ -461,10 +555,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// Really should only be used in the catch of addRequestAsync 
 		/// </summary>
 		/// <param name="request"> </param>
-		private void removeRequestFromMap(Request request)
+		private async Task removeRequestFromMapAsync(Request request)
 		{
 			// It's okay to leave empty maps around
-			ImmutableKey key = new ImmutableKey(request.getKey(txManager));
+			ImmutableKey key = new ImmutableKey(await request.getKeyAsync(txManager));
 			requestsMap[request.TableName].Remove(key);
 		}
 
