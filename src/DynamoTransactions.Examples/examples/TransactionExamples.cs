@@ -25,6 +25,7 @@ using Newtonsoft.Json.Linq;
 // or implied. See the License for the specific language governing permissions 
 // and limitations under the License. 
 // </summary>
+
 namespace com.amazonaws.services.dynamodbv2.transactions.examples
 {
     /// <summary>
@@ -63,21 +64,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
         public TransactionExamples()
         {
             AWSCredentials credentials;
-
+            
             try
             {
-                var credentialOptions = JsonConvert.DeserializeObject<JObject>(File.ReadAllText("project.json"));
+                var credentialOptions = JsonConvert.DeserializeObject<JObject>(File.ReadAllText("config.json"));
                 credentials = new BasicAWSCredentials(credentialOptions["apiKey"].Value<string>(), credentialOptions["secretKey"].Value<string>());
-                if (credentials.GetCredentials().AccessKey != null)
-                {
-                    Console.Error.WriteLine("No credentials supplied in AwsCredentials.properties, will try with default credentials file");
-                    credentials = new StoredProfileAWSCredentials();
-                }
             }
-            catch (IOException e)
+            catch (FileNotFoundException)
             {
-                Console.Error.WriteLine("Could not loadAsync credentials from built-in credentials file.");
-                throw;
+                credentials = null;
+            }
+            if (credentials != null)
+            {
+                Console.Error.WriteLine("No credentials supplied in AwsCredentials.properties, will try with default credentials file");
+                credentials = new StoredProfileAWSCredentials();
             }
 
             dynamodb = new AmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig

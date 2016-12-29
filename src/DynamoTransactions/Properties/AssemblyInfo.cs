@@ -17,3 +17,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("7b30c246-9634-44ea-ae0a-18f57055998e")]
+
+[assembly: InternalsVisibleTo("DynamoTransactions.Integration")]

@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
 
-/// <summary>
-/// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-/// 
-/// Licensed under the Amazon Software License (the "License"). 
-/// You may not use this file except in compliance with the License. 
-/// A copy of the License is located at
-/// 
-///  http://aws.amazon.com/asl/
-/// 
-/// or in the "license" file accompanying this file. This file is distributed 
-/// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
-/// or implied. See the License for the specific language governing permissions 
-/// and limitations under the License. 
-/// </summary>
+// <summary>
+// Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// 
+// Licensed under the Amazon Software License (the "License"). 
+// You may not use this file except in compliance with the License. 
+// A copy of the License is located at
+// 
+//  http://aws.amazon.com/asl/
+// 
+// or in the "license" file accompanying this file. This file is distributed 
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express 
+// or implied. See the License for the specific language governing permissions 
+// and limitations under the License. 
+// </summary>
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
-
-
-	using AWSCredentials = com.amazonaws.auth.AWSCredentials;
-	using GetItemRequest = com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-	using GetItemResponse = com.amazonaws.services.dynamodbv2.model.GetItemResult;
-	using UpdateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
-	using UpdateItemResponse = com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
-
 	/// <summary>
 	/// A very primitive fault-injection client.
 	/// 
@@ -46,7 +44,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		// Any requests with keys in this set will return the queue of responses in order. When the end of the queue is reached
 		// further requests will be passed to the DynamoDB client.
-		public readonly IDictionary<GetItemRequest, LinkedList<GetItemResult>> getRequestsToStub = new Dictionary<GetItemRequest, LinkedList<GetItemResult>>();
+		public readonly IDictionary<GetItemRequest, LinkedList<GetItemResponse>> getRequestsToStub = 
+            new Dictionary<GetItemRequest, LinkedList<GetItemResponse>>();
 
 		/// <summary>
 		/// Resets the client to the stock DynamoDB client (all requests will call DynamoDB)
@@ -58,13 +57,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			getRequestsToStub.Clear();
 		}
 
-		public FailingAmazonDynamoDBClient(AWSCredentials credentials) : base(credentials)
+		public FailingAmazonDynamoDBClient(AWSCredentials credentials, AmazonDynamoDBConfig clientConfig) : base(credentials, clientConfig)
 		{
 		}
 
-//JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-//ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.GetItemResponse getItem(com.amazonaws.services.dynamodbv2.model.GetItemRequest getItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override GetItemResponse getItem(GetItemRequest getItemRequest)
+		public new async Task<GetItemResponse> GetItemAsync(GetItemRequest getItemRequest, CancellationToken cancellationToken)
 		{
 			if (requestsToFail.Contains(getItemRequest))
 			{
@@ -72,25 +69,26 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			}
 			if (getRequestsToTreatAsDeleted.Contains(getItemRequest))
 			{
-				return new GetItemResult();
+				return new GetItemResponse();
 			}
-			LinkedList<GetItemResult> stubbedResults = getRequestsToStub[getItemRequest];
+			LinkedList<GetItemResponse> stubbedResults = getRequestsToStub[getItemRequest];
 			if (stubbedResults != null && stubbedResults.Count > 0)
 			{
-				return stubbedResults.RemoveFirst();
+				//return stubbedResults.RemoveFirst();
+				return stubbedResults.First.Value;
 			}
-			return base.getItem(getItemRequest);
+			return await base.GetItemAsync(getItemRequest, cancellationToken);
 		}
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItem(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest updateItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-		public override UpdateItemResponse updateItem(UpdateItemRequest updateItemRequest)
+		public new async Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest updateItemRequest, CancellationToken cancellationToken)
 		{
 			if (requestsToFail.Contains(updateItemRequest))
 			{
 				throw new FailedYourRequestException();
 			}
-			return base.updateItem(updateItemRequest);
+			return await base.UpdateItemAsync(updateItemRequest, cancellationToken);
 		}
 	}
 

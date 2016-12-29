@@ -1102,7 +1102,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 };
             }
 
-            Dictionary<string, AttributeValue> key = Request.getKeyFromItem(tableName, item, txManager);
+            Dictionary<string, AttributeValue> key = Request.getKeyFromItemAsync(tableName, item, txManager);
 
             UpdateItemRequest update = new UpdateItemRequest
             {

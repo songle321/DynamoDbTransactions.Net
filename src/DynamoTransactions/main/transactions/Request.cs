@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -32,7 +33,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     {
 private static readonly ISet<string> VALID_RETURN_VALUES = new HashSet<string>(new[] { "ALL_OLD", "ALL_NEW", "NONE" });
 
-        protected int? rid;
+        protected int rid;
 
         [JsonIgnore]
         protected internal abstract string TableName { get; }
@@ -49,7 +50,7 @@ private static readonly ISet<string> VALID_RETURN_VALUES = new HashSet<string>(n
 		 * 
 		 */
 
-        public virtual int? Rid
+        public virtual int Rid
         {
             get
             {
@@ -294,7 +295,7 @@ internal DeleteItemRequest request;
             {
                 if (key == null)
                 {
-                    key = getKeyFromItem(TableName, request.Item, txManager);
+                    key = getKeyFromItemAsync(TableName, request.Item, txManager);
                 }
                 return key;
             }
@@ -392,14 +393,14 @@ internal DeleteItemRequest request;
             }
         }
 
-        protected internal static Dictionary<string, AttributeValue> getKeyFromItem(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
+        protected internal static async Task<Dictionary<string, AttributeValue>> getKeyFromItemAsync(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
         {
             if (item == null)
             {
                 throw new InvalidRequestException("PutItem must contain an Item", null, tableName, null, null);
             }
             Dictionary<string, AttributeValue> newKey = new Dictionary<string, AttributeValue>();
-            List<KeySchemaElement> schema = txManager.GetTableSchemaAsync(tableName);
+            List<KeySchemaElement> schema = await txManager.GetTableSchemaAsync(tableName);
             foreach (KeySchemaElement schemaElement in schema)
             {
                 AttributeValue val = item[schemaElement.AttributeName];

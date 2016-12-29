@@ -111,7 +111,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public async Task<PutItemResponse> PutItemAsync(PutItemRequest request, CancellationToken cancellationToken)
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            checkExpectedValuesAsync(request.TableName, Request.getKeyFromItem(request.TableName, request.Item, txManager), expectedValues, cancellationToken);
+            checkExpectedValuesAsync(request.TableName, Request.getKeyFromItemAsync(request.TableName, request.Item, txManager), expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
