@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
@@ -45,7 +47,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 N = "1"
             };
-            JSON_M_ATTR_VAL["attr_b"] = (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes()));
+            JSON_M_ATTR_VAL["attr_b"] = new AttributeValue
+            {
+                B = new MemoryStream(Encoding.ASCII.GetBytes("asdf"))
+            };
             JSON_M_ATTR_VAL["attr_ss"] = new AttributeValue
             {
                 SS = { "a", "b" }
@@ -54,220 +59,251 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 NS = { "1", "2" }
             };
-            JSON_M_ATTR_VAL["attr_bs"] = (new AttributeValue()).withBS(ByteBuffer.wrap(("asdf").GetBytes()), ByteBuffer.wrap(("ghjk").GetBytes()));
+            JSON_M_ATTR_VAL["attr_bs"] = new AttributeValue
+            {
+                BS =
+                {
+                    new MemoryStream(Encoding.ASCII.GetBytes("asdf")),
+                    new MemoryStream(Encoding.ASCII.GetBytes("ghjk"))
+                }
+            };
             JSON_M_ATTR_VAL["attr_bool"] = new AttributeValue
             {
                 BOOL = true
             };
-            JSON_M_ATTR_VAL["attr_l"] = (new AttributeValue()).withL(new AttributeValue
+            JSON_M_ATTR_VAL["attr_l"] = new AttributeValue
             {
-                S = "s",
-            }, new AttributeValue
+                L =
+                {
+                    new AttributeValue
+                    {
+                        S = "s",
+                    },
+                    new AttributeValue
+                    {
+                        N = "1",
+                    },
+                    new AttributeValue
+                    {
+                        B = new MemoryStream(Encoding.UTF8.GetBytes("asdf"))
+                    },
+                    new AttributeValue
+                    {
+                        BOOL = true,
+                    },
+                    new AttributeValue
+                    {
+                        NULL = true
+                    }
+                }
+            };
+            JSON_M_ATTR_VAL["attr_null"] = new AttributeValue
             {
-                N = "1",
-            }, (new AttributeValue()).withB(ByteBuffer.wrap(("asdf").GetBytes())), new AttributeValue
+                NULL = true
+            };
+
+            BASIC_ITEM[HASH_ATTR_NAME] = new AttributeValue("a");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void validPut()
+        public virtual void validPut()
+        {
+            Request.PutItem r = new Request.PutItem();
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            r.Request = new PutItemRequest
             {
-                BOOL = true,
-            }, new AttributeValue
+                TableName = TABLE_NAME,
+                Item = item
+            };
+            r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putNullTableName()
+        public virtual void putNullTableName()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+            item[HASH_ATTR_NAME] = new AttributeValue("a");
+
+            invalidRequestTest(new PutItemRequest{Item = item}, "TableName must not be null")
+            );
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putNullItem()
+        public virtual void putNullItem()
+        {
+            invalidRequestTest(new PutItemRequest
             {
-                NULL = true,)
+                TableName = TABLE_NAME,,
+                "PutItem must contain an Item"
+            });
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putMissingKey()
+        public virtual void putMissingKey()
+        {
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+            item["other-attr"] = new AttributeValue("a");
+
+            invalidRequestTest(new PutItemRequest
+            {
+                TableName = TABLE_NAME,
+                Item = item,,
+                "PutItem request must contain the key attribute"
+            });
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putExpected()
+        public virtual void putExpected()
+        {
+            var request = new PutItemRequest
+            {
+                TableName = BasicPutRequest.
+            }
+            invalidRequestTest(BasicPutRequest, 
+        Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putConditionExpression()
+        public virtual void putConditionExpression()
+        {
+            invalidRequestTest(BasicPutRequest.withConditionExpression("attribute_not_exists (some_field)"), "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putExpressionAttributeNames()
+        public virtual void putExpressionAttributeNames()
+        {
+            invalidRequestTest(BasicPutRequest
+    
+        ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void putExpressionAttributeValues()
+        public virtual void putExpressionAttributeValues()
+        {
+            invalidRequestTest(BasicPutRequest
+    
+        ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void updateExpected()
+        public virtual void updateExpected()
+        {
+            invalidRequestTest(BasicUpdateRequest
+    
+        Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void updateConditionExpression()
+        public virtual void updateConditionExpression()
+        {
+            invalidRequestTest(BasicUpdateRequest.withConditionExpression("attribute_not_exists(some_field)"), "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void updateUpdateExpression()
+        public virtual void updateUpdateExpression()
+        {
+            invalidRequestTest(BasicUpdateRequest
+    
+        UpdateExpression = "REMOVE some_field",, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void updateExpressionAttributeNames()
+        public virtual void updateExpressionAttributeNames()
+        {
+            invalidRequestTest(BasicUpdateRequest
+    
+        ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void updateExpressionAttributeValues()
+        public virtual void updateExpressionAttributeValues()
+        {
+            invalidRequestTest(BasicUpdateRequest
+    
+        ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void deleteExpected()
+        public virtual void deleteExpected()
+        {
+            invalidRequestTest(BasicDeleteRequest
+    
+        Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void deleteConditionExpression()
+        public virtual void deleteConditionExpression()
+        {
+            invalidRequestTest(BasicDeleteRequest.withConditionExpression("attribute_not_exists (some_field)"), "Requests with conditions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void deleteExpressionAttributeNames()
+        public virtual void deleteExpressionAttributeNames()
+        {
+            invalidRequestTest(BasicDeleteRequest
+    
+        ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void deleteExpressionAttributeValues()
+        public virtual void deleteExpressionAttributeValues()
+        {
+            invalidRequestTest(BasicDeleteRequest
+    
+        ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
+        }
+
+        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+        //ORIGINAL LINE: @Test public void validUpdate()
+        public virtual void validUpdate()
+        {
+            Request.UpdateItem r = new Request.UpdateItem();
+            Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            r.setRequest(new UpdateItemRequest
+            {
+                TableName = TABLE_NAME,
+                Key = item,)
+        };
+        r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+		}
+
+    //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
+    //ORIGINAL LINE: @Test public void validDelete()
+    public virtual void validDelete()
+    {
+        Request.DeleteItem r = new Request.DeleteItem();
+        Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
+        item[HASH_ATTR_NAME] = new AttributeValue("a");
+        r.setRequest(new DeleteItemRequest
+        {
+            TableName = TABLE_NAME,
+            Key = item,)
     };
-        JSON_M_ATTR_VAL["attr_null"] = new AttributeValue {
-NULL = true
-};
-
-    BASIC_ITEM[HASH_ATTR_NAME] = new AttributeValue("a");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void validPut()
-public virtual void validPut()
-{
-    Request.PutItem r = new Request.PutItem();
-    Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-    item[HASH_ATTR_NAME] = new AttributeValue("a");
-    r.setRequest(new PutItemRequest
-    {
-        TableName = TABLE_NAME,
-        Item = item,)
-};
-r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putNullTableName()
-		public virtual void putNullTableName()
-{
-    Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-    item[HASH_ATTR_NAME] = new AttributeValue("a");
-
-    invalidRequestTest(new PutItemRequest
-    {
-        Item = item,,
-        "TableName must not be null")
-};
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putNullItem()
-		public virtual void putNullItem()
-{
-    invalidRequestTest(new PutItemRequest
-    {
-        TableName = TABLE_NAME,,
-        "PutItem must contain an Item")
-};
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putMissingKey()
-		public virtual void putMissingKey()
-{
-    Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-    item["other-attr"] = new AttributeValue("a");
-
-    invalidRequestTest(new PutItemRequest
-    {
-        TableName = TABLE_NAME,
-        Item = item,,
-        "PutItem request must contain the key attribute")
-};
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putExpected()
-		public virtual void putExpected()
-{
-    invalidRequestTest(BasicPutRequest
-Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putConditionExpression()
-public virtual void putConditionExpression()
-{
-    invalidRequestTest(BasicPutRequest.withConditionExpression("attribute_not_exists (some_field)"), "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putExpressionAttributeNames()
-public virtual void putExpressionAttributeNames()
-{
-    invalidRequestTest(BasicPutRequest
-ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void putExpressionAttributeValues()
-public virtual void putExpressionAttributeValues()
-{
-    invalidRequestTest(BasicPutRequest
-ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void updateExpected()
-public virtual void updateExpected()
-{
-    invalidRequestTest(BasicUpdateRequest
-Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void updateConditionExpression()
-public virtual void updateConditionExpression()
-{
-    invalidRequestTest(BasicUpdateRequest.withConditionExpression("attribute_not_exists(some_field)"), "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void updateUpdateExpression()
-public virtual void updateUpdateExpression()
-{
-    invalidRequestTest(BasicUpdateRequest
-UpdateExpression = "REMOVE some_field",, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void updateExpressionAttributeNames()
-public virtual void updateExpressionAttributeNames()
-{
-    invalidRequestTest(BasicUpdateRequest
-ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void updateExpressionAttributeValues()
-public virtual void updateExpressionAttributeValues()
-{
-    invalidRequestTest(BasicUpdateRequest
-ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void deleteExpected()
-public virtual void deleteExpected()
-{
-    invalidRequestTest(BasicDeleteRequest
-Expected = NONNULL_EXPECTED_ATTR_VALUES,, "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void deleteConditionExpression()
-public virtual void deleteConditionExpression()
-{
-    invalidRequestTest(BasicDeleteRequest.withConditionExpression("attribute_not_exists (some_field)"), "Requests with conditions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void deleteExpressionAttributeNames()
-public virtual void deleteExpressionAttributeNames()
-{
-    invalidRequestTest(BasicDeleteRequest
-ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void deleteExpressionAttributeValues()
-public virtual void deleteExpressionAttributeValues()
-{
-    invalidRequestTest(BasicDeleteRequest
-ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES,, "Requests with expressions");
-}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void validUpdate()
-public virtual void validUpdate()
-{
-    Request.UpdateItem r = new Request.UpdateItem();
-    Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-    item[HASH_ATTR_NAME] = new AttributeValue("a");
-    r.setRequest(new UpdateItemRequest
-    {
-        TableName = TABLE_NAME,
-        Key = item,)
-};
-r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @Test public void validDelete()
-		public virtual void validDelete()
-{
-    Request.DeleteItem r = new Request.DeleteItem();
-    Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-    item[HASH_ATTR_NAME] = new AttributeValue("a");
-    r.setRequest(new DeleteItemRequest
-    {
-        TableName = TABLE_NAME,
-        Key = item,)
-};
-r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
+    r.validate("1", new MockTransactionManager(this, HASH_SCHEMA));
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void validLock()
-		public virtual void validLock()
+public virtual void validLock()
 {
     Request.GetItem r = new Request.GetItem();
     Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
