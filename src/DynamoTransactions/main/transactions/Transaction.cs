@@ -445,7 +445,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 /* 1. Validate the request (no conditions, required attributes, no conflicting attributes etc)
 				 * 2. Copy the request (we change things in it, so don't mutate the caller's request
-				 * 3. Acquire the lock, save image, apply via addRequestAsync()
+				 * 3. Acquire the lock, saveAsync image, apply via addRequestAsync()
 				 *    a) If that fails, go to 3) again.
 				 */
 
@@ -679,7 +679,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         /// <summary>
         /// Verifies that we actually hold all of the locks for the requests in the transaction, and that we have saved the 
-        /// previous item images of every item involved in the requests (except for request types that we don't save images for).
+        /// previous item images of every item involved in the requests (except for request types that we don't saveAsync images for).
         /// 
         /// The caller needs to wrap this with OCC on the tx version (request count) if it's going to commitAsync based on this decision.
         /// 
@@ -981,7 +981,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                 // 5) We failed to take the backup, but should have.  
                 //   a) If we've applied, assert.
-                txAssert(!item.ContainsKey(AttributeName.APPLIED.ToString()), txId, "Applied change to item but didn't save a backup", "table", tableName, "key", key, "item" + item);
+                txAssert(!item.ContainsKey(AttributeName.APPLIED.ToString()), txId, "Applied change to item but didn't saveAsync a backup", "table", tableName, "key", key, "item" + item);
 
                 //   b) Otherwise release the lock (okay to delete if transient to re-use logic)
                 releaseReadLockAsync(tableName, key);
@@ -1399,7 +1399,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Dictionary<string, AttributeValue> returnItem = null;
 
             // 1. Remember what return values the caller wanted.
-            string returnValues = request.ReturnValues; // save the returnValues because we will mutate it
+            string returnValues = request.ReturnValues; // saveAsync the returnValues because we will mutate it
             if (string.ReferenceEquals(returnValues, null))
             {
                 returnValues = "NONE";
@@ -1772,9 +1772,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// </summary>
         /// <param name="item">
         ///            An item object with key attributes populated. </param>
-        public virtual void save<T>(T item)
+        public virtual async Task saveAsync<T>(T item)
         {
-            doWithMapperAsync(new CallableAnonymousInnerClass3<T>(this, item));
+            await doWithMapperAsync(new CallableAnonymousInnerClass3<T>(this, item));
         }
 
         private class CallableAnonymousInnerClass3<T> : Callable<object>

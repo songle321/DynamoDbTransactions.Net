@@ -579,7 +579,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 item.Value = "Magenta";
 
                 // Performs an UpdateItem request after verifying the version is unchanged as of this transaction
-                t1.save(item);
+                t1.saveAsync(item);
                 print("Item1 is now: " + item.Value);
                 print("Item1 version is now: " + item.Version);
             }
@@ -591,7 +591,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 item.Value = "Violet";
 
                 // Performs a CreateItem request after verifying the version attribute is not set as of this transaction
-                t1.save(item);
+                t1.saveAsync(item);
 
                 print("Item1 is now: " + item.Value);
                 print("Item1 version is now: " + item.Version);

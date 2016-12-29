@@ -279,7 +279,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
             when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-            when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult
+            when(mockClient.GetItemAsync(GET_ITEM_REQUEST)).thenReturn(new GetItemResult
             {
                 Item = NON_TRANSIENT_APPLIED_ITEM,)
 };
@@ -299,7 +299,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             verify(isolationHandler).createGetItemRequest(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
 
-            verify(mockClient).getItem(GET_ITEM_REQUEST);
+            verify(mockClient).GetItemAsync(GET_ITEM_REQUEST);
 		}
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -309,7 +309,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
     doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
     when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-    when(mockClient.getItem(GET_ITEM_REQUEST)).thenReturn(new GetItemResult
+    when(mockClient.GetItemAsync(GET_ITEM_REQUEST)).thenReturn(new GetItemResult
     {
         Item = NON_TRANSIENT_APPLIED_ITEM,)
 };
@@ -329,7 +329,7 @@ bool caughtException = false;
 
             verify(isolationHandler).createGetItemRequest(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
 
-            verify(mockClient).getItem(GET_ITEM_REQUEST);
+            verify(mockClient).GetItemAsync(GET_ITEM_REQUEST);
 		}
 	}
 

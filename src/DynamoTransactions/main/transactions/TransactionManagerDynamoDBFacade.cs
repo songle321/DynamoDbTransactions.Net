@@ -57,7 +57,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///     fetch all attributes. </param>
         /// <param name="cancellationToken"></param>
         /// <returns> Versions of the items that can be read at the isolation level stripped of special attributes </returns>
-        private async Task<List<Dictionary<string, AttributeValue>>> HandleItemsAsync(List<Dictionary<string, AttributeValue>> items, string tableName, List<string> attributesToGet, CancellationToken cancellationToken)
+        private async Task<List<Dictionary<string, AttributeValue>>> HandleItemsAsync(List<Dictionary<string, AttributeValue>> items, string tableName, List<string> attributesToGet, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<Dictionary<string, AttributeValue>> result = new List<Dictionary<string, AttributeValue>>();
             foreach (Dictionary<string, AttributeValue> item in items)
@@ -87,12 +87,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             return result.ToList();
         }
 
-        public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await txManager.GetItemAsync(request, isolationLevel, cancellationToken);
         }
 
-        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await GetItemAsync(new GetItemRequest
             {
@@ -101,7 +101,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, bool consistentRead, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, bool consistentRead, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await GetItemAsync(new GetItemRequest
             {
@@ -111,7 +111,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken)
+        public async Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (KeysAndAttributes keysAndAttributes in request.RequestItems.Values)
             {
@@ -133,7 +133,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse BatchGetItemAsync(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems, String returnConsumedCapacity) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity, CancellationToken cancellationToken)
+        public async Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity, CancellationToken cancellationToken = default(CancellationToken))
         {
             BatchGetItemRequest request = new BatchGetItemRequest
             {
@@ -145,7 +145,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.BatchGetItemResponse BatchGetItemAsync(java.util.Map<String, com.amazonaws.services.dynamodbv2.model.KeysAndAttributes> requestItems) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken)
+        public async Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default(CancellationToken))
         {
             BatchGetItemRequest request = new BatchGetItemRequest
             {
@@ -156,7 +156,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(com.amazonaws.services.dynamodbv2.model.ScanRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken)
+        public async Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<string> attributesToGet = addSpecialAttributes(request.AttributesToGet);
             request.AttributesToGet = attributesToGet;
@@ -168,7 +168,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, CancellationToken cancellationToken)
+        public async Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, CancellationToken cancellationToken = default(CancellationToken))
         {
             ScanRequest request = new ScanRequest
             {
@@ -180,7 +180,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<ScanResponse> ScanAsync(string tableName, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken)
+        public async Task<ScanResponse> ScanAsync(string tableName, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = default(CancellationToken))
         {
             ScanRequest request = new ScanRequest
             {
@@ -192,7 +192,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(String tableName, java.util.List<String> attributesToGet, java.util.Map<String, com.amazonaws.services.dynamodbv2.model.Condition> scanFilter) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken)
+        public async Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = default(CancellationToken))
         {
             ScanRequest request = new ScanRequest
             {
@@ -205,7 +205,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.QueryResponse QueryAsync(com.amazonaws.services.dynamodbv2.model.QueryRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
-        public async Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken)
+        public async Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<string> attributesToGet = addSpecialAttributes(request.AttributesToGet);
             request.AttributesToGet = attributesToGet;

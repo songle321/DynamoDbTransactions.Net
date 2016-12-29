@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using static DynamoTransactions.Integration.AssertStatic;
@@ -55,7 +56,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item0Filtered = new Dictionary<string, AttributeValue>(item0);
             item0.Add("attr_not_to_get", new AttributeValue("val_not_to_get"));
             attributesToGet = Arrays.asList(ID_ATTRIBUTE, "s_someattr"); // not including attr_not_to_get
-            update = Collections.singletonMap("s_someattr", (new AttributeValueUpdate()).withValue(new AttributeValue("val2")));
+            update = Collections.singletonMap("s_someattr", new AttributeValueUpdate
+            {
+                Value = new AttributeValue("val2")
+            });
             item0Updated = new Dictionary<string, AttributeValue>(item0);
             item0Updated["s_someattr"] = new AttributeValue("val2");
         }
@@ -75,15 +79,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private void putItem(bool commit)
         {
             Transaction t = manager.newTransaction();
-            t.putItem(new PutItemRequest
+            t.putItemAsync(new PutItemRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item0,
 
-            });
+            }).Wait();
             if (commit)
             {
-                t.commit();
+                t.commitAsync().Wait();
                 assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, true);
             }
             else
@@ -93,8 +97,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
-        //ORIGINAL LINE: private void updateItem(final boolean commit)
-        private void updateItem(bool commit)
+        //ORIGINAL LINE: private void updateItemAsync(final boolean commit)
+        private void updateItemAsync(bool commit)
         {
             Transaction t = manager.newTransaction();
             UpdateItemRequest request = new UpdateItemRequest
@@ -104,10 +108,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 AttributeUpdates = update,
 
             };
-            t.updateItem(request);
+            t.updateItemAsync(request).Wait();
             if (commit)
             {
-                t.commit();
+                t.commitAsync().Wait();
                 assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, true);
             }
             else
@@ -132,14 +136,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Condition hashKeyCondition = new Condition
             {
                 ComparisonOperator = ComparisonOperator.EQ,
-                AttributeValueList = key0.get(ID_ATTRIBUTE),
+                AttributeValueList = { key0[ID_ATTRIBUTE]},
 
             };
             QueryRequest request = new QueryRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
-
-            }.withKeyConditions(Collections.singletonMap(ID_ATTRIBUTE, hashKeyCondition));
+                KeyConditions = Collections.singletonMap(ID_ATTRIBUTE, hashKeyCondition)
+            };
             if (filterAttributes)
             {
                 request.AttributesToGet = attributesToGet;
@@ -153,15 +157,16 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             KeysAndAttributes keysAndAttributes = new KeysAndAttributes
             {
-                Keys = key0,
-
+                Keys = { key0},
             };
             if (filterAttributes)
             {
-                keysAndAttributesAttributesToGet = attributesToGet,
-;
+                keysAndAttributes.AttributesToGet = attributesToGet;
             }
-            return (new BatchGetItemRequest()).withRequestItems(Collections.singletonMap(INTEG_HASH_TABLE_NAME, keysAndAttributes));
+            return new BatchGetItemRequest
+            {
+                RequestItems = Collections.singletonMap(INTEG_HASH_TABLE_NAME, keysAndAttributes)
+            };
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
@@ -178,7 +183,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 request.AttributesToGet = attributesToGet;
             }
-            GetItemResponse result = facade.getItem(request);
+            GetItemResponse result = facade.GetItemAsync(request).Result;
             assertContainsNoTransactionAttributes(result.Item);
             assertEquals(item, result.Item);
         }
@@ -196,23 +201,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 scanRequest.AttributesToGet = attributesToGet;
             }
-            ScanResponse scanResponse = facade.scan(scanRequest);
-            assertEquals(1, scanResult.Items.size());
-            assertContainsNoTransactionAttributes(scanResult.Items.get(0));
-            assertEquals(item, scanResult.Items.get(0));
+            ScanResponse scanResponse = facade.ScanAsync(scanRequest).Result;
+            assertEquals(1, scanResponse.Items.Count);
+            assertContainsNoTransactionAttributes(scanResponse.Items[0]);
+            assertEquals(item, scanResponse.Items[0]);
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
         //ORIGINAL LINE: private void testScanIsEmpty(final TransactionManagerDynamoDBFacade facade)
         private void testScanIsEmpty(TransactionManagerDynamoDBFacade facade)
         {
-            ScanResponse scanResponse = facade.scan(new ScanRequest
+            ScanResponse scanResponse = facade.ScanAsync(new ScanRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
 
-            });
-            assertNotNull(scanResult.Items);
-            assertEquals(0, scanResult.Items.size());
+            }).Result;
+            assertNotNull(scanResponse.Items);
+            assertEquals(0, scanResponse.Items.Count);
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
@@ -220,10 +225,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private void testQueryContainsItem(TransactionManagerDynamoDBFacade facade, Dictionary<string, AttributeValue> item, bool filterAttributes)
         {
             QueryRequest queryRequest = createQueryRequest(filterAttributes);
-            QueryResponse queryResponse = facade.query(queryRequest);
-            assertEquals(1, queryResult.Items.size());
-            assertContainsNoTransactionAttributes(queryResult.Items.get(0));
-            assertEquals(item, queryResult.Items.get(0));
+            QueryResponse queryResponse = facade.QueryAsync(queryRequest).Result;
+            assertEquals(1, queryResponse.Items.Count);
+            assertContainsNoTransactionAttributes(queryResponse.Items[0]);
+            assertEquals(item, queryResponse.Items[0]);
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
@@ -231,9 +236,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private void testQueryIsEmpty(TransactionManagerDynamoDBFacade facade)
         {
             QueryRequest queryRequest = createQueryRequest(false);
-            QueryResponse queryResponse = facade.query(queryRequest);
-            assertNotNull(queryResult.Items);
-            assertEquals(0, queryResult.Items.size());
+            QueryResponse queryResponse = facade.QueryAsync(queryRequest).Result;
+            assertNotNull(queryResponse.Items);
+            assertEquals(0, queryResponse.Items.Count);
         }
 
         //JAVA TO C# CONVERTER WARNING: 'final' parameters are not available in .NET:
@@ -241,8 +246,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private void testBatchGetItemsContainsItem(TransactionManagerDynamoDBFacade facade, Dictionary<string, AttributeValue> item, bool filterAttributes)
         {
             BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(filterAttributes);
-            BatchGetItemResponse batchGetItemResponse = facade.batchGetItem(batchGetItemRequest);
-            List<Dictionary<string, AttributeValue>> items = batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME);
+            BatchGetItemResponse batchGetItemResponse = facade.BatchGetItemAsync(batchGetItemRequest).Result;
+            List<Dictionary<string, AttributeValue>> items = batchGetItemResponse.Responses[INTEG_HASH_TABLE_NAME];
             assertEquals(1, items.Count);
             assertContainsNoTransactionAttributes(items[0]);
             assertEquals(item, items[0]);
@@ -253,11 +258,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         private void testBatchGetItemsIsEmpty(TransactionManagerDynamoDBFacade facade)
         {
             BatchGetItemRequest batchGetItemRequest = createBatchGetItemRequest(false);
-            BatchGetItemResponse batchGetItemResponse = facade.batchGetItem(batchGetItemRequest);
-            assertNotNull(batchGetItemResult.Responses);
-            assertEquals(1, batchGetItemResult.Responses.size());
-            assertNotNull(batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME));
-            assertEquals(0, batchGetItemResult.Responses.get(INTEG_HASH_TABLE_NAME).size());
+            BatchGetItemResponse batchGetItemResponse = facade.BatchGetItemAsync(batchGetItemRequest).Result;
+            assertNotNull(batchGetItemResponse.Responses);
+            assertEquals(1, batchGetItemResponse.Responses.Count);
+            assertNotNull(batchGetItemResponse.Responses[INTEG_HASH_TABLE_NAME]);
+            assertEquals(0, batchGetItemResponse.Responses[INTEG_HASH_TABLE_NAME].Count);
 
         }
 
@@ -334,7 +339,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void uncommittedFacadeReadsUncommittedUpdate()
         {
             putItem(true);
-            updateItem(false);
+            updateItemAsync(false);
 
             // test that read calls contain the updated uncommitted item
             testReadCallsContainItem(uncommittedFacade, item0Updated, false);
@@ -368,7 +373,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void committedFacadeDoesNotReadUncommittedUpdate()
         {
             putItem(true);
-            updateItem(false);
+            updateItemAsync(false);
 
             // test that read calls contain the last committed version of the item
             testReadCallsContainItem(committedFacade, item0, false);

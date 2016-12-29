@@ -5,8 +5,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 {
     internal class Collections
     {
-        public static Dictionary<string, AttributeValue> singletonMap(string id,
-                AttributeValue attributeValue)
-            => new Dictionary<string, AttributeValue> {{id, attributeValue}};
+        public static Dictionary<TKey, TValue> singletonMap<TKey, TValue>(TKey id,
+                TValue attributeValue)
+            => new Dictionary<TKey, TValue> {{id, attributeValue}};
     }
 }

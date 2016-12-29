@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
 using static DynamoTransactions.Integration.AssertStatic;
@@ -116,7 +118,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         };
                     }
                     //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
-                    expected.putAll(Key);
+                    foreach (var keyValue in Key) expected.Add(keyValue.Key, keyValue.Value);
                     return expected;
                 }
             }
@@ -132,23 +134,26 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             Transaction t = manager.newTransaction();
             hashItem0 = new ExampleHashKeyItem();
-            hashItem0.Id = UUID.randomUUID().ToString();
+            hashItem0.Id = Guid.NewGuid().ToString();
             hashItem0.Something = "val";
             hashItem0.SomeSet = new HashSet<string>(Arrays.asList("one", "two"));
-            t.save(hashItem0);
+            t.saveAsync(hashItem0).Wait();
             key0 = newKey(INTEG_HASH_TABLE_NAME);
             item0 = new Dictionary<string, AttributeValue>(key0);
             item0["s_someattr"] = new AttributeValue("val");
-            item0["ss_otherattr"] = (new AttributeValue()).withSS("one", "two");
-            Dictionary<string, AttributeValue> putResponse = t.putItem(new PutItemRequest
+            item0["ss_otherattr"] = new AttributeValue
+            {
+                SS = { "one", "two" }
+            };
+            Dictionary<string, AttributeValue> putResponse = t.putItemAsync(new PutItemRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item0,
                 ReturnValues = ReturnValue.ALL_OLD,
 
-            }).Attributes;
-            assertNull(putResult);
-            t.commit();
+            }).Result.Attributes;
+            assertNull(putResponse);
+            t.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, true);
         }
@@ -158,26 +163,29 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void teardown()
         {
             Transaction t = manager.newTransaction();
-            t.deleteItem(new DeleteItemRequest
+            t.deleteItemAsync(new DeleteItemRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Key = key0,
 
-            });
-            t.commit();
+            }).Wait();
+            t.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, false);
         }
 
         private ExampleHashKeyItem newItem()
         {
             ExampleHashKeyItem item1 = new ExampleHashKeyItem();
-            item1.Id = UUID.randomUUID().ToString();
+            item1.Id = Guid.NewGuid().ToString();
             return item1;
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public MapperTransactionsIntegrationTest() throws java.io.IOException
-        public MapperTransactionsIntegrationTest() : base(new DynamoDBMapperConfig(DynamoDBMapperConfig.TableNameOverride.withTableNamePrefix(TABLE_NAME_PREFIX + "_")))
+        public MapperTransactionsIntegrationTest() : base(new DynamoDBContextConfig
+        {
+            TableNamePrefix = TABLE_NAME_PREFIX + "_"
+        })
         {
         }
 
@@ -187,11 +195,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             ExampleHashKeyItem item1 = newItem();
             Transaction transaction = manager.newTransaction();
-            transaction.delete(item1);
+            transaction.deleteAsync(item1).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, transaction.Id, true, false);
-            transaction.rollback();
+            transaction.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
-            transaction.delete(long.MaxValue);
+            transaction.deleteAsync(long.MaxValue).Wait();
         }
 
         /*
@@ -207,27 +215,27 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Transaction t1 = manager.newTransaction();
             Transaction t2 = manager.newTransaction();
 
-            ExampleHashKeyItem loadedItem = t1.load(item1);
+            ExampleHashKeyItem loadedItem = t1.loadAsync(item1).Result;
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false); // we're not applying locks
             assertNull(loadedItem);
 
-            t2.delete(item1);
+            t2.deleteAsync(item1).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2.Id, true, false); // we're not applying deletes either
 
-            t2.commit();
+            t2.commitAsync().Wait();
 
             try
             {
-                t1.commit();
+                t1.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
             {
             }
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
         }
@@ -241,23 +249,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             Transaction t0 = manager.newTransaction();
             item1.Something = "val";
-            t0.save(item1);
+            t0.saveAsync(item1);
 
-            t0.commit();
+            t0.commitAsync().Wait();
 
             Transaction t1 = manager.newTransaction();
 
-            ExampleHashKeyItem loadedItem1 = t1.load(item1);
+            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
             assertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
 
-            ExampleHashKeyItem loadedItem2 = t1.load(item2);
+            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item2).Result;
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item2.Key, t1.Id, true, false);
             assertNull(loadedItem2);
 
-            t1.commit();
-            t1.delete(long.MaxValue);
+            t1.commitAsync().Wait();
+            t1.deleteAsync(long.MaxValue).Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, false);
@@ -268,18 +276,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void getItemWithDelete()
         {
             Transaction t1 = manager.newTransaction();
-            ExampleHashKeyItem loadedItem1 = t1.load(hashItem0);
+            ExampleHashKeyItem loadedItem1 = t1.loadAsync(hashItem0).Result;
             assertEquals(hashItem0.ExpectedValues, loadedItem1.ExpectedValues);
             assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, loadedItem1.ExpectedValues, t1.Id, false, false);
 
-            t1.delete(hashItem0);
+            t1.deleteAsync(hashItem0).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
 
-            ExampleHashKeyItem loadedItem2 = t1.load(hashItem0);
+            ExampleHashKeyItem loadedItem2 = t1.loadAsync(hashItem0).Result;
             assertNull(loadedItem2);
             assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
 
-            t1.commit();
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, false);
         }
 
@@ -290,15 +298,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Transaction t1 = manager.newTransaction();
             ExampleHashKeyItem item1 = newItem();
 
-            ExampleHashKeyItem loadedItem1 = t1.load(item1);
+            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
             assertNull(loadedItem1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
-            ExampleHashKeyItem loadedItem2 = t1.load(item1);
+            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1).Result;
             assertNull(loadedItem2);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
-            t1.commit();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
         }
@@ -311,18 +319,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             ExampleHashKeyItem item1 = newItem();
             item1.Something = "wef";
 
-            ExampleHashKeyItem loadedItem1 = t1.load(item1);
+            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
             assertNull(loadedItem1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
 
-            t1.save(item1);
+            t1.saveAsync(item1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem2 = t1.load(item1);
+            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1).Result;
             assertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
-            t1.commit();
+            t1.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
         }
@@ -345,47 +353,47 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             t1Item.Id = item1.Id;
             t1Item.Something = "t1";
 
-            t1.save(t1Item);
+            t1.saveAsync(t1Item).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1Item.ExpectedValues, t1.Id, true, true);
 
-            t1.commit();
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1Item.ExpectedValues, true);
 
             // Begin t2
             ExampleHashKeyItem t2Item = new ExampleHashKeyItem();
             t2Item.Id = item1.Id;
             t2Item.Something = "t2";
-            t2Item.SomeSet = Collections.singleton("extra");
+            t2Item.SomeSet = new HashSet<string> {"extra"};
 
-            t2.save(t2Item);
+            t2.saveAsync(t2Item).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2Item.ExpectedValues, t2.Id, false, true);
 
             // Begin and finish t3
             ExampleHashKeyItem t3Item = new ExampleHashKeyItem();
             t3Item.Id = item1.Id;
             t3Item.Something = "t3";
-            t3Item.SomeSet = Collections.singleton("things");
+            t3Item.SomeSet = new HashSet<string> {"things"};
 
-            t3.save(t3Item);
+            t3.saveAsync(t3Item).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, t3.Id, false, true);
 
-            t3.commit();
+            t3.commitAsync().Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, true);
 
             // Ensure t2 rolled back
             try
             {
-                t2.commit();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
             {
             }
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
-            t3.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
+            t3.deleteAsync(long.MaxValue).Wait();
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, true);
         }
@@ -454,7 +462,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     };
                     //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
-                    expected.putAll(Key);
+                    foreach(var keyValue in Key) expected.Add(keyValue.Key, keyValue.Value);
                     return expected;
                 }
             }
@@ -468,8 +476,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             ExampleVersionedHashKeyItem item1 = newVersionedItem();
 
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
-            t1.commit();
+            t1.saveAsync(item1);
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
 
             ExampleVersionedHashKeyItem item2 = new ExampleVersionedHashKeyItem();
@@ -477,17 +485,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             Transaction t2 = manager.newTransaction();
             try
             {
-                t2.save(item2);
+                t2.saveAsync(item2);
                 fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t2.rollback();
+                t2.rollbackAsync().Wait();
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -498,20 +506,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // establish the item with version 1
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
+            t1.saveAsync(item1);
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
             // while the item is being created in the first transaction, create it in another transaction
             ExampleVersionedHashKeyItem item2 = new ExampleVersionedHashKeyItem();
             item2.Id = item1.Id;
             Transaction t2 = manager.newTransaction();
-            t2.save(item2);
-            t2.commit();
+            t2.saveAsync(item2);
+            t2.commitAsync().Wait();
 
             // try to commit the original transaction
             try
             {
-                t1.commit();
+                t1.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
@@ -519,8 +527,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -531,31 +539,31 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // establish the item with version 1
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
-            t1.commit();
+            t1.saveAsync(item1);
+            t1.commitAsync().Wait();
 
             // update the item to version 2
             Transaction t2 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t2.load(item1);
-            t2.save(item2);
-            t2.commit();
+            ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1).Result;
+            t2.saveAsync(item2).Wait();
+            t2.commitAsync().Wait();
 
             // try to delete with an outdated view of the item
             Transaction t3 = manager.newTransaction();
             try
             {
-                t3.delete(item1);
+                t3.deleteAsync(item1).Wait();
                 fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t3.rollback();
+                t3.rollbackAsync().Wait();
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
-            t3.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
+            t3.deleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -566,31 +574,31 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // establish the item with version 1
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
-            t1.commit();
+            t1.saveAsync(item1).Wait();
+            t1.commitAsync().Wait();
 
-            // update the item to version 2 and save
+            // update the item to version 2 and saveAsync
             Transaction t2 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t2.load(item1);
-            t2.save(item2);
-            t2.commit();
+            ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1).Result;
+            t2.saveAsync(item2).Wait();
+            t2.commitAsync().Wait();
 
             Transaction t3 = manager.newTransaction();
-            t3.load(item1);
+            t3.loadAsync(item1).Wait();
             try
             {
-                t3.save(item1);
+                t3.saveAsync(item1).Wait();
                 fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t3.rollback();
+                t3.rollbackAsync().Wait();
             }
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
-            t3.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
+            t3.deleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -601,23 +609,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // establish the item with version 1
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
-            t1.commit();
+            t1.saveAsync(item1).Wait();
+            t1.commitAsync().Wait();
 
             // start to delete the item
             Transaction t2 = manager.newTransaction();
-            t2.delete(item1);
+            t2.deleteAsync(item1).Wait();
 
             // update the item to version 2
             Transaction t3 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t3.load(item1);
-            t3.save(item2);
-            t3.commit();
+            ExampleVersionedHashKeyItem item2 = t3.loadAsync(item1).Result;
+            t3.saveAsync(item2).Wait();
+            t3.commitAsync().Wait();
 
             // try to commit the delete
             try
             {
-                t2.commit();
+                t2.commitAsync().Wait();
                 fail();
             }
             catch (TransactionRolledBackException)
@@ -626,15 +634,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
 
-            t1.delete(long.MaxValue);
-            t2.delete(long.MaxValue);
-            t3.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
+            t2.deleteAsync(long.MaxValue).Wait();
+            t3.deleteAsync(long.MaxValue).Wait();
         }
 
         private ExampleVersionedHashKeyItem newVersionedItem()
         {
             ExampleVersionedHashKeyItem item1 = new ExampleVersionedHashKeyItem();
-            item1.Id = UUID.randomUUID().ToString();
+            item1.Id = Guid.NewGuid().ToString();
             return item1;
         }
 
@@ -646,20 +654,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item1.Something = "example";
 
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
+            t1.saveAsync(item1).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem1 = manager.load(item1, Transaction.IsolationLevel.COMMITTED);
+            ExampleHashKeyItem loadedItem1 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
             assertNull(loadedItem1);
 
-            t1.commit();
+            t1.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, true);
 
-            ExampleHashKeyItem loadedItem2 = manager.load(item1, Transaction.IsolationLevel.COMMITTED);
+            ExampleHashKeyItem loadedItem2 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
             assertNotNull(loadedItem2);
             assertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
 
-            t1.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -670,20 +678,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item1.Something = "example";
 
             Transaction t1 = manager.newTransaction();
-            t1.save(item1);
+            t1.saveAsync(item1).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem1 = manager.load(item1, Transaction.IsolationLevel.UNCOMMITTED);
+            ExampleHashKeyItem loadedItem1 = manager.loadAsync(item1, Transaction.IsolationLevel.UNCOMMITTED).Result;
             assertNotNull(loadedItem1);
             assertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
 
-            t1.rollback();
+            t1.rollbackAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
 
-            ExampleHashKeyItem loadedItem2 = manager.load(item1, Transaction.IsolationLevel.COMMITTED);
+            ExampleHashKeyItem loadedItem2 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
             assertNull(loadedItem2);
 
-            t1.delete(long.MaxValue);
+            t1.deleteAsync(long.MaxValue).Wait();
         }
     }
 }

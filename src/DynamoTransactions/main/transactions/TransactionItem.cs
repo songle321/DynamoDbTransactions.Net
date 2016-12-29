@@ -487,7 +487,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				throw new TransactionException(txId, "Items in transactions may not contain the attribute named " + Transaction.AttributeName.TXID.ToString());
 			}
 
-			// Don't save over the already saved item.  Prevents us from saving the applied image instead of the previous image in the case
+			// Don't saveAsync over the already saved item.  Prevents us from saving the applied image instead of the previous image in the case
 			// of a re-drive.
 			// If we want to be extremely paranoid, we could expect every attribute to be set exactly already in a second write step, and assert
 			Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(1);
