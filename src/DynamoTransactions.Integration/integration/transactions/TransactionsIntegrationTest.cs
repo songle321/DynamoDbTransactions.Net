@@ -2408,22 +2408,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             //ORIGINAL LINE: final java.util.concurrent.atomic.AtomicBoolean shouldThrowAfterApply = new java.util.concurrent.atomic.AtomicBoolean(false);
             AtomicBoolean shouldThrowAfterApply = new AtomicBoolean(false);
 
-            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final Transaction t1 = new Transaction(java.util.Guid.NewGuid().toString(), manager, true)
-            Transaction t1 = new TransactionAnonymousInnerClass12(this, Guid.NewGuid().ToString(), manager, shouldThrowAfterApply);
-
-            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
-            Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
-            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key2 = newKey(INTEG_HASH_TABLE_NAME);
-            Dictionary<string, AttributeValue> key2 = newKey(INTEG_HASH_TABLE_NAME);
-
-            // Read an item that doesn't exist to get its read lock
-            Dictionary<string, AttributeValue> item1Returned = t1.getItemAsync(new GetItemRequest(INTEG_HASH_TABLE_NAME, key1, true)).Result.Item;
-            assertNull(item1Returned);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
-
             // Now start another transaction that is going to try to read that same item,
             // but stop after you read the competing transaction record (don't try to roll it back yet)
 
@@ -2445,6 +2429,22 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
             //ORIGINAL LINE: final TransactionManager manager = new TransactionManager(dynamodb, INTEG_LOCK_TABLE_NAME, INTEG_IMAGES_TABLE_NAME)
             TransactionManager manager = new TransactionManagerAnonymousInnerClass(this, dynamodb, INTEG_LOCK_TABLE_NAME, INTEG_IMAGES_TABLE_NAME, waitAfterResumeTransaction, resumedTransaction);
+
+            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
+            //ORIGINAL LINE: final Transaction t1 = new Transaction(java.util.Guid.NewGuid().toString(), manager, true)
+            Transaction t1 = new TransactionAnonymousInnerClass12(this, Guid.NewGuid().ToString(), manager, shouldThrowAfterApply);
+
+            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
+            //ORIGINAL LINE: final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
+            Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
+            //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
+            //ORIGINAL LINE: final java.util.Map<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> key2 = newKey(INTEG_HASH_TABLE_NAME);
+            Dictionary<string, AttributeValue> key2 = newKey(INTEG_HASH_TABLE_NAME);
+
+            // Read an item that doesn't exist to get its read lock
+            Dictionary<string, AttributeValue> item1Returned = t1.getItemAsync(new GetItemRequest(INTEG_HASH_TABLE_NAME, key1, true)).Result.Item;
+            assertNull(item1Returned);
+            assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1.Id, true, false);
 
             Thread thread = new Thread(() =>
             {
