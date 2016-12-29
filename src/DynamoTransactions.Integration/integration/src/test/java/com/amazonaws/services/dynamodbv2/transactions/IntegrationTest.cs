@@ -117,12 +117,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             dynamodb = new FailingAmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig { ServiceURL = endpoint });
         }
 
-        protected internal IDictionary<string, AttributeValue> key0;
-        protected internal IDictionary<string, AttributeValue> item0;
+        protected internal Dictionary<string, AttributeValue> key0;
+        protected internal Dictionary<string, AttributeValue> item0;
 
-        protected internal virtual IDictionary<string, AttributeValue> newKey(string tableName)
+        protected internal virtual Dictionary<string, AttributeValue> newKey(string tableName)
         {
-            IDictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
+            Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
             key[ID_ATTRIBUTE] = new AttributeValue
             {
                 S = "val_" + GlobalRandom.NextDouble
@@ -379,7 +379,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        protected internal virtual void assertNoSpecialAttributes(IDictionary<string, AttributeValue> item)
+        protected internal virtual void assertNoSpecialAttributes(Dictionary<string, AttributeValue> item)
         {
             foreach (string attrName in Transaction.SPECIAL_ATTR_NAMES)
             {
@@ -390,7 +390,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        protected internal virtual void assertOldItemImage(string txId, string tableName, Dictionary<string, AttributeValue> key, IDictionary<string, AttributeValue> item, bool shouldExist)
+        protected internal virtual void assertOldItemImage(string txId, string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> item, bool shouldExist)
         {
             Transaction t = manager.resumeTransaction(txId);
             Dictionary<string, Dictionary<ImmutableKey, Request>> requests = t.TxItem.RequestMap;

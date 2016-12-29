@@ -44,7 +44,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
 		// Any requests with keys in this set will return the queue of responses in order. When the end of the queue is reached
 		// further requests will be passed to the DynamoDB client.
-		public readonly IDictionary<GetItemRequest, LinkedList<GetItemResponse>> getRequestsToStub = 
+		public readonly Dictionary<GetItemRequest, LinkedList<GetItemResponse>> getRequestsToStub = 
             new Dictionary<GetItemRequest, LinkedList<GetItemResponse>>();
 
 		/// <summary>
