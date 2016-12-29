@@ -262,7 +262,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Key = key0,
 
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
             Dictionary<string, AttributeValue> getResult2 = t1.getItemAsync(new GetItemRequest
@@ -461,12 +461,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest outerInstance;
 
-            public TransactionAnonymousInnerClass(TransactionsIntegrationTest outerInstance, string toString, UnknownType manager) : base(toString, manager, true)
+            public TransactionAnonymousInnerClass(TransactionsIntegrationTest outerInstance, string toString, TransactionManager manager) : base(toString, manager, true)
             {
                 this.outerInstance = outerInstance;
             }
 
-            protected internal override Dictionary<string, AttributeValue> applyAndKeepLock(Request request, Dictionary<string, AttributeValue> lockedItem)
+            protected internal override Task<Dictionary<string, AttributeValue>> applyAndKeepLockAsync(Request request, Dictionary<string, AttributeValue> lockedItem)
             {
                 throw new FailingAmazonDynamoDBClient.FailedYourRequestException();
             }
@@ -662,7 +662,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Key = key0,
 
-            });
+            }).Wait();
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
@@ -694,7 +694,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item1,
 
-            });
+            }).Wait();
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1, t1.Id, true, true);
 
@@ -721,7 +721,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Key = key0,
 
-            });
+            }).Wait();
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item0, t1.Id, false, false);
 
@@ -859,16 +859,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 AttributeUpdates = updates,
                 Key = key0,
 
-            });
+            }).Wait();
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key0, item1, t1.Id, false, true);
 
-            dynamodb.getRequestsToTreatAsDeleted.Add(new GetItemRequest
+            GetItemRequest deletedGetRequests = new GetItemRequest
             {
                 TableName = manager.ItemImageTableName,
                 ConsistentRead = true
-            }.addKeyEntry(Transaction.AttributeName.IMAGE_ID.ToString(), new AttributeValue(t1.TxItem.txId + "#" + 1))),
-);
+            };
+            deletedGetRequests.Key.Add(Transaction.AttributeName.IMAGE_ID.ToString(),
+                new AttributeValue(t1.TxItem.txId + "#" + 1));
+
+            dynamodb.getRequestsToTreatAsDeleted.Add(deletedGetRequests);
 
             try
             {
@@ -876,8 +879,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     TableName = INTEG_HASH_TABLE_NAME,
                     Key = key0,
-
-                }, Transaction.IsolationLevel.COMMITTED).Result.Item;
+                }, Transaction.IsolationLevel.COMMITTED).Wait();
                 fail("Should have thrown an exception.");
             }
             catch (TransactionException e)
@@ -959,7 +961,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 this.outerInstance = outerInstance;
             }
 
-            protected internal override Task doCommitAsync()
+            protected internal override async Task doCommitAsync()
             {
                 //Skip cleaning up the transaction so we can validate reading.
             }
@@ -1202,7 +1204,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = new Dictionary<string, AttributeValue>(t1Item)
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t1Item, t1.Id, true, true);
 
             t1.commitAsync().Wait();
@@ -1217,7 +1219,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = new Dictionary<string, AttributeValue>(t2Item)
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t2Item, t2.Id, false, true);
 
             // Begin and finish t3
@@ -1229,7 +1231,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = new Dictionary<string, AttributeValue>(t3Item)
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, t3Item, t3.Id, false, true);
 
             t3.commitAsync().Wait();
@@ -1517,7 +1519,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item, t2.Id, false, true);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, key2, t2.Id, true, false);
 
-            Transaction commitFailingTransaction = new TransactionAnonymousInnerClass(this, t2.Id, manager);
+            Transaction commitFailingTransaction = new TransactionAnonymousInnerClass1(this, t2.Id, manager);
 
             try
             {
@@ -1541,11 +1543,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             t2.deleteAsync(long.MaxValue).Wait();
         }
 
-        private class TransactionAnonymousInnerClass : Transaction
+        private class TransactionAnonymousInnerClass1 : Transaction
         {
             private readonly TransactionsIntegrationTest outerInstance;
 
-            public TransactionAnonymousInnerClass(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
+            public TransactionAnonymousInnerClass1(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
             {
                 this.outerInstance = outerInstance;
             }
@@ -1575,15 +1577,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item1,
-
-            });
+            }).Wait();
 
             t1.putItemAsync(new PutItemRequest
             {
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item2,
-
-            });
+            }).Wait();
 
             t1.commitAsync().Wait();
             t1.deleteAsync(long.MaxValue).Wait();
@@ -1622,7 +1622,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             assertItemLocked(INTEG_HASH_TABLE_NAME, key2, item2, t2.Id, false, false);
             assertItemLocked(INTEG_HASH_TABLE_NAME, key3, key3, t2.Id, true, false);
 
-            Transaction rollbackFailingTransaction = new TransactionAnonymousInnerClass2(this, t2.Id, manager);
+            Transaction rollbackFailingTransaction = new TransactionAnonymousInnerClass22(this, t2.Id, manager);
 
             try
             {
@@ -1648,11 +1648,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             t2.deleteAsync(long.MaxValue).Wait();
         }
 
-        private class TransactionAnonymousInnerClass2 : Transaction
+        private class TransactionAnonymousInnerClass22 : Transaction
         {
             private readonly TransactionsIntegrationTest outerInstance;
 
-            public TransactionAnonymousInnerClass2(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
+            public TransactionAnonymousInnerClass22(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
             {
                 this.outerInstance = outerInstance;
             }
@@ -1668,7 +1668,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void rollbackCompletedTransaction()
         {
             Transaction t1 = manager.newTransaction();
-            Transaction rollbackFailingTransaction = new TransactionAnonymousInnerClass3(this, t1.Id, manager);
+            Transaction rollbackFailingTransaction = new TransactionAnonymousInnerClass33(this, t1.Id, manager);
 
             Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
             t1.putItemAsync(new PutItemRequest
@@ -1676,18 +1676,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = key1,
 
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, key1, t1.Id, true, true);
 
             t1.rollbackAsync().Wait();
             rollbackFailingTransaction.rollbackAsync().Wait();
         }
 
-        private class TransactionAnonymousInnerClass3 : Transaction
+        private class TransactionAnonymousInnerClass33 : Transaction
         {
             private readonly TransactionsIntegrationTest outerInstance;
 
-            public TransactionAnonymousInnerClass3(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
+            public TransactionAnonymousInnerClass33(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
             {
                 this.outerInstance = outerInstance;
             }
@@ -1703,7 +1703,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void commitCompletedTransaction()
         {
             Transaction t1 = manager.newTransaction();
-            Transaction commitFailingTransaction = new TransactionAnonymousInnerClass4(this, t1.Id, manager);
+            Transaction commitFailingTransaction = new TransactionAnonymousInnerClass44(this, t1.Id, manager);
 
             Dictionary<string, AttributeValue> key1 = newKey(INTEG_HASH_TABLE_NAME);
             t1.putItemAsync(new PutItemRequest
@@ -1711,18 +1711,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = key1,
 
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, key1, t1.Id, true, true);
 
             t1.commitAsync().Wait();
             commitFailingTransaction.commitAsync().Wait();
         }
 
-        private class TransactionAnonymousInnerClass4 : Transaction
+        private class TransactionAnonymousInnerClass44 : Transaction
         {
             private readonly TransactionsIntegrationTest outerInstance;
 
-            public TransactionAnonymousInnerClass4(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
+            public TransactionAnonymousInnerClass44(TransactionsIntegrationTest outerInstance, string getId, TransactionManager manager) : base(getId, manager, false)
             {
                 this.outerInstance = outerInstance;
             }
@@ -1954,7 +1954,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     TableName = INTEG_HASH_TABLE_NAME,
                     Item = item1,
 
-                });
+                }).Wait();
                 fail();
             }
             catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
@@ -2028,7 +2028,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     TableName = INTEG_HASH_TABLE_NAME,
                     Item = item0a,
 
-                });
+                }).Wait();
                 fail();
             }
             catch (FailingAmazonDynamoDBClient.FailedYourRequestException)
@@ -2064,8 +2064,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public virtual void shouldNotApplyAfterRollback()
         {
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore barrier = new java.util.concurrent.Semaphore(0);
-            Semaphore barrier = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim barrier = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim barrier = new SemaphoreSlim(0);
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
             //ORIGINAL LINE: final Transaction t1 = new Transaction(java.util.Guid.NewGuid().toString(), manager, true)
             Transaction t1 = new TransactionAnonymousInnerClass9(this, Guid.NewGuid().ToString(), manager, barrier);
@@ -2079,7 +2079,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item1["attr1"] = new AttributeValue("original1");
 
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore caughtRolledBackException = new java.util.concurrent.Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim caughtRolledBackException = new java.util.concurrent.SemaphoreSlim(0);
             SemaphoreSlim caughtRolledBackException = new SemaphoreSlim(0);
 
             Thread thread = new Thread(() =>
@@ -2168,8 +2168,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             // Very similar to "shouldNotApplyAfterRollback" except the transaction is rolled back and then deleted.
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore barrier = new java.util.concurrent.Semaphore(0);
-            Semaphore barrier = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim barrier = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim barrier = new SemaphoreSlim(0);
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
             //ORIGINAL LINE: final Transaction t1 = new Transaction(java.util.Guid.NewGuid().toString(), manager, true)
             Transaction t1 = new TransactionAnonymousInnerClass10(this, Guid.NewGuid().ToString(), manager, barrier);
@@ -2183,8 +2183,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item1["attr1"] = new AttributeValue("original1");
 
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore caughtTransactionNotFoundException = new java.util.concurrent.Semaphore(0);
-            Semaphore caughtTransactionNotFoundException = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim caughtTransactionNotFoundException = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim caughtTransactionNotFoundException = new SemaphoreSlim(0);
 
             Thread thread = new Thread(() =>
         {
@@ -2195,7 +2195,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     TableName = INTEG_HASH_TABLE_NAME,
                     Item = item1,
 
-                });
+                }).Wait();
             }
             catch (TransactionNotFoundException)
             {
@@ -2215,7 +2215,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             thread.Join();
 
-            assertEquals(1, caughtTransactionNotFoundException.availablePermits());
+            assertEquals(1, caughtTransactionNotFoundException.CurrentCount);
 
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, false);
 
@@ -2273,8 +2273,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // Very similar to "shouldNotApplyAfterRollbackAndDeleted" except the lock is broken by a new transaction, not t1
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore barrier = new java.util.concurrent.Semaphore(0);
-            Semaphore barrier = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim barrier = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim barrier = new SemaphoreSlim(0);
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
             //ORIGINAL LINE: final Transaction t1 = new Transaction(java.util.Guid.NewGuid().toString(), manager, true)
             Transaction t1 = new TransactionAnonymousInnerClass11(this, Guid.NewGuid().ToString(), manager, barrier);
@@ -2288,8 +2288,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             item1["attr1"] = new AttributeValue("original1");
 
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore caughtFailedYourRequestException = new java.util.concurrent.Semaphore(0);
-            Semaphore caughtFailedYourRequestException = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim caughtFailedYourRequestException = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim caughtFailedYourRequestException = new SemaphoreSlim(0);
 
             Thread thread = new Thread(() =>
         {
@@ -2320,7 +2320,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             thread.Join();
 
-            assertEquals(1, caughtFailedYourRequestException.availablePermits());
+            assertEquals(1, caughtFailedYourRequestException.CurrentCount);
 
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, null, t1.Id, true, false, false); // locked and "null", but don't check the tx item
 
@@ -2336,7 +2336,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = INTEG_HASH_TABLE_NAME,
                 Item = item1a,
 
-            });
+            }).Wait();
             assertItemLocked(INTEG_HASH_TABLE_NAME, key1, item1a, t3.Id, true, true);
             t3.commitAsync().Wait();
             assertItemNotLocked(INTEG_HASH_TABLE_NAME, key1, item1a, true);
@@ -2429,17 +2429,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // t2 waits on this for the main thread to signal it.
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore waitAfterResumeTransaction = new java.util.concurrent.Semaphore(0);
-            Semaphore waitAfterResumeTransaction = new Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim waitAfterResumeTransaction = new java.util.concurrent.SemaphoreSlim(0);
+            SemaphoreSlim waitAfterResumeTransaction = new SemaphoreSlim(0);
 
             // the main thread waits on this for t2 to signal that it's ready
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore resumedTransaction = new java.util.concurrent.Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim resumedTransaction = new java.util.concurrent.SemaphoreSlim(0);
             SemaphoreSlim resumedTransaction = new SemaphoreSlim(0);
 
             // the main thread waits on this for t2 to finish with its rollback of t1
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
-            //ORIGINAL LINE: final java.util.concurrent.Semaphore rolledBackT1 = new java.util.concurrent.Semaphore(0);
+            //ORIGINAL LINE: final java.util.concurrent.SemaphoreSlim rolledBackT1 = new java.util.concurrent.SemaphoreSlim(0);
             SemaphoreSlim rolledBackT1 = new SemaphoreSlim(0);
 
             //JAVA TO C# CONVERTER WARNING: The original Java variable was marked 'final':
@@ -2447,13 +2447,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             TransactionManager manager = new TransactionManagerAnonymousInnerClass(this, dynamodb, INTEG_LOCK_TABLE_NAME, INTEG_IMAGES_TABLE_NAME, waitAfterResumeTransaction, resumedTransaction);
 
             Thread thread = new Thread(() =>
-        {
-            Transaction t2 = new TransactionAnonymousInnerClass13(this, Guid.NewGuid().ToString(), manager);
-            // This will stop pause on waitAfterResumeTransaction once it finds that key1 is already locked by t1.
-            Dictionary<string, AttributeValue> item1Returned = t2.getItemAsync(new GetItemRequest(INTEG_HASH_TABLE_NAME, key1, true)).Result.Item;
-            assertNull(item1Returned);
-            rolledBackT1.Release();
-        });
+            {
+                Transaction t2 = new TransactionAnonymousInnerClass13(this, Guid.NewGuid().ToString(), manager);
+                // This will stop pause on waitAfterResumeTransaction once it finds that key1 is already locked by t1.
+                Dictionary<string, AttributeValue> item1Returned2 = t2.getItemAsync(new GetItemRequest(INTEG_HASH_TABLE_NAME, key1, true)).Result.Item;
+                assertNull(item1Returned2);
+                rolledBackT1.Release();
+            });
             thread.Start();
 
             // Wait for t2 to get to the point where it loaded the t1 tx record.
