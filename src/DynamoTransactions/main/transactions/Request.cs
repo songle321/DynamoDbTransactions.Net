@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
@@ -162,23 +163,23 @@ internal UpdateItemRequest request;
                 {
                     throw new InvalidRequestException("ReturnItemCollectionMetrics is not currently supported", txId, request.TableName, null, this);
                 }
-                if (request.Expected != null)
+                if (request.Expected != null && request.Expected.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ConditionExpression != null)
+                if (request.ConditionExpression != null && request.ConditionExpression.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.UpdateExpression != null)
+                if (request.UpdateExpression != null && request.UpdateExpression.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeNames != null)
+                if (request.ExpressionAttributeNames != null && request.ExpressionAttributeNames.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeValues != null)
+                if (request.ExpressionAttributeValues != null && request.ExpressionAttributeValues.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
@@ -235,19 +236,19 @@ internal DeleteItemRequest request;
                 {
                     throw new InvalidRequestException("ReturnItemCollectionMetrics is not currently supported", txId, TableName, null, this);
                 }
-                if (request.Expected != null)
+                if (request.Expected != null && request.Expected.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ConditionExpression != null)
+                if (request.ConditionExpression != null && request.ConditionExpression.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeNames != null)
+                if (request.ExpressionAttributeNames != null && request.ExpressionAttributeNames.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeValues != null)
+                if (request.ExpressionAttributeValues != null && request.ExpressionAttributeValues.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
@@ -315,19 +316,19 @@ internal DeleteItemRequest request;
                 {
                     throw new InvalidRequestException("ReturnItemCollectionMetrics is not currently supported", txId, TableName, null, this);
                 }
-                if (request.Expected != null)
+                if (request.Expected != null && request.Expected.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ConditionExpression != null)
+                if (request.ConditionExpression != null && request.ConditionExpression.Any())
                 {
                     throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeNames != null)
+                if (request.ExpressionAttributeNames != null && request.ExpressionAttributeNames.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
-                if (request.ExpressionAttributeValues != null)
+                if (request.ExpressionAttributeValues != null && request.ExpressionAttributeValues.Any())
                 {
                     throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
@@ -403,8 +404,8 @@ internal DeleteItemRequest request;
             List<KeySchemaElement> schema = await txManager.GetTableSchemaAsync(tableName);
             foreach (KeySchemaElement schemaElement in schema)
             {
-                AttributeValue val = item[schemaElement.AttributeName];
-                if (val == null)
+                AttributeValue val;
+                if(!item.TryGetValue(schemaElement.AttributeName, out val))
                 {
                     throw new InvalidRequestException("PutItem request must contain the key attribute " + schemaElement.AttributeName, null, tableName, null, null);
                 }
