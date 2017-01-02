@@ -198,7 +198,7 @@ AttributeName = Transaction.AttributeName.ImageId.ToString(),
             }
         }
 
-        protected internal virtual IReadIsolationHandler getReadIsolationHandler(Transaction.IsolationLevel isolationLevel)
+        protected internal virtual IReadIsolationHandler GetReadIsolationHandler(Transaction.IsolationLevel isolationLevel)
         {
             if (isolationLevel == null)
             {
@@ -226,7 +226,7 @@ AttributeName = Transaction.AttributeName.ImageId.ToString(),
                 request.AttributesToGet = attributesToGet.ToList();
             }
             GetItemResponse result = await Client.GetItemAsync(request, cancellationToken);
-            Dictionary<string, AttributeValue> item = await getReadIsolationHandler(isolationLevel).HandleItemAsync(result.Item, request.AttributesToGet, request.TableName, cancellationToken);
+            Dictionary<string, AttributeValue> item = await GetReadIsolationHandler(isolationLevel).HandleItemAsync(result.Item, request.AttributesToGet, request.TableName, cancellationToken);
             Transaction.StripSpecialAttributes(item);
             result.Item = item;
             return result;

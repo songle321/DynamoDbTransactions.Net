@@ -45,7 +45,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             this._txManager = txManager;
             this._isolationLevel = isolationLevel;
-            this._isolationHandler = txManager.getReadIsolationHandler(isolationLevel);
+            this._isolationHandler = txManager.GetReadIsolationHandler(isolationLevel);
         }
 
         /// <summary>
