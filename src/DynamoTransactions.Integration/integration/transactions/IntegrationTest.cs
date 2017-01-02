@@ -238,8 +238,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                TransactionManager.verifyOrCreateTransactionTable(dynamodb, INTEG_LOCK_TABLE_NAME, 10L, 10L, 5L * 60);
-                TransactionManager.verifyOrCreateTransactionImagesTable(dynamodb, INTEG_IMAGES_TABLE_NAME, 10L, 10L, 5L * 60);
+                TransactionManager.verifyOrCreateTransactionTableAsync(dynamodb, INTEG_LOCK_TABLE_NAME, 10L, 10L, 5L * 60);
+                TransactionManager.verifyOrCreateTransactionImagesTableAsync(dynamodb, INTEG_IMAGES_TABLE_NAME, 10L, 10L, 5L * 60).Wait();
             }
             catch (ResourceInUseException)
             {

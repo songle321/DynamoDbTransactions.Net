@@ -112,11 +112,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
 
             // 1. Verify that the transaction table exists, or create it if it doesn't exist
             print("Verifying or creating table " + TX_TABLE_NAME);
-            TransactionManager.verifyOrCreateTransactionTable(dynamodb, TX_TABLE_NAME, 1, 1, null);
+            TransactionManager.verifyOrCreateTransactionTableAsync(dynamodb, TX_TABLE_NAME, 1, 1, null).Wait();
 
             // 2. Verify that the transaction item images table exists, or create it otherwise
             print("Verifying or creating table " + TX_IMAGES_TABLE_NAME);
-            TransactionManager.verifyOrCreateTransactionImagesTable(dynamodb, TX_IMAGES_TABLE_NAME, 1, 1, null);
+            TransactionManager.verifyOrCreateTransactionImagesTableAsync(dynamodb, TX_IMAGES_TABLE_NAME, 1, 1, null).Wait();
 
             // 3. Create a table to do transactions on
             print("Verifying or creating table " + EXAMPLE_TABLE_NAME);

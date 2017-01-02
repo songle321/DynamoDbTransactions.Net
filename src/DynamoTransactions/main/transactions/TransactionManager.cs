@@ -271,9 +271,9 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public static void verifyOrCreateTransactionTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-        public static void verifyOrCreateTransactionTable(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+        public static async Task verifyOrCreateTransactionTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            await (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
             {
                 ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
