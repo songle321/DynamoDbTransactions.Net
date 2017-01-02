@@ -303,7 +303,7 @@ internal DeleteItemRequest request;
 
             protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
-                if (request == null || request.Item == null)
+                if (request == null || request.Item == null || !request.Item.Any())
                 {
                     throw new InvalidRequestException("PutItem must contain an Item", txId, TableName, null, this);
                 }
@@ -396,7 +396,7 @@ internal DeleteItemRequest request;
 
         protected internal static async Task<Dictionary<string, AttributeValue>> GetKeyFromItemAsync(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
         {
-            if (item == null)
+            if (item == null || !item.Any())
             {
                 throw new InvalidRequestException("PutItem must contain an Item", null, tableName, null, null);
             }
