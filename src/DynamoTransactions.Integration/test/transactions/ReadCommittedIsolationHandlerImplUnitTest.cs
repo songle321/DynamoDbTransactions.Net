@@ -66,54 +66,54 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     //ORIGINAL LINE: @RunWith(MockitoJUnitRunner.class) public class ReadCommittedIsolationHandlerImplUnitTest
     public class ReadCommittedIsolationHandlerImplUnitTest
     {
-        protected internal const int RID = 1;
-        protected internal static GetItemRequest GET_ITEM_REQUEST = new GetItemRequest
+        protected internal const int Rid = 1;
+        protected internal static GetItemRequest GetItemRequest = new GetItemRequest
         {
-            TableName = TABLE_NAME,
-            Key = KEY,
+            TableName = TableName,
+            Key = Key,
             ConsistentRead = true
         };
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Mock private TransactionManager mockTxManager;
-        private Mock<TransactionManager> mockTxManager;
+        private Mock<TransactionManager> _mockTxManager;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Mock private Transaction mockTx;
-        private Mock<Transaction> mockTx;
+        private Mock<Transaction> _mockTx;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Mock private TransactionItem mockTxItem;
-        private Mock<TransactionItem> mockTxItem;
+        private Mock<TransactionItem> _mockTxItem;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Mock private Request mockRequest;
-        private Mock<Request> mockRequest;
+        private Mock<Request> _mockRequest;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Mock private com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient mockClient;
-        private Mock<AmazonDynamoDBClient> mockClient;
+        private Mock<AmazonDynamoDBClient> _mockClient;
 
-        private ReadCommittedIsolationHandlerImpl isolationHandler;
-        private Mock<ReadCommittedIsolationHandlerImpl> mockIsolationHandler;
+        private ReadCommittedIsolationHandlerImpl _isolationHandler;
+        private Mock<ReadCommittedIsolationHandlerImpl> _mockIsolationHandler;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Before public void setup()
-        public virtual void setup()
+        public virtual void Setup()
         {
-            mockIsolationHandler = new Mock<ReadCommittedIsolationHandlerImpl>();
-            mockIsolationHandler.CallBase = true;
-            isolationHandler = mockIsolationHandler.Object;
+            _mockIsolationHandler = new Mock<ReadCommittedIsolationHandlerImpl>();
+            _mockIsolationHandler.CallBase = true;
+            _isolationHandler = _mockIsolationHandler.Object;
 
-            mockTxItem = new Mock<TransactionItem>();
+            _mockTxItem = new Mock<TransactionItem>();
 
-            mockRequest = new Mock<Request>();
+            _mockRequest = new Mock<Request>();
 
-            mockClient = new Mock<AmazonDynamoDBClient>();
+            _mockClient = new Mock<AmazonDynamoDBClient>();
 
-            mockTx = new Mock<Transaction>();
-            mockTx.SetupGet(x => x.TxItem).Returns(mockTxItem.Object);
-            mockTx.SetupGet(x => x.Id).Returns(TX_ID);
+            _mockTx = new Mock<Transaction>();
+            _mockTx.SetupGet(x => x.TxItem).Returns(_mockTxItem.Object);
+            _mockTx.SetupGet(x => x.Id).Returns(TxId);
 
             //isolationHandler = spy(new ReadCommittedIsolationHandlerImpl(mockTxManager, 0));
             //when(mockTx.TxItem).thenReturn(mockTxItem);
@@ -124,271 +124,271 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void checkItemCommittedReturnsNullForNullItem()
         [Fact]
-        public virtual void checkItemCommittedReturnsNullForNullItem()
+        public virtual void CheckItemCommittedReturnsNullForNullItem()
         {
-            setup();
-            assertNull(isolationHandler.checkItemCommitted(null));
+            Setup();
+            AssertNull(_isolationHandler.CheckItemCommitted(null));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void checkItemCommittedReturnsItemForUnlockedItem()
         [Fact]
-        public virtual void checkItemCommittedReturnsItemForUnlockedItem()
+        public virtual void CheckItemCommittedReturnsItemForUnlockedItem()
         {
-            setup();
-            assertEquals(UNLOCKED_ITEM, isolationHandler.checkItemCommitted(UNLOCKED_ITEM));
+            Setup();
+            AssertEquals(UnlockedItem, _isolationHandler.CheckItemCommitted(UnlockedItem));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void checkItemCommittedReturnsNullForTransientItem()
         [Fact]
-        public virtual void checkItemCommittedReturnsNullForTransientItem()
+        public virtual void CheckItemCommittedReturnsNullForTransientItem()
         {
-            setup();
-            assertNull(isolationHandler.checkItemCommitted(TRANSIENT_APPLIED_ITEM));
-            assertNull(isolationHandler.checkItemCommitted(TRANSIENT_UNAPPLIED_ITEM));
+            Setup();
+            AssertNull(_isolationHandler.CheckItemCommitted(TransientAppliedItem));
+            AssertNull(_isolationHandler.CheckItemCommitted(TransientUnappliedItem));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException.class) public void checkItemCommittedThrowsExceptionForNonTransientAppliedItem()
         [Fact]
-        public virtual void checkItemCommittedThrowsExceptionForNonTransientAppliedItem()
+        public virtual void CheckItemCommittedThrowsExceptionForNonTransientAppliedItem()
         {
-            setup();
-            Assert.Throws<TransactionException>(() => isolationHandler.checkItemCommitted(NON_TRANSIENT_APPLIED_ITEM));
+            Setup();
+            Assert.Throws<TransactionException>(() => _isolationHandler.CheckItemCommitted(NonTransientAppliedItem));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsNullForNullItem()
         [Fact]
-        public virtual void filterAttributesToGetReturnsNullForNullItem()
+        public virtual void FilterAttributesToGetReturnsNullForNullItem()
         {
-            setup();
-            isolationHandler.filterAttributesToGet(null, null);
+            Setup();
+            _isolationHandler.FilterAttributesToGet(null, null);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetIsNull()
         [Fact]
-        public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetIsNull()
+        public virtual void FilterAttributesToGetReturnsItemWhenAttributesToGetIsNull()
         {
-            setup();
-            Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, null);
-            assertEquals(UNLOCKED_ITEM, result);
+            Setup();
+            Dictionary<string, AttributeValue> result = _isolationHandler.FilterAttributesToGet(UnlockedItem, null);
+            AssertEquals(UnlockedItem, result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetIsEmpty()
         [Fact]
-        public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetIsEmpty()
+        public virtual void FilterAttributesToGetReturnsItemWhenAttributesToGetIsEmpty()
         {
-            setup();
-            Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, new List<string>());
-            assertEquals(UNLOCKED_ITEM, result);
+            Setup();
+            Dictionary<string, AttributeValue> result = _isolationHandler.FilterAttributesToGet(UnlockedItem, new List<string>());
+            AssertEquals(UnlockedItem, result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsItemWhenAttributesToGetContainsAllAttributes()
         [Fact]
-        public virtual void filterAttributesToGetReturnsItemWhenAttributesToGetContainsAllAttributes()
+        public virtual void FilterAttributesToGetReturnsItemWhenAttributesToGetContainsAllAttributes()
         {
-            setup();
-            List<string> attributesToGet = Arrays.asList("Id", "attr1"); // all attributes
-            Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
-            assertEquals(UNLOCKED_ITEM, result);
+            Setup();
+            List<string> attributesToGet = Arrays.AsList("Id", "attr1"); // all attributes
+            Dictionary<string, AttributeValue> result = _isolationHandler.FilterAttributesToGet(UnlockedItem, attributesToGet);
+            AssertEquals(UnlockedItem, result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void filterAttributesToGetReturnsOnlySpecifiedAttributesWhenSpecified()
         [Fact]
-        public virtual void filterAttributesToGetReturnsOnlySpecifiedAttributesWhenSpecified()
+        public virtual void FilterAttributesToGetReturnsOnlySpecifiedAttributesWhenSpecified()
         {
-            setup();
-            List<string> attributesToGet = Arrays.asList("Id"); // only keep the key
-            Dictionary<string, AttributeValue> result = isolationHandler.filterAttributesToGet(UNLOCKED_ITEM, attributesToGet);
-            assertEquals(KEY, result);
+            Setup();
+            List<string> attributesToGet = Arrays.AsList("Id"); // only keep the key
+            Dictionary<string, AttributeValue> result = _isolationHandler.FilterAttributesToGet(UnlockedItem, attributesToGet);
+            AssertEquals(Key, result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionAssertionException.class) public void getOldCommittedItemThrowsExceptionIfNoLockingRequestExists()
         [Fact]
-        public virtual void getOldCommittedItemThrowsExceptionIfNoLockingRequestExists()
+        public virtual void GetOldCommittedItemThrowsExceptionIfNoLockingRequestExists()
         {
-            setup();
-            mockTxItem.Setup(x => x.getRequestForKey(TABLE_NAME, KEY)).Returns((Request) null);
+            Setup();
+            _mockTxItem.Setup(x => x.GetRequestForKey(TableName, Key)).Returns((Request) null);
             //when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(null);
-            Assert.Throws<TransactionAssertionException>(() => isolationHandler.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY).Wait());
+            Assert.Throws<TransactionAssertionException>(() => _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key).Wait());
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.transactions.exceptions.UnknownCompletedTransactionException.class) public void getOldCommittedItemThrowsExceptionIfOldItemDoesNotExist()
         [Fact]
-        public virtual void getOldCommittedItemThrowsExceptionIfOldItemDoesNotExist()
+        public virtual void GetOldCommittedItemThrowsExceptionIfOldItemDoesNotExist()
         {
-            setup();
-            mockTxItem.Setup(x => x.getRequestForKey(TABLE_NAME, KEY)).Returns(mockRequest.Object);
+            Setup();
+            _mockTxItem.Setup(x => x.GetRequestForKey(TableName, Key)).Returns(_mockRequest.Object);
             //when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 
-            mockRequest.SetupGet(x => x.Rid).Returns(RID);
+            _mockRequest.SetupGet(x => x.Rid).Returns(Rid);
             //when(mockRequest.Rid).thenReturn(RID);
 
-            mockTxItem.Setup(x => x.loadItemImageAsync(RID)).Returns(Task.FromResult((Dictionary<string, AttributeValue>)  null));
+            _mockTxItem.Setup(x => x.LoadItemImageAsync(Rid)).Returns(Task.FromResult((Dictionary<string, AttributeValue>)  null));
             //when(mockTxItem.loadItemImageAsync(RID)).thenReturn(null);
 
-            isolationHandler.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY);
+            _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void getOldCommittedItemReturnsOldImageIfOldItemExists()
         [Fact]
-        public virtual void getOldCommittedItemReturnsOldImageIfOldItemExists()
+        public virtual void GetOldCommittedItemReturnsOldImageIfOldItemExists()
         {
-            setup();
-            mockTxItem.Setup(x => x.getRequestForKey(TABLE_NAME, KEY)).Returns(mockRequest.Object);
+            Setup();
+            _mockTxItem.Setup(x => x.GetRequestForKey(TableName, Key)).Returns(_mockRequest.Object);
             //when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
 
-            mockRequest.SetupGet(x => x.Rid).Returns(RID);
+            _mockRequest.SetupGet(x => x.Rid).Returns(Rid);
             //when(mockRequest.Rid).thenReturn(RID);
 
-            mockTxItem.Setup(x => x.loadItemImageAsync(RID)).Returns(Task.FromResult(UNLOCKED_ITEM));
+            _mockTxItem.Setup(x => x.LoadItemImageAsync(Rid)).Returns(Task.FromResult(UnlockedItem));
             //when(mockTxItem.loadItemImageAsync(RID)).thenReturn(UNLOCKED_ITEM);
 
-            Dictionary<string, AttributeValue> result = isolationHandler.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY).Result;
-            assertEquals(UNLOCKED_ITEM, result);
+            Dictionary<string, AttributeValue> result = _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key).Result;
+            AssertEquals(UnlockedItem, result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void createGetItemRequestCorrectlyCreatesRequest()
         [Fact]
-        public virtual void createGetItemRequestCorrectlyCreatesRequest()
+        public virtual void CreateGetItemRequestCorrectlyCreatesRequest()
         {
-            setup();
-            mockTxManager.Setup(x => x.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(KEY));
+            Setup();
+            _mockTxManager.Setup(x => x.CreateKeyMapAsync(TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(Key));
             //when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-            GetItemRequest request = isolationHandler
-                .CreateGetItemRequestAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, CancellationToken.None).Result;
-            assertEquals(TABLE_NAME, request.TableName);
-            assertEquals(KEY, request.Key);
-            assertEquals(null, request.AttributesToGet);
-            assertTrue(request.ConsistentRead);
+            GetItemRequest request = _isolationHandler
+                .CreateGetItemRequestAsync(TableName, NonTransientAppliedItem, CancellationToken.None).Result;
+            AssertEquals(TableName, request.TableName);
+            AssertEquals(Key, request.Key);
+            AssertEquals(null, request.AttributesToGet);
+            AssertTrue(request.ConsistentRead);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
         [Fact]
-        public virtual void handleItemReturnsNullForNullItem()
+        public virtual void HandleItemReturnsNullForNullItem()
         {
-            setup();
-            assertNull(isolationHandler.HandleItemAsync(null, TABLE_NAME, 0, CancellationToken.None).Result);
+            Setup();
+            AssertNull(_isolationHandler.HandleItemAsync(null, TableName, 0, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
         [Fact]
-        public virtual void handleItemReturnsItemForUnlockedItem()
+        public virtual void HandleItemReturnsItemForUnlockedItem()
         {
-            setup();
-            assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
+            Setup();
+            AssertEquals(UnlockedItem, _isolationHandler.HandleItemAsync(UnlockedItem, TableName, 0, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientItem()
         [Fact]
-        public virtual void handleItemReturnsNullForTransientItem()
+        public virtual void HandleItemReturnsNullForTransientItem()
         {
-            setup();
-            assertNull(isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
-            assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
+            Setup();
+            AssertNull(_isolationHandler.HandleItemAsync(TransientAppliedItem, TableName, 0, CancellationToken.None).Result);
+            AssertNull(_isolationHandler.HandleItemAsync(TransientUnappliedItem, TableName, 0, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException.class) public void handleItemThrowsExceptionForNonTransientAppliedItemWithNoCorrespondingTx()
         [Fact]
-        public virtual void handleItemThrowsExceptionForNonTransientAppliedItemWithNoCorrespondingTx()
+        public virtual void HandleItemThrowsExceptionForNonTransientAppliedItemWithNoCorrespondingTx()
         {
-            setup();
-            Assert.Throws<TransactionNotFoundException>(() => isolationHandler.loadTransaction(TX_ID));
+            Setup();
+            Assert.Throws<TransactionNotFoundException>(() => _isolationHandler.LoadTransaction(TxId));
             //doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
-            Assert.Throws<TransactionNotFoundException>(() => isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
+            Assert.Throws<TransactionNotFoundException>(() => _isolationHandler.HandleItemAsync(NonTransientAppliedItem, TableName, 0, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForNonTransientAppliedItemWithCommittedTxItem()
         [Fact]
-        public virtual void handleItemReturnsItemForNonTransientAppliedItemWithCommittedTxItem()
+        public virtual void HandleItemReturnsItemForNonTransientAppliedItemWithCommittedTxItem()
         {
-            setup();
-            mockIsolationHandler.Setup(x => x.loadTransaction(TX_ID)).Returns(mockTx.Object);
+            Setup();
+            _mockIsolationHandler.Setup(x => x.LoadTransaction(TxId)).Returns(_mockTx.Object);
             //doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
-            mockTxItem.Setup(x => x.getState()).Returns(TransactionItem.State.COMMITTED);
+            _mockTxItem.Setup(x => x.GetState()).Returns(TransactionItem.State.Committed);
             //when(mockTxItem.getState()).thenReturn(TransactionItem.State.COMMITTED);
-            assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler
-                .HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
+            AssertEquals(NonTransientAppliedItem, _isolationHandler
+                .HandleItemAsync(NonTransientAppliedItem, TableName, 0, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsOldVersionOfItemForNonTransientAppliedItemWithPendingTxItem()
         [Fact]
-        public virtual void handleItemReturnsOldVersionOfItemForNonTransientAppliedItemWithPendingTxItem()
+        public virtual void HandleItemReturnsOldVersionOfItemForNonTransientAppliedItemWithPendingTxItem()
         {
-            setup();
-            mockIsolationHandler.Setup(x => x.loadTransaction(TX_ID)).Returns(mockTx.Object);
+            Setup();
+            _mockIsolationHandler.Setup(x => x.LoadTransaction(TxId)).Returns(_mockTx.Object);
             //doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
-            mockIsolationHandler.Setup(x => x.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY))
-                .Returns(Task.FromResult(UNLOCKED_ITEM));
+            _mockIsolationHandler.Setup(x => x.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key))
+                .Returns(Task.FromResult(UnlockedItem));
             //doReturn(UNLOCKED_ITEM).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-            mockTxManager
-                .Setup(x => x.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(KEY));
+            _mockTxManager
+                .Setup(x => x.CreateKeyMapAsync(TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(Key));
             //when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-            mockTxItem.SetupGet(x => x.getState()).Returns(TransactionItem.State.PENDING);
+            _mockTxItem.SetupGet(x => x.GetState()).Returns(TransactionItem.State.Pending);
             //when(mockTxItem.getState()).thenReturn(TransactionItem.State.PENDING);
-            mockTxItem.Setup(x => x.getRequestForKey(TABLE_NAME, KEY)).Returns(mockRequest.Object);
+            _mockTxItem.Setup(x => x.GetRequestForKey(TableName, Key)).Returns(_mockRequest.Object);
             //when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
-            assertEquals(UNLOCKED_ITEM, isolationHandler
-                .HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Result);
-            mockIsolationHandler.Verify(x => x.loadTransaction(TX_ID));
+            AssertEquals(UnlockedItem, _isolationHandler
+                .HandleItemAsync(NonTransientAppliedItem, TableName, 0, CancellationToken.None).Result);
+            _mockIsolationHandler.Verify(x => x.LoadTransaction(TxId));
             //verify(isolationHandler).loadTransaction(TX_ID);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test(expected = com.amazonaws.services.dynamodbv2.transactions.exceptions.TransactionException.class) public void handleItemThrowsExceptionForNonTransientAppliedItemWithPendingTxItemWithNoOldVersionAndNoRetries()
         [Fact]
-        public virtual void handleItemThrowsExceptionForNonTransientAppliedItemWithPendingTxItemWithNoOldVersionAndNoRetries()
+        public virtual void HandleItemThrowsExceptionForNonTransientAppliedItemWithPendingTxItemWithNoOldVersionAndNoRetries()
         {
-            setup();
-            mockIsolationHandler.Setup(x => x.loadTransaction(TX_ID)).Returns(mockTx.Object);
+            Setup();
+            _mockIsolationHandler.Setup(x => x.LoadTransaction(TxId)).Returns(_mockTx.Object);
             //doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
             Assert.Throws<UnknownCompletedTransactionException>(
-                () => isolationHandler.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY).Wait());
+                () => _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key).Wait());
             //doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-            mockTxItem.Setup(x => x.getState()).Returns(TransactionItem.State.PENDING);
+            _mockTxItem.Setup(x => x.GetState()).Returns(TransactionItem.State.Pending);
             //when(mockTxItem.getState()).thenReturn(TransactionItem.State.PENDING);
-            mockTxItem.Setup(x => x.getRequestForKey(TABLE_NAME, KEY)).Returns(mockRequest.Object);
+            _mockTxItem.Setup(x => x.GetRequestForKey(TableName, Key)).Returns(_mockRequest.Object);
             //when(mockTxItem.getRequestForKey(TABLE_NAME, KEY)).thenReturn(mockRequest);
-            isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 0, CancellationToken.None).Wait();
-            mockIsolationHandler.Verify(x => x.loadTransaction(TX_ID));
+            _isolationHandler.HandleItemAsync(NonTransientAppliedItem, TableName, 0, CancellationToken.None).Wait();
+            _mockIsolationHandler.Verify(x => x.LoadTransaction(TxId));
             //verify(isolationHandler).loadTransaction(TX_ID);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemRetriesWhenTransactionNotFound()
         [Fact]
-        public virtual void handleItemRetriesWhenTransactionNotFound()
+        public virtual void HandleItemRetriesWhenTransactionNotFound()
         {
-            setup();
-            Assert.Throws<TransactionNotFoundException>(() => isolationHandler.loadTransaction(TX_ID));
+            Setup();
+            Assert.Throws<TransactionNotFoundException>(() => _isolationHandler.LoadTransaction(TxId));
             //doThrow(typeof(TransactionNotFoundException)).when(isolationHandler).loadTransaction(TX_ID);
-            mockTxManager
-                .Setup(x => x.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(KEY));
+            _mockTxManager
+                .Setup(x => x.CreateKeyMapAsync(TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(Key));
             //when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-            mockClient
-                .Setup(x => x.GetItemAsync(GET_ITEM_REQUEST, It.IsAny<CancellationToken>()))
+            _mockClient
+                .Setup(x => x.GetItemAsync(GetItemRequest, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new GetItemResponse
             {
-                Item = NON_TRANSIENT_APPLIED_ITEM
+                Item = NonTransientAppliedItem
             }));
             //when(mockClient.GetItemAsync(GET_ITEM_REQUEST)).thenReturn(new GetItemResponse
             //{
@@ -397,46 +397,46 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             bool caughtException = false;
             try
             {
-                isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1, CancellationToken.None).Wait();
+                _isolationHandler.HandleItemAsync(NonTransientAppliedItem, TableName, 1, CancellationToken.None).Wait();
             }
             catch (TransactionException)
             {
                 caughtException = true;
             }
 
-            assertTrue(caughtException);
+            AssertTrue(caughtException);
 
-            mockIsolationHandler.Verify(x => x.loadTransaction(TX_ID), Times.Exactly(2));
+            _mockIsolationHandler.Verify(x => x.LoadTransaction(TxId), Times.Exactly(2));
             //verify(isolationHandler, times(2)).loadTransaction(TX_ID);
 
-            mockIsolationHandler.Verify(x => x.CreateGetItemRequestAsync(
-                TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()));
+            _mockIsolationHandler.Verify(x => x.CreateGetItemRequestAsync(
+                TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()));
             //verify(isolationHandler).createGetItemRequest(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
 
-            mockClient.Verify(x => x.GetItemAsync(GET_ITEM_REQUEST, It.IsAny<CancellationToken>()));
+            _mockClient.Verify(x => x.GetItemAsync(GetItemRequest, It.IsAny<CancellationToken>()));
             //verify(mockClient).GetItemAsync(GET_ITEM_REQUEST);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemRetriesWhenUnknownCompletedTransaction()
         [Fact]
-        public virtual void handleItemRetriesWhenUnknownCompletedTransaction()
+        public virtual void HandleItemRetriesWhenUnknownCompletedTransaction()
         {
-            setup();
-            mockIsolationHandler.Setup(x => x.loadTransaction(TX_ID)).Returns(mockTx.Object);
+            Setup();
+            _mockIsolationHandler.Setup(x => x.LoadTransaction(TxId)).Returns(_mockTx.Object);
             //doReturn(mockTx).when(isolationHandler).loadTransaction(TX_ID);
             Assert.Throws<UnknownCompletedTransactionException>(
-                () => isolationHandler.GetOldCommittedItemAsync(mockTx.Object, TABLE_NAME, KEY).Wait());
+                () => _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key).Wait());
             //doThrow(typeof(UnknownCompletedTransactionException)).when(isolationHandler).getOldCommittedItem(mockTx, TABLE_NAME, KEY);
-            mockTxManager
-                .Setup(x => x.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(KEY));
+            _mockTxManager
+                .Setup(x => x.CreateKeyMapAsync(TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(Key));
             //when(mockTxManager.CreateKeyMapAsync(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM)).thenReturn(KEY);
-            mockClient
-                .Setup(x => x.GetItemAsync(GET_ITEM_REQUEST, It.IsAny<CancellationToken>()))
+            _mockClient
+                .Setup(x => x.GetItemAsync(GetItemRequest, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new GetItemResponse
                 {
-                    Item = NON_TRANSIENT_APPLIED_ITEM
+                    Item = NonTransientAppliedItem
                 }));
             //when(mockClient.GetItemAsync(GET_ITEM_REQUEST)).thenReturn(new GetItemResponse
             //{
@@ -445,23 +445,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             bool caughtException = false;
             try
             {
-                isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, TABLE_NAME, 1, CancellationToken.None).Wait();
+                _isolationHandler.HandleItemAsync(NonTransientAppliedItem, TableName, 1, CancellationToken.None).Wait();
             }
             catch (TransactionException)
             {
                 caughtException = true;
             }
 
-            assertTrue(caughtException);
+            AssertTrue(caughtException);
 
-            mockIsolationHandler.Verify(x => x.loadTransaction(TX_ID), Times.Exactly(2));
+            _mockIsolationHandler.Verify(x => x.LoadTransaction(TxId), Times.Exactly(2));
             //verify(isolationHandler, times(2)).loadTransaction(TX_ID);
 
-            mockIsolationHandler.Verify(x => x.CreateGetItemRequestAsync(
-                TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM, It.IsAny<CancellationToken>()));
+            _mockIsolationHandler.Verify(x => x.CreateGetItemRequestAsync(
+                TableName, NonTransientAppliedItem, It.IsAny<CancellationToken>()));
             //verify(isolationHandler).createGetItemRequest(TABLE_NAME, NON_TRANSIENT_APPLIED_ITEM);
 
-            mockClient.Verify(x => x.GetItemAsync(GET_ITEM_REQUEST, It.IsAny<CancellationToken>()));
+            _mockClient.Verify(x => x.GetItemAsync(GetItemRequest, It.IsAny<CancellationToken>()));
             //verify(mockClient).GetItemAsync(GET_ITEM_REQUEST);
         }
     }

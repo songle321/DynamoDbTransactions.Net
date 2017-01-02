@@ -24,7 +24,7 @@ namespace com.amazonaws.services.dynamodbv2.util
 	{
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void testBSEquals()
-		public virtual void testBSEquals()
+		public virtual void TestBsEquals()
 		{
 			byte[] b1 = {0x01};
 			byte[] b2 = {0x01};
@@ -41,7 +41,7 @@ namespace com.amazonaws.services.dynamodbv2.util
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void testBSNotEq()
-		public virtual void testBSNotEq()
+		public virtual void TestBsNotEq()
         {
             byte[] b1 = { 0x01 };
             byte[] b2 = { 0x01 };
@@ -60,7 +60,7 @@ namespace com.amazonaws.services.dynamodbv2.util
 
 //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
 //ORIGINAL LINE: @Test public void testBSWithNull()
-		public virtual void testBSWithNull()
+		public virtual void TestBsWithNull()
 		{
 			byte[] b1 = {0x01};
 			byte[] b2 = {0x01};

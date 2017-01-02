@@ -20,7 +20,7 @@
 	/// </summary>
 	public class TransactionCompletedException : TransactionException
 	{
-private const long serialVersionUID = -8170993155989412979L;
+private const long SerialVersionUid = -8170993155989412979L;
 
 		public TransactionCompletedException(string txId, string message) : base(txId, message)
 		{

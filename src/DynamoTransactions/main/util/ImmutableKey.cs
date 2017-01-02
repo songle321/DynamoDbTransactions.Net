@@ -23,13 +23,13 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ImmutableKey
 	{
-private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
+private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> _key;
 
 		public ImmutableKey(Dictionary<string, AttributeValue> mutableKey)
 		{
 			if (mutableKey == null)
 			{
-				this.key = null;
+				this._key = null;
 			}
 			else
 			{
@@ -38,7 +38,7 @@ private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 				{
 					keyBuilder[e.Key] = new ImmutableAttributeValue(e.Value);
 				}
-				this.key = new ReadOnlyDictionary<string, ImmutableAttributeValue>(keyBuilder);
+				this._key = new ReadOnlyDictionary<string, ImmutableAttributeValue>(keyBuilder);
 			}
 		}
 
@@ -46,7 +46,7 @@ private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 		{
 			const int prime = 31;
 			int result = 1;
-			result = prime * result + ((key == null) ? 0 : key.GetHashCode());
+			result = prime * result + ((_key == null) ? 0 : _key.GetHashCode());
 			return result;
 		}
 
@@ -65,14 +65,14 @@ private readonly IReadOnlyDictionary<string, ImmutableAttributeValue> key;
 				return false;
 			}
 			ImmutableKey other = (ImmutableKey) obj;
-			if (key == null)
+			if (_key == null)
 			{
-				if (other.key != null)
+				if (other._key != null)
 				{
 					return false;
 				}
 			}
-			else if (!key.Equals(other.key))
+			else if (!_key.Equals(other._key))
 			{
 				return false;
 			}

@@ -32,25 +32,25 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// </summary>
     public class TransactionManager
     {
-        private static readonly Log log = LogFactory.getLog(typeof(TransactionManager));
-        private static readonly List<AttributeDefinition> TRANSACTIONS_TABLE_ATTRIBUTES;
+        private static readonly Log Log = LogFactory.GetLog(typeof(TransactionManager));
+        private static readonly List<AttributeDefinition> TransactionsTableAttributes;
 
-        private static readonly List<KeySchemaElement> TRANSACTIONS_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
+        private static readonly List<KeySchemaElement> TransactionsTableKeySchema = new List<KeySchemaElement>
         {
             new KeySchemaElement
             {
-                AttributeName = Transaction.AttributeName.TXID.ToString(),
+                AttributeName = Transaction.AttributeName.Txid.ToString(),
                 KeyType = KeyType.HASH
             }
         };
 
-        private static readonly List<AttributeDefinition> TRANSACTION_IMAGES_TABLE_ATTRIBUTES;
+        private static readonly List<AttributeDefinition> TransactionImagesTableAttributes;
 
-        private static readonly List<KeySchemaElement> TRANSACTION_IMAGES_TABLE_KEY_SCHEMA = new List<KeySchemaElement>
+        private static readonly List<KeySchemaElement> TransactionImagesTableKeySchema = new List<KeySchemaElement>
         {
             new KeySchemaElement
             {
-                AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
+                AttributeName = Transaction.AttributeName.ImageId.ToString(),
                 KeyType = KeyType.HASH
             }
         };
@@ -59,29 +59,29 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         static TransactionManager()
         {
             List<AttributeDefinition> definition = new List<AttributeDefinition> { new AttributeDefinition {
-                AttributeName = Transaction.AttributeName.TXID.ToString(),
+                AttributeName = Transaction.AttributeName.Txid.ToString(),
                 AttributeType = ScalarAttributeType.S,
             }};
             definition.Sort(new AttributeDefinitionComparator());
-            TRANSACTIONS_TABLE_ATTRIBUTES = definition;
+            TransactionsTableAttributes = definition;
 
             definition = new List<AttributeDefinition> { new AttributeDefinition
             {
-AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
+AttributeName = Transaction.AttributeName.ImageId.ToString(),
                 AttributeType = ScalarAttributeType.S,
             }};
             definition.Sort(new AttributeDefinitionComparator());
-            TRANSACTION_IMAGES_TABLE_ATTRIBUTES = definition;
+            TransactionImagesTableAttributes = definition;
         }
 
-        private readonly AmazonDynamoDBClient client;
-        private readonly string transactionTableName;
-        private readonly string itemImageTableName;
-        private readonly ConcurrentDictionary<string, List<KeySchemaElement>> tableSchemaCache = new ConcurrentDictionary<string, List<KeySchemaElement>>();
-        private readonly DynamoDBContext clientMapper;
-        private readonly ThreadLocalDynamoDBFacade facadeProxy;
-        private readonly ReadUncommittedIsolationHandlerImpl readUncommittedIsolationHandler;
-        private readonly ReadCommittedIsolationHandlerImpl readCommittedIsolationHandler;
+        private readonly AmazonDynamoDBClient _client;
+        private readonly string _transactionTableName;
+        private readonly string _itemImageTableName;
+        private readonly ConcurrentDictionary<string, List<KeySchemaElement>> _tableSchemaCache = new ConcurrentDictionary<string, List<KeySchemaElement>>();
+        private readonly DynamoDBContext _clientMapper;
+        private readonly ThreadLocalDynamoDbFacade _facadeProxy;
+        private readonly ReadUncommittedIsolationHandlerImpl _readUncommittedIsolationHandler;
+        private readonly ReadCommittedIsolationHandlerImpl _readCommittedIsolationHandler;
 
         public TransactionManager(AmazonDynamoDBClient client, string transactionTableName, string itemImageTableName) : this(client, transactionTableName, itemImageTableName, new DynamoDBContextConfig())
         {
@@ -101,28 +101,28 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
             {
                 throw new System.ArgumentException("itemImageTableName must not be null");
             }
-            this.client = client;
-            this.transactionTableName = transactionTableName;
-            this.itemImageTableName = itemImageTableName;
-            this.facadeProxy = new ThreadLocalDynamoDBFacade();
-            this.clientMapper = new DynamoDBContext(facadeProxy, config);
-            this.readUncommittedIsolationHandler = new ReadUncommittedIsolationHandlerImpl();
-            this.readCommittedIsolationHandler = new ReadCommittedIsolationHandlerImpl(this);
+            this._client = client;
+            this._transactionTableName = transactionTableName;
+            this._itemImageTableName = itemImageTableName;
+            this._facadeProxy = new ThreadLocalDynamoDbFacade();
+            this._clientMapper = new DynamoDBContext(_facadeProxy, config);
+            this._readUncommittedIsolationHandler = new ReadUncommittedIsolationHandlerImpl();
+            this._readCommittedIsolationHandler = new ReadCommittedIsolationHandlerImpl(this);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
         protected internal virtual async Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            List<KeySchemaElement> schema = tableSchemaCache[tableName];
+            List<KeySchemaElement> schema = _tableSchemaCache[tableName];
             if (schema == null)
             {
-                DescribeTableResponse result = await client.DescribeTableAsync(new DescribeTableRequest
+                DescribeTableResponse result = await _client.DescribeTableAsync(new DescribeTableRequest
                 {
                     TableName = tableName,
                 }, cancellationToken);
                 schema = result.Table.KeySchema;
-                tableSchemaCache[tableName] = schema;
+                _tableSchemaCache[tableName] = schema;
             }
             return schema;
         }
@@ -148,37 +148,37 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
             return key;
         }
 
-        public virtual Transaction newTransaction()
+        public virtual Transaction NewTransaction()
         {
             Transaction transaction = new Transaction(Guid.NewGuid().ToString(), this, true);
-            log.info("Started transaction " + transaction.Id);
+            Log.Info("Started transaction " + transaction.Id);
             return transaction;
         }
 
-        public virtual Transaction resumeTransaction(string txId)
+        public virtual Transaction ResumeTransaction(string txId)
         {
             Transaction transaction = new Transaction(txId, this, false);
-            log.info("Resuming transaction from id " + transaction.Id);
+            Log.Info("Resuming transaction from id " + transaction.Id);
             return transaction;
         }
 
-        public virtual Transaction resumeTransaction(Dictionary<string, AttributeValue> txItem)
+        public virtual Transaction ResumeTransaction(Dictionary<string, AttributeValue> txItem)
         {
             Transaction transaction = new Transaction(txItem, this);
-            log.info("Resuming transaction from item " + transaction.Id);
+            Log.Info("Resuming transaction from item " + transaction.Id);
             return transaction;
         }
 
-        public static bool isTransactionItem(Dictionary<string, AttributeValue> txItem)
+        public static bool IsTransactionItem(Dictionary<string, AttributeValue> txItem)
         {
-            return TransactionItem.isTransactionItem(txItem);
+            return TransactionItem.IsTransactionItem(txItem);
         }
 
         public virtual AmazonDynamoDBClient Client
         {
             get
             {
-                return client;
+                return _client;
             }
         }
 
@@ -186,19 +186,19 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         {
             get
             {
-                return clientMapper;
+                return _clientMapper;
             }
         }
 
-        protected internal virtual ThreadLocalDynamoDBFacade FacadeProxy
+        protected internal virtual ThreadLocalDynamoDbFacade FacadeProxy
         {
             get
             {
-                return facadeProxy;
+                return _facadeProxy;
             }
         }
 
-        protected internal virtual ReadIsolationHandler getReadIsolationHandler(Transaction.IsolationLevel isolationLevel)
+        protected internal virtual IReadIsolationHandler getReadIsolationHandler(Transaction.IsolationLevel isolationLevel)
         {
             if (isolationLevel == null)
             {
@@ -206,11 +206,11 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
             }
             switch (isolationLevel)
             {
-                case Transaction.IsolationLevel.UNCOMMITTED:
-                    return readUncommittedIsolationHandler;
-                case Transaction.IsolationLevel.COMMITTED:
-                    return readCommittedIsolationHandler;
-                case Transaction.IsolationLevel.READ_LOCK:
+                case Transaction.IsolationLevel.Uncommitted:
+                    return _readUncommittedIsolationHandler;
+                case Transaction.IsolationLevel.Committed:
+                    return _readCommittedIsolationHandler;
+                case Transaction.IsolationLevel.ReadLock:
                     throw new System.ArgumentException("Cannot callAsync GetItemAsync at the READ_LOCK isolation level outside of a transaction. Call GetItemAsync on a transaction directly instead.");
                 default:
                     throw new System.ArgumentException("Unrecognized isolation level: " + isolationLevel);
@@ -222,12 +222,12 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
             if (request.AttributesToGet != null)
             {
                 ISet<string> attributesToGet = new HashSet<string>(request.AttributesToGet);
-                attributesToGet.UnionWith(Transaction.SPECIAL_ATTR_NAMES);
+                attributesToGet.UnionWith(Transaction.SpecialAttrNames);
                 request.AttributesToGet = attributesToGet.ToList();
             }
             GetItemResponse result = await Client.GetItemAsync(request, cancellationToken);
             Dictionary<string, AttributeValue> item = await getReadIsolationHandler(isolationLevel).HandleItemAsync(result.Item, request.AttributesToGet, request.TableName, cancellationToken);
-            Transaction.stripSpecialAttributes(item);
+            Transaction.StripSpecialAttributes(item);
             result.Item = item;
             return result;
         }
@@ -236,7 +236,7 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         {
             get
             {
-                return transactionTableName;
+                return _transactionTableName;
             }
         }
 
@@ -244,7 +244,7 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         {
             get
             {
-                return itemImageTableName;
+                return _itemImageTableName;
             }
         }
 
@@ -260,20 +260,20 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         /// <param name="tableName"> </param>
         /// <param name="item"> </param>
         /// <param name="txId"> </param>
-        public virtual void breakLock(string tableName, Dictionary<string, AttributeValue> item, string txId)
+        public virtual void BreakLock(string tableName, Dictionary<string, AttributeValue> item, string txId)
         {
-            if (log.WarnEnabled)
+            if (Log.WarnEnabled)
             {
-                log.warn("Breaking a lock on table " + tableName + " for transaction " + txId + " for item " + item + ".  This will leave the item in an unknown state");
+                Log.Warn("Breaking a lock on table " + tableName + " for transaction " + txId + " for item " + item + ".  This will leave the item in an unknown state");
             }
-            Transaction.unlockItemUnsafeAsync(this, tableName, item, txId);
+            Transaction.UnlockItemUnsafeAsync(this, tableName, item, txId);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public static void verifyOrCreateTransactionTable(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-        public static async Task verifyOrCreateTransactionTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+        public static async Task VerifyOrCreateTransactionTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            await (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            await (new TableHelper(client)).VerifyOrCreateTableAsync(tableName, TransactionsTableAttributes, TransactionsTableKeySchema, null, new ProvisionedThroughput
             {
                 ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
@@ -282,9 +282,9 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public static void verifyOrCreateTransactionImagesTableAsync(com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient client, String tableName, long readCapacityUnits, long writeCapacityUnits, Nullable<long> waitTimeSeconds) throws InterruptedException
-        public static async Task verifyOrCreateTransactionImagesTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
+        public static async Task VerifyOrCreateTransactionImagesTableAsync(AmazonDynamoDBClient client, string tableName, long readCapacityUnits, long writeCapacityUnits, long? waitTimeSeconds)
         {
-            await (new TableHelper(client)).verifyOrCreateTableAsync(tableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null, new ProvisionedThroughput
+            await (new TableHelper(client)).VerifyOrCreateTableAsync(tableName, TransactionImagesTableAttributes, TransactionImagesTableKeySchema, null, new ProvisionedThroughput
             {
                 ReadCapacityUnits = readCapacityUnits,
                 WriteCapacityUnits = writeCapacityUnits,
@@ -299,15 +299,15 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         /// <param name="transactionImagesTableName"> </param>
         /// <exception cref="ResourceInUseException"> if the table exists but has the wrong schema </exception>
         /// <exception cref="ResourceNotFoundException"> if the table does not exist </exception>
-        public static async Task verifyTransactionTablesExistAsync(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
+        public static async Task VerifyTransactionTablesExistAsync(AmazonDynamoDBClient client, string transactionTableName, string transactionImagesTableName)
         {
-            string state = await (new TableHelper(client)).verifyTableExistsAsync(transactionTableName, TRANSACTIONS_TABLE_ATTRIBUTES, TRANSACTIONS_TABLE_KEY_SCHEMA, null);
+            string state = await (new TableHelper(client)).VerifyTableExistsAsync(transactionTableName, TransactionsTableAttributes, TransactionsTableKeySchema, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionTableName + " is not ACTIVE");
             }
 
-            state = await (new TableHelper(client)).verifyTableExistsAsync(transactionImagesTableName, TRANSACTION_IMAGES_TABLE_ATTRIBUTES, TRANSACTION_IMAGES_TABLE_KEY_SCHEMA, null);
+            state = await (new TableHelper(client)).VerifyTableExistsAsync(transactionImagesTableName, TransactionImagesTableAttributes, TransactionImagesTableKeySchema, null);
             if (!"ACTIVE".Equals(state))
             {
                 throw new ResourceInUseException("Table " + transactionImagesTableName + " is not ACTIVE");
@@ -369,11 +369,11 @@ AttributeName = Transaction.AttributeName.IMAGE_ID.ToString(),
         ///            . </param>
         /// <returns> An instance of the item class with all attributes populated from
         ///         the table, or null if the item does not exist. </returns>
-        public virtual async Task<T> loadAsync<T>(T item, Transaction.IsolationLevel isolationLevel)
+        public virtual async Task<T> LoadAsync<T>(T item, Transaction.IsolationLevel isolationLevel)
         {
             try
             {
-                FacadeProxy.Backend = new TransactionManagerDynamoDBFacade(this, isolationLevel);
+                FacadeProxy.Backend = new TransactionManagerDynamoDbFacade(this, isolationLevel);
                 return await ClientMapper.LoadAsync<T>(item);
             }
             finally

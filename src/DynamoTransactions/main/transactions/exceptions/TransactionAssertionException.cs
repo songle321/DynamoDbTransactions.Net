@@ -18,7 +18,7 @@
  {
 public class TransactionAssertionException : TransactionException
 	{
-private const long serialVersionUID = -894664265849460781L;
+private const long SerialVersionUid = -894664265849460781L;
 
 		public TransactionAssertionException(string txId, string message) : base(txId, message)
 		{
@@ -30,7 +30,7 @@ private const long serialVersionUID = -894664265849460781L;
 		/// <param name="txId"> </param>
 		/// <param name="message"> </param>
 		/// <param name="data"> </param>
-		public static void txAssert(bool assertion, string txId, string message, params object[] data)
+		public static void TxAssert(bool assertion, string txId, string message, params object[] data)
 		{
 			if (!assertion)
 			{
@@ -49,9 +49,9 @@ private const long serialVersionUID = -894664265849460781L;
 			}
 		}
 
-		public static void txFail(string txId, string message, params object[] data)
+		public static void TxFail(string txId, string message, params object[] data)
 		{
-			txAssert(false, txId, message, data);
+			TxAssert(false, txId, message, data);
 		}
 	}
 

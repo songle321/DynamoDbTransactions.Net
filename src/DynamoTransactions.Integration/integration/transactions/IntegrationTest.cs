@@ -50,33 +50,33 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     public class IntegrationTest
     {
 
-        protected internal static readonly FailingAmazonDynamoDBClient dynamodb;
+        protected internal static readonly FailingAmazonDynamoDbClient Dynamodb;
         //protected internal static readonly AmazonDynamoDBClient documentDynamoDB;
-        private const string DYNAMODB_ENDPOINT = "http://dynamodb.us-west-2.amazonaws.com";
-        private const string DYNAMODB_ENDPOINT_PROPERTY = "dynamodb-local.endpoint";
+        private const string DynamodbEndpoint = "http://dynamodb.us-west-2.amazonaws.com";
+        private const string DynamodbEndpointProperty = "dynamodb-local.endpoint";
 
-        protected internal const string ID_ATTRIBUTE = "Id";
-        protected internal const string HASH_TABLE_NAME = "TransactionsIntegrationTest_Hash";
-        protected internal const string HASH_RANGE_TABLE_NAME = "TransactionsIntegrationTest_HashRange";
-        protected internal const string LOCK_TABLE_NAME = "TransactionsIntegrationTest_Transactions";
-        protected internal const string IMAGES_TABLE_NAME = "TransactionsIntegrationTest_ItemImages";
-        protected internal static readonly string TABLE_NAME_PREFIX = DateTime.Now.ToString("yyyy-MM-dd'T'HH-mm-ss");
+        protected internal const string IdAttribute = "Id";
+        protected internal const string HashTableName = "TransactionsIntegrationTest_Hash";
+        protected internal const string HashRangeTableName = "TransactionsIntegrationTest_HashRange";
+        protected internal const string LockTableName = "TransactionsIntegrationTest_Transactions";
+        protected internal const string ImagesTableName = "TransactionsIntegrationTest_ItemImages";
+        protected internal static readonly string TableNamePrefix = DateTime.Now.ToString("yyyy-MM-dd'T'HH-mm-ss");
 
-        protected internal static readonly string INTEG_LOCK_TABLE_NAME = TABLE_NAME_PREFIX + "_" + LOCK_TABLE_NAME;
-        protected internal static readonly string INTEG_IMAGES_TABLE_NAME = TABLE_NAME_PREFIX + "_" + IMAGES_TABLE_NAME;
-        protected internal static readonly string INTEG_HASH_TABLE_NAME = TABLE_NAME_PREFIX + "_" + HASH_TABLE_NAME;
-        protected internal static readonly string INTEG_HASH_RANGE_TABLE_NAME = TABLE_NAME_PREFIX + "_" + HASH_RANGE_TABLE_NAME;
+        protected internal static readonly string IntegLockTableName = TableNamePrefix + "_" + LockTableName;
+        protected internal static readonly string IntegImagesTableName = TableNamePrefix + "_" + ImagesTableName;
+        protected internal static readonly string IntegHashTableName = TableNamePrefix + "_" + HashTableName;
+        protected internal static readonly string IntegHashRangeTableName = TableNamePrefix + "_" + HashRangeTableName;
 
-        protected internal readonly TransactionManager manager;
+        protected internal readonly TransactionManager Manager;
 
         public IntegrationTest()
         {
-            manager = new TransactionManager(dynamodb, INTEG_LOCK_TABLE_NAME, INTEG_IMAGES_TABLE_NAME);
+            Manager = new TransactionManager(Dynamodb, IntegLockTableName, IntegImagesTableName);
         }
 
         public IntegrationTest(DynamoDBContextConfig config)
         {
-            manager = new TransactionManager(dynamodb, INTEG_LOCK_TABLE_NAME, INTEG_IMAGES_TABLE_NAME, config);
+            Manager = new TransactionManager(Dynamodb, IntegLockTableName, IntegImagesTableName, config);
         }
 
         static IntegrationTest()
@@ -100,7 +100,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
             else
             {
-                endpoint = DYNAMODB_ENDPOINT;
+                endpoint = DynamodbEndpoint;
                 string apiKey = config?["apiKey"]?.Value<string>();
                 string secretKey = config?["secretKey"]?.Value<string>();
                 if(apiKey != null && secretKey != null)
@@ -114,34 +114,34 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 }
             }
 
-            dynamodb = new FailingAmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig { ServiceURL = endpoint });
+            Dynamodb = new FailingAmazonDynamoDbClient(credentials, new AmazonDynamoDBConfig { ServiceURL = endpoint });
         }
 
-        protected internal Dictionary<string, AttributeValue> key0;
-        protected internal Dictionary<string, AttributeValue> item0;
+        protected internal Dictionary<string, AttributeValue> Key0;
+        protected internal Dictionary<string, AttributeValue> Item0;
 
-        protected internal virtual Dictionary<string, AttributeValue> newKey(string tableName)
+        protected internal virtual Dictionary<string, AttributeValue> NewKey(string tableName)
         {
             Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
-            key[ID_ATTRIBUTE] = new AttributeValue
+            key[IdAttribute] = new AttributeValue
             {
                 S = "val_" + GlobalRandom.NextDouble
             };
-            if (INTEG_HASH_RANGE_TABLE_NAME.Equals(tableName))
+            if (IntegHashRangeTableName.Equals(tableName))
             {
                 key["RangeAttr"] = new AttributeValue
                 {
                     N = Convert.ToString(GlobalRandom.NextDouble)
                 };
             }
-            else if (!INTEG_HASH_TABLE_NAME.Equals(tableName))
+            else if (!IntegHashTableName.Equals(tableName))
             {
                 throw new System.ArgumentException();
             }
             return key;
         }
 
-        private static void waitForTableToBecomeAvailable(string tableName)
+        private static void WaitForTableToBecomeAvailable(string tableName)
         {
             try
             {
@@ -164,7 +164,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 System.Threading.Thread.Sleep(5000); // Wait 5 seconds.
                 try
                 {
-                    var res = dynamodb.DescribeTableAsync(new DescribeTableRequest
+                    var res = Dynamodb.DescribeTableAsync(new DescribeTableRequest
                     {
                         TableName = tableName
                     }, CancellationToken.None).Result;
@@ -182,13 +182,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             } while (status != "ACTIVE");
         }
 
-        public static void waitForDelete(string tableName)
+        public static void WaitForDelete(string tableName)
         {
             try
             {
                 while (true)
                 {
-                    DescribeTableResponse desc = dynamodb.DescribeTableAsync(new DescribeTableRequest
+                    DescribeTableResponse desc = Dynamodb.DescribeTableAsync(new DescribeTableRequest
                     {
                         TableName = tableName
                     }, CancellationToken.None).Result;
@@ -211,73 +211,73 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @BeforeClass public static void createTables() throws InterruptedException
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        public static void createTables()
+        public static void CreateTables()
         {
             try
             {
                 CreateTableRequest createHash = new CreateTableRequest
                 {
-                    TableName = INTEG_HASH_TABLE_NAME,
+                    TableName = IntegHashTableName,
                     AttributeDefinitions =
                     {
-                        new AttributeDefinition(ID_ATTRIBUTE, ScalarAttributeType.S)
+                        new AttributeDefinition(IdAttribute, ScalarAttributeType.S)
                     },
                     KeySchema =
                     {
-                        new KeySchemaElement(ID_ATTRIBUTE, KeyType.HASH)
+                        new KeySchemaElement(IdAttribute, KeyType.HASH)
                     },
                     ProvisionedThroughput = new ProvisionedThroughput(5L, 5L)
                 };
 
-                dynamodb.CreateTableAsync(createHash).Wait();
+                Dynamodb.CreateTableAsync(createHash).Wait();
             }
             catch (ResourceInUseException)
             {
-                Console.Error.WriteLine("Warning: " + INTEG_HASH_TABLE_NAME + " was already in use");
+                Console.Error.WriteLine("Warning: " + IntegHashTableName + " was already in use");
             }
 
             try
             {
-                TransactionManager.verifyOrCreateTransactionTableAsync(dynamodb, INTEG_LOCK_TABLE_NAME, 10L, 10L, 5L * 60);
-                TransactionManager.verifyOrCreateTransactionImagesTableAsync(dynamodb, INTEG_IMAGES_TABLE_NAME, 10L, 10L, 5L * 60).Wait();
+                TransactionManager.VerifyOrCreateTransactionTableAsync(Dynamodb, IntegLockTableName, 10L, 10L, 5L * 60);
+                TransactionManager.VerifyOrCreateTransactionImagesTableAsync(Dynamodb, IntegImagesTableName, 10L, 10L, 5L * 60).Wait();
             }
             catch (ResourceInUseException)
             {
-                Console.Error.WriteLine("Warning: " + INTEG_HASH_TABLE_NAME + " was already in use");
+                Console.Error.WriteLine("Warning: " + IntegHashTableName + " was already in use");
             }
 
 
-            waitForTableToBecomeAvailable(INTEG_HASH_TABLE_NAME);
+            WaitForTableToBecomeAvailable(IntegHashTableName);
 
-            waitForTableToBecomeAvailable(INTEG_LOCK_TABLE_NAME);
+            WaitForTableToBecomeAvailable(IntegLockTableName);
 
-            waitForTableToBecomeAvailable(INTEG_IMAGES_TABLE_NAME);
+            WaitForTableToBecomeAvailable(IntegImagesTableName);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @AfterClass public static void deleteTables() throws InterruptedException
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        public static void deleteTables()
+        public static void DeleteTables()
         {
             try
             {
-                Table hashTable = Table.LoadTable(dynamodb, INTEG_HASH_TABLE_NAME);
-                Table lockTable = Table.LoadTable(dynamodb, INTEG_LOCK_TABLE_NAME);
-                Table imagesTable = Table.LoadTable(dynamodb, INTEG_IMAGES_TABLE_NAME);
+                Table hashTable = Table.LoadTable(Dynamodb, IntegHashTableName);
+                Table lockTable = Table.LoadTable(Dynamodb, IntegLockTableName);
+                Table imagesTable = Table.LoadTable(Dynamodb, IntegImagesTableName);
 
-                Console.WriteLine("Issuing DeleteTable request for " + INTEG_HASH_TABLE_NAME);
-                dynamodb.DeleteTableAsync(INTEG_HASH_TABLE_NAME);
-                Console.WriteLine("Issuing DeleteTable request for " + INTEG_LOCK_TABLE_NAME);
-                dynamodb.DeleteTableAsync(INTEG_LOCK_TABLE_NAME);
-                Console.WriteLine("Issuing DeleteTable request for " + INTEG_IMAGES_TABLE_NAME);
-                dynamodb.DeleteTableAsync(INTEG_IMAGES_TABLE_NAME);
+                Console.WriteLine("Issuing DeleteTable request for " + IntegHashTableName);
+                Dynamodb.DeleteTableAsync(IntegHashTableName);
+                Console.WriteLine("Issuing DeleteTable request for " + IntegLockTableName);
+                Dynamodb.DeleteTableAsync(IntegLockTableName);
+                Console.WriteLine("Issuing DeleteTable request for " + IntegImagesTableName);
+                Dynamodb.DeleteTableAsync(IntegImagesTableName);
 
-                Console.WriteLine("Waiting for " + INTEG_HASH_TABLE_NAME + " to be deleted...this may take a while...");
-                waitForDelete(INTEG_HASH_TABLE_NAME);
-                Console.WriteLine("Waiting for " + INTEG_LOCK_TABLE_NAME + " to be deleted...this may take a while...");
-                waitForDelete(INTEG_LOCK_TABLE_NAME);
-                Console.WriteLine("Waiting for " + INTEG_IMAGES_TABLE_NAME + " to be deleted...this may take a while...");
-                waitForDelete(INTEG_IMAGES_TABLE_NAME);
+                Console.WriteLine("Waiting for " + IntegHashTableName + " to be deleted...this may take a while...");
+                WaitForDelete(IntegHashTableName);
+                Console.WriteLine("Waiting for " + IntegLockTableName + " to be deleted...this may take a while...");
+                WaitForDelete(IntegLockTableName);
+                Console.WriteLine("Waiting for " + IntegImagesTableName + " to be deleted...this may take a while...");
+                WaitForDelete(IntegImagesTableName);
             }
             catch (Exception e)
             {
@@ -286,134 +286,134 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        protected internal virtual void assertItemLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, string owner, bool isTransient, bool isApplied)
+        protected internal virtual void AssertItemLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, string owner, bool isTransient, bool isApplied)
         {
-            assertItemLocked(tableName, key, expected, owner, isTransient, isApplied, true);
+            AssertItemLocked(tableName, key, expected, owner, isTransient, isApplied, true);
         }
 
-        protected internal virtual void assertItemLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, string owner, bool isTransient, bool isApplied, bool checkTxItem)
+        protected internal virtual void AssertItemLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, string owner, bool isTransient, bool isApplied, bool checkTxItem)
         {
-            Dictionary<string, AttributeValue> item = getItem(tableName, key);
-            assertNotNull(item);
-            assertEquals(owner, item[Transaction.AttributeName.TXID.ToString()].S);
+            Dictionary<string, AttributeValue> item = GetItem(tableName, key);
+            AssertNotNull(item);
+            AssertEquals(owner, item[Transaction.AttributeName.Txid.ToString()].S);
             if (isTransient)
             {
-                assertTrue("item is not transient, and should have been", item.ContainsKey(Transaction.AttributeName.TRANSIENT.ToString()));
-                assertEquals("item is not transient, and should have been", "1", item[Transaction.AttributeName.TRANSIENT.ToString()].S);
+                AssertTrue("item is not transient, and should have been", item.ContainsKey(Transaction.AttributeName.Transient.ToString()));
+                AssertEquals("item is not transient, and should have been", "1", item[Transaction.AttributeName.Transient.ToString()].S);
             }
             else
             {
-                assertNull("item is transient, and should not have been", item[Transaction.AttributeName.TRANSIENT.ToString()]);
+                AssertNull("item is transient, and should not have been", item[Transaction.AttributeName.Transient.ToString()]);
             }
             if (isApplied)
             {
-                assertTrue("item is not applied, and should have been", item.ContainsKey(Transaction.AttributeName.APPLIED.ToString()));
-                assertEquals("item is not applied, and should have been", "1", item[Transaction.AttributeName.APPLIED.ToString()].S);
+                AssertTrue("item is not applied, and should have been", item.ContainsKey(Transaction.AttributeName.Applied.ToString()));
+                AssertEquals("item is not applied, and should have been", "1", item[Transaction.AttributeName.Applied.ToString()].S);
             }
             else
             {
-                assertNull("item is applied, and should not have been", item[Transaction.AttributeName.APPLIED.ToString()]);
+                AssertNull("item is applied, and should not have been", item[Transaction.AttributeName.Applied.ToString()]);
             }
-            assertTrue(item.ContainsKey(Transaction.AttributeName.DATE.ToString()));
+            AssertTrue(item.ContainsKey(Transaction.AttributeName.Date.ToString()));
             if (expected != null)
             {
-                item.Remove(Transaction.AttributeName.TXID.ToString());
-                item.Remove(Transaction.AttributeName.TRANSIENT.ToString());
-                item.Remove(Transaction.AttributeName.APPLIED.ToString());
-                item.Remove(Transaction.AttributeName.DATE.ToString());
-                assertEquals(expected, item);
+                item.Remove(Transaction.AttributeName.Txid.ToString());
+                item.Remove(Transaction.AttributeName.Transient.ToString());
+                item.Remove(Transaction.AttributeName.Applied.ToString());
+                item.Remove(Transaction.AttributeName.Date.ToString());
+                AssertEquals(expected, item);
             }
             // Also verify that it is locked in the tx record
             if (checkTxItem)
             {
-                TransactionItem txItem = new TransactionItem(owner, manager, false);
-                assertTrue(txItem.RequestMap.ContainsKey(tableName));
-                assertTrue(txItem.RequestMap[tableName].ContainsKey(new ImmutableKey(key)));
+                TransactionItem txItem = new TransactionItem(owner, Manager, false);
+                AssertTrue(txItem.RequestMap.ContainsKey(tableName));
+                AssertTrue(txItem.RequestMap[tableName].ContainsKey(new ImmutableKey(key)));
             }
         }
 
-        protected internal virtual void assertItemLocked(string tableName, Dictionary<string, AttributeValue> key, string owner, bool isTransient, bool isApplied)
+        protected internal virtual void AssertItemLocked(string tableName, Dictionary<string, AttributeValue> key, string owner, bool isTransient, bool isApplied)
         {
-            assertItemLocked(tableName, key, null, owner, isTransient, isApplied);
+            AssertItemLocked(tableName, key, null, owner, isTransient, isApplied);
         }
 
-        protected internal virtual void assertItemNotLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, bool shouldExist)
+        protected internal virtual void AssertItemNotLocked(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> expected, bool shouldExist)
         {
-            Dictionary<string, AttributeValue> item = getItem(tableName, key);
+            Dictionary<string, AttributeValue> item = GetItem(tableName, key);
             if (shouldExist)
             {
-                assertNotNull("Item does not exist in the table, but it should", item);
-                assertNull(item[Transaction.AttributeName.TRANSIENT.ToString()]);
-                assertNull(item[Transaction.AttributeName.TXID.ToString()]);
-                assertNull(item[Transaction.AttributeName.APPLIED.ToString()]);
-                assertNull(item[Transaction.AttributeName.DATE.ToString()]);
+                AssertNotNull("Item does not exist in the table, but it should", item);
+                AssertNull(item[Transaction.AttributeName.Transient.ToString()]);
+                AssertNull(item[Transaction.AttributeName.Txid.ToString()]);
+                AssertNull(item[Transaction.AttributeName.Applied.ToString()]);
+                AssertNull(item[Transaction.AttributeName.Date.ToString()]);
             }
             else
             {
-                assertNull("Item should have been null: " + item, item);
+                AssertNull("Item should have been null: " + item, item);
             }
 
             if (expected != null)
             {
-                item.Remove(Transaction.AttributeName.TXID.ToString());
-                item.Remove(Transaction.AttributeName.TRANSIENT.ToString());
-                assertEquals(expected, item);
+                item.Remove(Transaction.AttributeName.Txid.ToString());
+                item.Remove(Transaction.AttributeName.Transient.ToString());
+                AssertEquals(expected, item);
             }
         }
 
-        protected internal virtual void assertItemNotLocked(string tableName, Dictionary<string, AttributeValue> key, bool shouldExist)
+        protected internal virtual void AssertItemNotLocked(string tableName, Dictionary<string, AttributeValue> key, bool shouldExist)
         {
-            assertItemNotLocked(tableName, key, null, shouldExist);
+            AssertItemNotLocked(tableName, key, null, shouldExist);
         }
 
-        protected internal virtual void assertTransactionDeleted(Transaction t)
+        protected internal virtual void AssertTransactionDeleted(Transaction t)
         {
             try
             {
-                manager.resumeTransaction(t.Id);
-                fail();
+                Manager.ResumeTransaction(t.Id);
+                Fail();
             }
             catch (TransactionNotFoundException e)
             {
-                assertTrue(e.Message.Contains("Transaction not found"));
+                AssertTrue(e.Message.Contains("Transaction not found"));
             }
         }
 
-        protected internal virtual void assertNoSpecialAttributes(Dictionary<string, AttributeValue> item)
+        protected internal virtual void AssertNoSpecialAttributes(Dictionary<string, AttributeValue> item)
         {
-            foreach (string attrName in Transaction.SPECIAL_ATTR_NAMES)
+            foreach (string attrName in Transaction.SpecialAttrNames)
             {
                 if (item.ContainsKey(attrName))
                 {
-                    fail("Should not have contained attribute " + attrName + " " + item);
+                    Fail("Should not have contained attribute " + attrName + " " + item);
                 }
             }
         }
 
-        protected internal virtual void assertOldItemImage(string txId, string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> item, bool shouldExist)
+        protected internal virtual void AssertOldItemImage(string txId, string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValue> item, bool shouldExist)
         {
-            Transaction t = manager.resumeTransaction(txId);
+            Transaction t = Manager.ResumeTransaction(txId);
             Dictionary<string, Dictionary<ImmutableKey, Request>> requests = t.TxItem.RequestMap;
             Request r = requests[tableName][new ImmutableKey(key)];
-            Dictionary<string, AttributeValue> image = t.TxItem.loadItemImageAsync(r.Rid).Result;
+            Dictionary<string, AttributeValue> image = t.TxItem.LoadItemImageAsync(r.Rid).Result;
             if (shouldExist)
             {
-                assertNotNull(image);
-                image.Remove(Transaction.AttributeName.TXID.ToString());
-                image.Remove(Transaction.AttributeName.IMAGE_ID.ToString());
-                image.Remove(Transaction.AttributeName.DATE.ToString());
-                assertFalse(image.ContainsKey(Transaction.AttributeName.TRANSIENT.ToString()));
-                assertEquals(item, image); // TODO does not work for Set AttributeValue types (DynamoDB does not preserve ordering)
+                AssertNotNull(image);
+                image.Remove(Transaction.AttributeName.Txid.ToString());
+                image.Remove(Transaction.AttributeName.ImageId.ToString());
+                image.Remove(Transaction.AttributeName.Date.ToString());
+                AssertFalse(image.ContainsKey(Transaction.AttributeName.Transient.ToString()));
+                AssertEquals(item, image); // TODO does not work for Set AttributeValue types (DynamoDB does not preserve ordering)
             }
             else
             {
-                assertNull(image);
+                AssertNull(image);
             }
         }
 
-        protected internal virtual Dictionary<string, AttributeValue> getItem(string tableName, Dictionary<string, AttributeValue> key)
+        protected internal virtual Dictionary<string, AttributeValue> GetItem(string tableName, Dictionary<string, AttributeValue> key)
         {
-            GetItemResponse result = dynamodb.GetItemAsync(new GetItemRequest
+            GetItemResponse result = Dynamodb.GetItemAsync(new GetItemRequest
                 {
                     TableName = tableName,
                     Key = key,

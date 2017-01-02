@@ -5,6 +5,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 {
     public class Arrays
     {
-        public static List<T> asList<T>(params T[] keySchemaElement) => new List<T>(keySchemaElement);
+        public static List<T> AsList<T>(params T[] keySchemaElement) => new List<T>(keySchemaElement);
     }
 }

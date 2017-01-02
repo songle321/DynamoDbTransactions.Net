@@ -25,21 +25,21 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ImmutableAttributeValue
 	{
-private readonly string n;
-		private readonly string s;
-		private readonly sbyte[] b;
-		private readonly List<string> ns;
-		private readonly List<string> ss;
-		private readonly List<sbyte[]> bs;
+private readonly string _n;
+		private readonly string _s;
+		private readonly sbyte[] _b;
+		private readonly List<string> _ns;
+		private readonly List<string> _ss;
+		private readonly List<sbyte[]> _bs;
 
 		public ImmutableAttributeValue(AttributeValue av)
 		{
-			s = av.S;
-			n = av.N;
-			b = (sbyte[]) av.B?.ToArray().Clone();
-			ns = av.NS != null ? new List<string>(av.NS) : null;
-			ss = av.SS != null ? new List<string>(av.SS) : null;
-			bs = av.BS != null ? new List<sbyte[]>(av.BS.Count) : null;
+			_s = av.S;
+			_n = av.N;
+			_b = (sbyte[]) av.B?.ToArray().Clone();
+			_ns = av.NS != null ? new List<string>(av.NS) : null;
+			_ss = av.SS != null ? new List<string>(av.SS) : null;
+			_bs = av.BS != null ? new List<sbyte[]>(av.BS.Count) : null;
 
 			if (av.BS != null)
 			{
@@ -47,11 +47,11 @@ private readonly string n;
 				{
 					if (buf != null)
 					{
-						bs.Add((sbyte[]) buf.ToArray().Clone());
+						_bs.Add((sbyte[]) buf.ToArray().Clone());
 					}
 					else
 					{
-						bs.Add(null);
+						_bs.Add(null);
 					}
 				}
 			}
@@ -61,12 +61,12 @@ private readonly string n;
 		{
 			const int prime = 31;
 			int result = 1;
-			result = prime * result + b.GetHashCode();
-			result = prime * result + (bs?.GetHashCode() ?? 0);
-			result = prime * result + ((string.ReferenceEquals(n, null)) ? 0 : n.GetHashCode());
-			result = prime * result + (ns?.GetHashCode() ?? 0);
-			result = prime * result + ((string.ReferenceEquals(s, null)) ? 0 : s.GetHashCode());
-			result = prime * result + (ss?.GetHashCode() ?? 0);
+			result = prime * result + _b.GetHashCode();
+			result = prime * result + (_bs?.GetHashCode() ?? 0);
+			result = prime * result + ((string.ReferenceEquals(_n, null)) ? 0 : _n.GetHashCode());
+			result = prime * result + (_ns?.GetHashCode() ?? 0);
+			result = prime * result + ((string.ReferenceEquals(_s, null)) ? 0 : _s.GetHashCode());
+			result = prime * result + (_ss?.GetHashCode() ?? 0);
 			return result;
 		}
 
@@ -85,84 +85,84 @@ private readonly string n;
 				return false;
 			}
 			ImmutableAttributeValue other = (ImmutableAttributeValue) obj;
-			if (!b.SequenceEqual(other.b))
+			if (!_b.SequenceEqual(other._b))
 			{
 				return false;
 			}
-			if (bs == null)
+			if (_bs == null)
 			{
-				if (other.bs != null)
+				if (other._bs != null)
 				{
 					return false;
 				}
 			}
 //JAVA TO C# CONVERTER WARNING: LINQ 'SequenceEqual' is not always identical to Java AbstractList 'equals':
 //ORIGINAL LINE: else if (!bs.equals(other.bs))
-			else if (!bs.Zip(other.bs, (x, y) => x.SequenceEqual(y)).All(x => x))
+			else if (!_bs.Zip(other._bs, (x, y) => x.SequenceEqual(y)).All(x => x))
 			{
 				// Note: this else if block is not auto-generated
-				if (other.bs == null)
+				if (other._bs == null)
 				{
 					return false;
 				}
-				if (bs.Count != other.bs.Count)
+				if (_bs.Count != other._bs.Count)
 				{
 					return false;
 				}
-				for (int i = 0; i < bs.Count; i++)
+				for (int i = 0; i < _bs.Count; i++)
 				{
-					if (bs[i].SequenceEqual(other.bs[i]))
+					if (_bs[i].SequenceEqual(other._bs[i]))
 					{
 						return false;
 					}
 				}
 				return true;
 			}
-			if (string.ReferenceEquals(n, null))
+			if (string.ReferenceEquals(_n, null))
 			{
-				if (!string.ReferenceEquals(other.n, null))
+				if (!string.ReferenceEquals(other._n, null))
 				{
 					return false;
 				}
 			}
-			else if (!n.Equals(other.n))
+			else if (!_n.Equals(other._n))
 			{
 				return false;
 			}
-			if (ns == null)
+			if (_ns == null)
 			{
-				if (other.ns != null)
+				if (other._ns != null)
 				{
 					return false;
 				}
 			}
 //JAVA TO C# CONVERTER WARNING: LINQ 'SequenceEqual' is not always identical to Java AbstractList 'equals':
 //ORIGINAL LINE: else if (!ns.equals(other.ns))
-			else if (!ns.SequenceEqual(other.ns))
+			else if (!_ns.SequenceEqual(other._ns))
 			{
 				return false;
 			}
-			if (string.ReferenceEquals(s, null))
+			if (string.ReferenceEquals(_s, null))
 			{
-				if (!string.ReferenceEquals(other.s, null))
+				if (!string.ReferenceEquals(other._s, null))
 				{
 					return false;
 				}
 			}
-			else if (!s.Equals(other.s))
+			else if (!_s.Equals(other._s))
 			{
 				return false;
 			}
-			if (ss == null)
+			if (_ss == null)
 			{
-				if (other.ss != null)
+				if (other._ss != null)
 				{
 					return false;
 				}
 			}
 //JAVA TO C# CONVERTER WARNING: LINQ 'SequenceEqual' is not always identical to Java AbstractList 'equals':
 //ORIGINAL LINE: else if (!ss.equals(other.ss))
-			else if (!ss.SequenceEqual(other.ss))
+			else if (!_ss.SequenceEqual(other._ss))
 			{
 				return false;
 			}

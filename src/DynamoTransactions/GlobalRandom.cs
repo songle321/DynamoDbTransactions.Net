@@ -6,16 +6,16 @@
 //---------------------------------------------------------------------------------------------------------
 internal static class GlobalRandom
 {
-	private static System.Random randomInstance = null;
+	private static System.Random _randomInstance = null;
 
 	internal static double NextDouble
 	{
 		get
 		{
-			if (randomInstance == null)
-				randomInstance = new System.Random();
+			if (_randomInstance == null)
+				_randomInstance = new System.Random();
 
-			return randomInstance.NextDouble();
+			return _randomInstance.NextDouble();
 		}
 	}
 }

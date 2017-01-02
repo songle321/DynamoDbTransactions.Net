@@ -25,46 +25,46 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     //ORIGINAL LINE: @RunWith(MockitoJUnitRunner.class) public class ReadUncommittedIsolationHandlerImplUnitTest
     public class ReadUncommittedIsolationHandlerImplUnitTest
     {
-        protected internal const string TABLE_NAME = "TEST_TABLE";
-        protected internal static readonly Dictionary<string, AttributeValue> KEY = Collections.singletonMap("Id", new AttributeValue
+        protected internal const string TableName = "TEST_TABLE";
+        protected internal static readonly Dictionary<string, AttributeValue> Key = Collections.SingletonMap("Id", new AttributeValue
         {
             S = "KeyValue"
         });
-        protected internal const string TX_ID = "e1b52a78-0187-4787-b1a3-27f63a78898b";
-        protected internal static readonly Dictionary<string, AttributeValue> UNLOCKED_ITEM = createItem(false, false, false);
-        protected internal static readonly Dictionary<string, AttributeValue> TRANSIENT_UNAPPLIED_ITEM = createItem(true, true, false);
-        protected internal static readonly Dictionary<string, AttributeValue> TRANSIENT_APPLIED_ITEM = createItem(true, true, true);
-        protected internal static readonly Dictionary<string, AttributeValue> NON_TRANSIENT_APPLIED_ITEM = createItem(true, false, true);
+        protected internal const string TxId = "e1b52a78-0187-4787-b1a3-27f63a78898b";
+        protected internal static readonly Dictionary<string, AttributeValue> UnlockedItem = CreateItem(false, false, false);
+        protected internal static readonly Dictionary<string, AttributeValue> TransientUnappliedItem = CreateItem(true, true, false);
+        protected internal static readonly Dictionary<string, AttributeValue> TransientAppliedItem = CreateItem(true, true, true);
+        protected internal static readonly Dictionary<string, AttributeValue> NonTransientAppliedItem = CreateItem(true, false, true);
 
-        private ReadUncommittedIsolationHandlerImpl isolationHandler;
+        private ReadUncommittedIsolationHandlerImpl _isolationHandler;
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Before public void setup()
-        public virtual void setup()
+        public virtual void Setup()
         {
-            isolationHandler = new ReadUncommittedIsolationHandlerImpl();
+            _isolationHandler = new ReadUncommittedIsolationHandlerImpl();
         }
 
-        private static Dictionary<string, AttributeValue> createItem(bool isLocked, bool isTransient, bool isApplied)
+        private static Dictionary<string, AttributeValue> CreateItem(bool isLocked, bool isTransient, bool isApplied)
         {
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
             if (isLocked)
             {
-                item[Transaction.AttributeName.TXID.ToString()] = new AttributeValue(TX_ID);
-                item[Transaction.AttributeName.DATE.ToString()] = new AttributeValue
+                item[Transaction.AttributeName.Txid.ToString()] = new AttributeValue(TxId);
+                item[Transaction.AttributeName.Date.ToString()] = new AttributeValue
                 {
                     S = ""
                 };
                 if (isTransient)
                 {
-                    item[Transaction.AttributeName.TRANSIENT.ToString()] = new AttributeValue
+                    item[Transaction.AttributeName.Transient.ToString()] = new AttributeValue
                     {
                         S = ""
                     };
                 }
                 if (isApplied)
                 {
-                    item[Transaction.AttributeName.APPLIED.ToString()] = new AttributeValue
+                    item[Transaction.AttributeName.Applied.ToString()] = new AttributeValue
                     {
                         S = ""
                     };
@@ -78,20 +78,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 };
             }
             //JAVA TO C# CONVERTER TODO TASK: There is no .NET Dictionary equivalent to the Java 'putAll' method:
-            foreach (var entry in KEY) item.Add(entry.Key, entry.Value);
+            foreach (var entry in Key) item.Add(entry.Key, entry.Value);
             return item;
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
         [Fact]
-        public virtual void handleItemReturnsNullForNullItem()
+        public virtual void HandleItemReturnsNullForNullItem()
         {
-            setup();
-            assertNull(isolationHandler.HandleItemAsync(null, null, TABLE_NAME, CancellationToken.None).Result);
+            Setup();
+            AssertNull(_isolationHandler.HandleItemAsync(null, null, TableName, CancellationToken.None).Result);
         }
 
-        void assertNull(object p)
+        void AssertNull(object p)
         {
             p.Should().BeNull();
         }
@@ -99,13 +99,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
         [Fact]
-        public virtual void handleItemReturnsItemForUnlockedItem()
+        public virtual void HandleItemReturnsItemForUnlockedItem()
         {
-            setup();
-            assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
+            Setup();
+            AssertEquals(UnlockedItem, _isolationHandler.HandleItemAsync(UnlockedItem, null, TableName, CancellationToken.None).Result);
         }
 
-        void assertEquals(object a, object b)
+        void AssertEquals(object a, object b)
         {
             a.ShouldBeEquivalentTo(b);
         }
@@ -113,28 +113,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientUnappliedItem()
         [Fact]
-        public virtual void handleItemReturnsNullForTransientUnappliedItem()
+        public virtual void HandleItemReturnsNullForTransientUnappliedItem()
         {
-            setup();
-            assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
+            Setup();
+            AssertNull(_isolationHandler.HandleItemAsync(TransientUnappliedItem, null, TableName, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientAppliedItem()
         [Fact]
-        public virtual void handleItemReturnsNullForTransientAppliedItem()
+        public virtual void HandleItemReturnsNullForTransientAppliedItem()
         {
-            setup();
-            assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
+            Setup();
+            AssertEquals(TransientAppliedItem, _isolationHandler.HandleItemAsync(TransientAppliedItem, null, TableName, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForNonTransientAppliedItem()
         [Fact]
-        public virtual void handleItemReturnsItemForNonTransientAppliedItem()
+        public virtual void HandleItemReturnsItemForNonTransientAppliedItem()
         {
-            setup();
-            assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
+            Setup();
+            AssertEquals(NonTransientAppliedItem, _isolationHandler.HandleItemAsync(NonTransientAppliedItem, null, TableName, CancellationToken.None).Result);
         }
 
     }

@@ -27,11 +27,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// Facade to support the DynamoDBMapper doing a read using a specific isolation
     /// level. Used by <seealso cref="TransactionManager#loadAsync(Object, IsolationLevel)"/>.
     /// </summary>
-    public class TransactionManagerDynamoDBFacade : IAmazonDynamoDB
+    public class TransactionManagerDynamoDbFacade : IAmazonDynamoDB
     {
-        private readonly TransactionManager txManager;
-        private readonly Transaction.IsolationLevel isolationLevel;
-        private readonly ReadIsolationHandler isolationHandler;
+        private readonly TransactionManager _txManager;
+        private readonly Transaction.IsolationLevel _isolationLevel;
+        private readonly IReadIsolationHandler _isolationHandler;
 
         public IClientConfig Config
         {
@@ -41,11 +41,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        public TransactionManagerDynamoDBFacade(TransactionManager txManager, Transaction.IsolationLevel isolationLevel)
+        public TransactionManagerDynamoDbFacade(TransactionManager txManager, Transaction.IsolationLevel isolationLevel)
         {
-            this.txManager = txManager;
-            this.isolationLevel = isolationLevel;
-            this.isolationHandler = txManager.getReadIsolationHandler(isolationLevel);
+            this._txManager = txManager;
+            this._isolationLevel = isolationLevel;
+            this._isolationHandler = txManager.getReadIsolationHandler(isolationLevel);
         }
 
         /// <summary>
@@ -62,34 +62,34 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             List<Dictionary<string, AttributeValue>> result = new List<Dictionary<string, AttributeValue>>();
             foreach (Dictionary<string, AttributeValue> item in items)
             {
-                Dictionary<string, AttributeValue> handledItem = await isolationHandler.HandleItemAsync(item, attributesToGet, tableName, cancellationToken);
+                Dictionary<string, AttributeValue> handledItem = await _isolationHandler.HandleItemAsync(item, attributesToGet, tableName, cancellationToken);
                 // <summary>
                 // If the item is null, BatchGetItems, Scan, and Query should exclude the item from
                 // the returned list. This is based on the DynamoDB documentation.
                 // </summary>
                 if (handledItem != null)
                 {
-                    Transaction.stripSpecialAttributes(handledItem);
+                    Transaction.StripSpecialAttributes(handledItem);
                     result.Add(handledItem);
                 }
             }
             return result;
         }
 
-        private List<string> addSpecialAttributes(ICollection<string> attributesToGet)
+        private List<string> AddSpecialAttributes(ICollection<string> attributesToGet)
         {
             if (attributesToGet == null)
             {
                 return null;
             }
             ISet<string> result = new HashSet<string>(attributesToGet);
-            result.UnionWith(Transaction.SPECIAL_ATTR_NAMES);
+            result.UnionWith(Transaction.SpecialAttrNames);
             return result.ToList();
         }
 
         public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await txManager.GetItemAsync(request, isolationLevel, cancellationToken);
+            return await _txManager.GetItemAsync(request, _isolationLevel, cancellationToken);
         }
 
         public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
@@ -116,9 +116,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             foreach (KeysAndAttributes keysAndAttributes in request.RequestItems.Values)
             {
                 ICollection<string> attributesToGet = keysAndAttributes.AttributesToGet;
-                keysAndAttributes.AttributesToGet = addSpecialAttributes(attributesToGet);
+                keysAndAttributes.AttributesToGet = AddSpecialAttributes(attributesToGet);
             }
-            BatchGetItemResponse result = await txManager.Client.BatchGetItemAsync(request);
+            BatchGetItemResponse result = await _txManager.Client.BatchGetItemAsync(request);
             Dictionary<string, List<Dictionary<string, AttributeValue>>> responses = new Dictionary<string, List<Dictionary<string, AttributeValue>>>();
             foreach (KeyValuePair<string, List<Dictionary<string, AttributeValue>>> e in result.Responses)
             {
@@ -158,9 +158,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.ScanResponse scan(com.amazonaws.services.dynamodbv2.model.ScanRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
         public async Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            List<string> attributesToGet = addSpecialAttributes(request.AttributesToGet);
+            List<string> attributesToGet = AddSpecialAttributes(request.AttributesToGet);
             request.AttributesToGet = attributesToGet;
-            ScanResponse result = await txManager.Client.ScanAsync(request);
+            ScanResponse result = await _txManager.Client.ScanAsync(request);
             List<Dictionary<string, AttributeValue>> items = await HandleItemsAsync(result.Items, request.TableName, request.AttributesToGet, cancellationToken);
             result.Items = items;
             return result;
@@ -207,9 +207,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.QueryResponse QueryAsync(com.amazonaws.services.dynamodbv2.model.QueryRequest request) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
         public async Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            List<string> attributesToGet = addSpecialAttributes(request.AttributesToGet);
+            List<string> attributesToGet = AddSpecialAttributes(request.AttributesToGet);
             request.AttributesToGet = attributesToGet;
-            QueryResponse result = await txManager.Client.QueryAsync(request);
+            QueryResponse result = await _txManager.Client.QueryAsync(request);
             List<Dictionary<string, AttributeValue>> items = await HandleItemsAsync(result.Items, request.TableName, request.AttributesToGet, cancellationToken);
             result.Items = items;
             return result;

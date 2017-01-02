@@ -19,7 +19,7 @@
 	/// </summary>
 	public class TransactionNotFoundException : TransactionException
 	{
-private const long serialVersionUID = 1482803351154923519L;
+private const long SerialVersionUid = 1482803351154923519L;
 
 		public TransactionNotFoundException(string txId) : base(txId, "Transaction not found")
 		{

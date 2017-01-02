@@ -24,9 +24,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// (Transaction.IsolationLevel.UNCOMMITTED) level. It will
     /// only filter out transient items.
     /// </summary>
-    public class ReadUncommittedIsolationHandlerImpl : ReadIsolationHandler
+    public class ReadUncommittedIsolationHandlerImpl : IReadIsolationHandler
     {
-        private static readonly Log LOG = LogFactory.getLog(typeof(ReadUncommittedIsolationHandlerImpl));
+        private static readonly Log Log = LogFactory.GetLog(typeof(ReadUncommittedIsolationHandlerImpl));
 
         /// <summary>
         /// Given an item, return whatever is there. The returned item may contain changes that will later be rolled back.
@@ -47,7 +47,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             // If the item is transient, return a null item
             // But if the change is applied, return it even if it was a transient item (deleteAsync and lock do not apply)
-            if (isTransient(item) && !isApplied(item))
+            if (IsTransient(item) && !IsApplied(item))
             {
                 return null;
             }

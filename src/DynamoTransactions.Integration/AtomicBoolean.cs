@@ -9,8 +9,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     {
         #region Member Variables
 
-        private const int VALUE_TRUE = 1;
-        private const int VALUE_FALSE = 0;
+        private const int ValueTrue = 1;
+        private const int ValueFalse = 0;
 
         private int _currentValue;
 
@@ -29,12 +29,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         private int BoolToInt(bool value)
         {
-            return value ? VALUE_TRUE : VALUE_FALSE;
+            return value ? ValueTrue : ValueFalse;
         }
 
         private bool IntToBool(int value)
         {
-            return value == VALUE_TRUE;
+            return value == ValueTrue;
         }
 
         #endregion

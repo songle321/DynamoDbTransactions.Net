@@ -20,11 +20,11 @@ using Amazon.DynamoDBv2.Model;
  {
 	public class InvalidRequestException : TransactionException
 	{
-private const long serialVersionUID = 4622315126910271817L;
+private const long SerialVersionUid = 4622315126910271817L;
 
-		private readonly string tableName;
-		private readonly Dictionary<string, AttributeValue> key;
-		private readonly Request request;
+		private readonly string _tableName;
+		private readonly Dictionary<string, AttributeValue> _key;
+		private readonly Request _request;
 
 		public InvalidRequestException(string message, string txId, string tableName, Dictionary<string, AttributeValue> key, Request request) : this(message, txId, tableName, key, request, null)
 		{
@@ -32,16 +32,16 @@ private const long serialVersionUID = 4622315126910271817L;
 
 		public InvalidRequestException(string message, string txId, string tableName, Dictionary<string, AttributeValue> key, Request request, Exception t) : base(((!string.ReferenceEquals(message, null)) ? ": " + message : "Invalid request") + " for transaction " + txId + " table " + tableName + " key " + key, t)
 		{
-			this.tableName = tableName;
-			this.key = key;
-			this.request = request;
+			this._tableName = tableName;
+			this._key = key;
+			this._request = request;
 		}
 
 		public virtual string TableName
 		{
 			get
 			{
-				return tableName;
+				return _tableName;
 			}
 		}
 
@@ -49,7 +49,7 @@ private const long serialVersionUID = 4622315126910271817L;
 		{
 			get
 			{
-				return key;
+				return _key;
 			}
 		}
 
@@ -57,7 +57,7 @@ private const long serialVersionUID = 4622315126910271817L;
 		{
 			get
 			{
-				return request;
+				return _request;
 			}
 		}
 

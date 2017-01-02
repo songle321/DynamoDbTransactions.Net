@@ -29,9 +29,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// reuse the mapper and its underlying cache for each callAsync to the mapper from a
     /// transaction or the transaction manager.
     /// </summary>
-    public class ThreadLocalDynamoDBFacade : IAmazonDynamoDB
+    public class ThreadLocalDynamoDbFacade : IAmazonDynamoDB
     {
-        private readonly ThreadLocal<IAmazonDynamoDB> backend = new ThreadLocal<IAmazonDynamoDB>();
+        private readonly ThreadLocal<IAmazonDynamoDB> _backend = new ThreadLocal<IAmazonDynamoDB>();
 
         public IClientConfig Config
         {
@@ -45,15 +45,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             get
             {
-                if (backend.Value == null)
+                if (_backend.Value == null)
                 {
                     throw new Exception("No backend to proxy");
                 }
-                return backend.Value;
+                return _backend.Value;
             }
             set
             {
-                backend.Value = value;
+                _backend.Value = value;
             }
         }
 

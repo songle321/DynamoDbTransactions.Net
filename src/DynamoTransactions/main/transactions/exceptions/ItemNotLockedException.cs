@@ -23,12 +23,12 @@ using Amazon.DynamoDBv2.Model;
 	/// </summary>
 	public class ItemNotLockedException : TransactionException
 	{
-private const long serialVersionUID = -2992047273290608776L;
+private const long SerialVersionUid = -2992047273290608776L;
 
-		private readonly string txId;
-		private readonly string lockOwnerTxId;
-		private readonly string tableName;
-		private readonly Dictionary<string, AttributeValue> item;
+		private readonly string _txId;
+		private readonly string _lockOwnerTxId;
+		private readonly string _tableName;
+		private readonly Dictionary<string, AttributeValue> _item;
 
 		public ItemNotLockedException(string txId, string lockTxId, string tableName, Dictionary<string, AttributeValue> item) : this(txId, lockTxId, tableName, item, null)
 		{
@@ -36,17 +36,17 @@ private const long serialVersionUID = -2992047273290608776L;
 
 		public ItemNotLockedException(string txId, string lockOwnerTxId, string tableName, Dictionary<string, AttributeValue> item, Exception t) : base(txId, "Item is not locked by our transaction, is locked by " + lockOwnerTxId + " for table " + tableName + ", item: " + item)
 		{
-			this.txId = txId;
-			this.lockOwnerTxId = lockOwnerTxId;
-			this.tableName = tableName;
-			this.item = item;
+			this._txId = txId;
+			this._lockOwnerTxId = lockOwnerTxId;
+			this._tableName = tableName;
+			this._item = item;
 		}
 
 		public override string TxId
 		{
 			get
 			{
-				return txId;
+				return _txId;
 			}
 		}
 
@@ -54,7 +54,7 @@ private const long serialVersionUID = -2992047273290608776L;
 		{
 			get
 			{
-				return lockOwnerTxId;
+				return _lockOwnerTxId;
 			}
 		}
 
@@ -62,7 +62,7 @@ private const long serialVersionUID = -2992047273290608776L;
 		{
 			get
 			{
-				return item;
+				return _item;
 			}
 		}
 
@@ -70,7 +70,7 @@ private const long serialVersionUID = -2992047273290608776L;
 		{
 			get
 			{
-				return tableName;
+				return _tableName;
 			}
 		}
 

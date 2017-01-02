@@ -5,6 +5,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 {
     internal abstract class Callable<T>
     {
-        public abstract Task<T> callAsync();
+        public abstract Task<T> CallAsync();
     }
 }

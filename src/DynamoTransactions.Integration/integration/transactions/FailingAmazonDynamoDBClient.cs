@@ -28,50 +28,50 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 	/// 
 	/// @author dyanacek
 	/// </summary>
-	public class FailingAmazonDynamoDBClient : AmazonDynamoDBClient
+	public class FailingAmazonDynamoDbClient : AmazonDynamoDBClient
 	{
 
 		public class FailedYourRequestException : Exception
 		{
-			internal const long serialVersionUID = -7191808024168281212L;
+			internal const long SerialVersionUid = -7191808024168281212L;
 		}
 
 		// Any requests added to this set will throw a FailedYourRequestException when called.
-		public readonly ISet<AmazonWebServiceRequest> requestsToFail = new HashSet<AmazonWebServiceRequest>();
+		public readonly ISet<AmazonWebServiceRequest> RequestsToFail = new HashSet<AmazonWebServiceRequest>();
 
 		// Any requests added to this set will return a null item when called
-		public readonly ISet<GetItemRequest> getRequestsToTreatAsDeleted = new HashSet<GetItemRequest>();
+		public readonly ISet<GetItemRequest> GetRequestsToTreatAsDeleted = new HashSet<GetItemRequest>();
 
 		// Any requests with keys in this set will return the queue of responses in order. When the end of the queue is reached
 		// further requests will be passed to the DynamoDB client.
-		public readonly Dictionary<GetItemRequest, LinkedList<GetItemResponse>> getRequestsToStub = 
+		public readonly Dictionary<GetItemRequest, LinkedList<GetItemResponse>> GetRequestsToStub = 
             new Dictionary<GetItemRequest, LinkedList<GetItemResponse>>();
 
 		/// <summary>
 		/// Resets the client to the stock DynamoDB client (all requests will call DynamoDB)
 		/// </summary>
-		public virtual void reset()
+		public virtual void Reset()
 		{
-			requestsToFail.Clear();
-			getRequestsToTreatAsDeleted.Clear();
-			getRequestsToStub.Clear();
+			RequestsToFail.Clear();
+			GetRequestsToTreatAsDeleted.Clear();
+			GetRequestsToStub.Clear();
 		}
 
-		public FailingAmazonDynamoDBClient(AWSCredentials credentials, AmazonDynamoDBConfig clientConfig) : base(credentials, clientConfig)
+		public FailingAmazonDynamoDbClient(AWSCredentials credentials, AmazonDynamoDBConfig clientConfig) : base(credentials, clientConfig)
 		{
 		}
 
 		public new async Task<GetItemResponse> GetItemAsync(GetItemRequest getItemRequest, CancellationToken cancellationToken)
 		{
-			if (requestsToFail.Contains(getItemRequest))
+			if (RequestsToFail.Contains(getItemRequest))
 			{
 				throw new FailedYourRequestException();
 			}
-			if (getRequestsToTreatAsDeleted.Contains(getItemRequest))
+			if (GetRequestsToTreatAsDeleted.Contains(getItemRequest))
 			{
 				return new GetItemResponse();
 			}
-			LinkedList<GetItemResponse> stubbedResults = getRequestsToStub[getItemRequest];
+			LinkedList<GetItemResponse> stubbedResults = GetRequestsToStub[getItemRequest];
 			if (stubbedResults != null && stubbedResults.Count > 0)
 			{
 				//return stubbedResults.RemoveFirst();
@@ -84,7 +84,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 //ORIGINAL LINE: @Override public com.amazonaws.services.dynamodbv2.model.UpdateItemResponse updateItemAsync(com.amazonaws.services.dynamodbv2.model.UpdateItemRequest updateItemRequest) throws com.amazonaws.AmazonServiceException, com.amazonaws.AmazonClientException
 		public new async Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest updateItemRequest, CancellationToken cancellationToken)
 		{
-			if (requestsToFail.Contains(updateItemRequest))
+			if (RequestsToFail.Contains(updateItemRequest))
 			{
 				throw new FailedYourRequestException();
 			}

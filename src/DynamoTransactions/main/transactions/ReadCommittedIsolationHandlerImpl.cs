@@ -30,29 +30,29 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// uncommitted item, the isolation handler will attempt to
     /// get the last committed version of the item.
     /// </summary>
-    public class ReadCommittedIsolationHandlerImpl : ReadIsolationHandler
+    public class ReadCommittedIsolationHandlerImpl : IReadIsolationHandler
     {
-        private const int DEFAULT_NUM_RETRIES = 2;
-        private static readonly Log LOG = LogFactory.getLog(typeof(ReadCommittedIsolationHandlerImpl));
+        private const int DefaultNumRetries = 2;
+        private static readonly Log Log = LogFactory.GetLog(typeof(ReadCommittedIsolationHandlerImpl));
 
-        private readonly TransactionManager txManager;
-        private readonly int numRetries;
+        private readonly TransactionManager _txManager;
+        private readonly int _numRetries;
 
-        public ReadCommittedIsolationHandlerImpl(TransactionManager txManager) : this(txManager, DEFAULT_NUM_RETRIES)
+        public ReadCommittedIsolationHandlerImpl(TransactionManager txManager) : this(txManager, DefaultNumRetries)
         {
         }
 
         public ReadCommittedIsolationHandlerImpl(TransactionManager txManager, int numRetries)
         {
-            this.txManager = txManager;
-            this.numRetries = numRetries;
+            this._txManager = txManager;
+            this._numRetries = numRetries;
         }
 
         /// <summary>
         /// Return the item that's passed in if it's not locked. Otherwise, throw a TransactionException. </summary>
         /// <param name="item"> The item to check </param>
         /// <returns> The item if it's locked (or if it's locked, but not yet applied) </returns>
-        protected internal virtual Dictionary<string, AttributeValue> checkItemCommitted(Dictionary<string, AttributeValue> item)
+        protected internal virtual Dictionary<string, AttributeValue> CheckItemCommitted(Dictionary<string, AttributeValue> item)
         {
             // If the item doesn't exist, it's not locked
             if (item == null)
@@ -60,17 +60,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 return null;
             }
             // If the item is transient, return null
-            if (isTransient(item))
+            if (IsTransient(item))
             {
                 return null;
             }
             // If the item isn't applied, it doesn't matter if it's locked
-            if (!isApplied(item))
+            if (!IsApplied(item))
             {
                 return item;
             }
             // If the item isn't locked, return it
-            string lockingTxId = getOwner(item);
+            string lockingTxId = GetOwner(item);
             if (string.ReferenceEquals(lockingTxId, null))
             {
                 return item;
@@ -87,14 +87,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <returns> a previously committed version of the item </returns>
         protected internal virtual async Task<Dictionary<string, AttributeValue>> GetOldCommittedItemAsync(Transaction lockingTx, string tableName, Dictionary<string, AttributeValue> key)
         {
-            Request lockingRequest = lockingTx.TxItem.getRequestForKey(tableName, key);
-            txAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
-            Dictionary<string, AttributeValue> oldItem = await lockingTx.TxItem.loadItemImageAsync(lockingRequest.Rid);
+            Request lockingRequest = lockingTx.TxItem.GetRequestForKey(tableName, key);
+            TxAssert(lockingRequest != null, null, "Expected transaction to be locking request, but no request found for tx", lockingTx.Id, "table", tableName, "key ", key);
+            Dictionary<string, AttributeValue> oldItem = await lockingTx.TxItem.LoadItemImageAsync(lockingRequest.Rid);
             if (oldItem == null)
             {
-                if (LOG.DebugEnabled)
+                if (Log.DebugEnabled)
                 {
-                    LOG.debug("Item image " + lockingRequest.Rid + " missing for transaction " + lockingTx.Id);
+                    Log.Debug("Item image " + lockingRequest.Rid + " missing for transaction " + lockingTx.Id);
                 }
                 throw new UnknownCompletedTransactionException(lockingTx.Id, "Transaction must have completed since the old copy of the image is missing");
             }
@@ -109,7 +109,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// <returns> the request </returns>
         protected internal virtual async Task<GetItemRequest> CreateGetItemRequestAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken)
         {
-            Dictionary<string, AttributeValue> key = await txManager.CreateKeyMapAsync(tableName, item, cancellationToken);
+            Dictionary<string, AttributeValue> key = await _txManager.CreateKeyMapAsync(tableName, item, cancellationToken);
 
             /*
 			 * Set the request to consistent read the next time around, since we may have read while locking tx
@@ -124,9 +124,9 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             return request;
         }
 
-        protected internal virtual Transaction loadTransaction(string txId)
+        protected internal virtual Transaction LoadTransaction(string txId)
         {
-            return new Transaction(txId, txManager, false);
+            return new Transaction(txId, _txManager, false);
         }
 
         /// <summary>
@@ -153,26 +153,26 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     {
                         request = await CreateGetItemRequestAsync(tableName, item, cancellationToken);
                     }
-                    currentItem = (await txManager.Client.GetItemAsync(request, cancellationToken)).Item;
+                    currentItem = (await _txManager.Client.GetItemAsync(request, cancellationToken)).Item;
                 }
 
                 // 1. Return the item if it isn't locked (or if it's locked, but not applied yet)
                 try
                 {
-                    return checkItemCommitted(currentItem);
+                    return CheckItemCommitted(currentItem);
                 }
                 catch (TransactionException e1)
                 {
                     try
                     {
                         // 2. Load the locking transaction
-                        Transaction lockingTx = loadTransaction(e1.TxId);
+                        Transaction lockingTx = LoadTransaction(e1.TxId);
 
                         /*
 						 * 3. See if the locking transaction has been committed. If so, return the item. This is valid because you cannot
 						 * write to an item multiple times in the same transaction. Otherwise it would expose intermediate state.
 						 */
-                        if (TransactionItem.State.COMMITTED.Equals(lockingTx.TxItem.getState()))
+                        if (TransactionItem.State.Committed.Equals(lockingTx.TxItem.GetState()))
                         {
                             return currentItem;
                         }
@@ -186,18 +186,18 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     }
                     catch (UnknownCompletedTransactionException e2)
                     {
-                        LOG.debug("Could not find item image. Transaction must have already completed.", e2);
+                        Log.Debug("Could not find item image. Transaction must have already completed.", e2);
                     }
                     catch (TransactionNotFoundException e2)
                     {
-                        LOG.debug("Unable to find locking transaction. Transaction must have already completed.", e2);
+                        Log.Debug("Unable to find locking transaction. Transaction must have already completed.", e2);
                     }
                 }
             }
             throw new TransactionException(null, "Ran out of attempts to get a committed image of the item");
         }
 
-        protected internal virtual Dictionary<string, AttributeValue> filterAttributesToGet(Dictionary<string, AttributeValue> item, List<string> attributesToGet)
+        protected internal virtual Dictionary<string, AttributeValue> FilterAttributesToGet(Dictionary<string, AttributeValue> item, List<string> attributesToGet)
         {
             if (item == null)
             {
@@ -221,7 +221,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         public virtual async Task<Dictionary<string, AttributeValue>> HandleItemAsync(Dictionary<string, AttributeValue> item, List<string> attributesToGet, string tableName, CancellationToken cancellationToken)
         {
-            return filterAttributesToGet(await HandleItemAsync(item, tableName, numRetries, cancellationToken), attributesToGet);
+            return FilterAttributesToGet(await HandleItemAsync(item, tableName, _numRetries, cancellationToken), attributesToGet);
         }
 
     }

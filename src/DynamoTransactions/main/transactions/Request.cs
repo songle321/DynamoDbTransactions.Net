@@ -31,19 +31,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     [JsonObject]
     public abstract class Request
     {
-private static readonly ISet<string> VALID_RETURN_VALUES = new HashSet<string>(new[] { "ALL_OLD", "ALL_NEW", "NONE" });
+private static readonly ISet<string> ValidReturnValues = new HashSet<string>(new[] { "ALL_OLD", "ALL_NEW", "NONE" });
 
         protected int rid;
 
         [JsonIgnore]
         protected internal abstract string TableName { get; }
 
-        protected internal abstract Task<Dictionary<string, AttributeValue>> getKeyAsync(TransactionManager txManager);
+        protected internal abstract Task<Dictionary<string, AttributeValue>> GetKeyAsync(TransactionManager txManager);
 
         [JsonIgnore]
         protected internal abstract string ReturnValues { get; }
 
-        protected internal abstract Task doValidateAsync(string txId, TransactionManager txManager);
+        protected internal abstract Task DoValidateAsync(string txId, TransactionManager txManager);
 
         /*
 		 * Request implementations
@@ -96,15 +96,15 @@ internal GetItemRequest request;
                 }
             }
 
-            protected internal override async Task<Dictionary<string, AttributeValue>> getKeyAsync(TransactionManager txManager)
+            protected internal override async Task<Dictionary<string, AttributeValue>> GetKeyAsync(TransactionManager txManager)
             {
                 return request.Key;
             }
 
-            protected internal override async Task doValidateAsync(string txId, TransactionManager txManager)
+            protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
-                await validateAttributesAsync(this, request.Key, txId, txManager);
-                await validateAttributesAsync(this, request.AttributesToGet, txId, txManager);
+                await ValidateAttributesAsync(this, request.Key, txId, txManager);
+                await ValidateAttributesAsync(this, request.AttributesToGet, txId, txManager);
             }
         }
 
@@ -142,17 +142,17 @@ internal UpdateItemRequest request;
                 }
             }
 
-            protected internal override async Task<Dictionary<string, AttributeValue>> getKeyAsync(TransactionManager txManager)
+            protected internal override async Task<Dictionary<string, AttributeValue>> GetKeyAsync(TransactionManager txManager)
             {
                 return request.Key;
             }
 
-            protected internal override async Task doValidateAsync(string txId, TransactionManager txManager)
+            protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
-                validateAttributesAsync(this, request.Key, txId, txManager);
+                ValidateAttributesAsync(this, request.Key, txId, txManager);
                 if (request.AttributeUpdates != null)
                 {
-                    validateAttributesAsync(this, request.AttributeUpdates, txId, txManager);
+                    ValidateAttributesAsync(this, request.AttributeUpdates, txId, txManager);
                 }
                 if (request.ReturnConsumedCapacity != null)
                 {
@@ -164,23 +164,23 @@ internal UpdateItemRequest request;
                 }
                 if (request.Expected != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ConditionExpression != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.UpdateExpression != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, request.TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, request.TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeNames != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeValues != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
             }
         }
@@ -219,14 +219,14 @@ internal DeleteItemRequest request;
                 }
             }
 
-            protected internal override async Task<Dictionary<string, AttributeValue>> getKeyAsync(TransactionManager txManager)
+            protected internal override async Task<Dictionary<string, AttributeValue>> GetKeyAsync(TransactionManager txManager)
             {
                 return request.Key;
             }
 
-            protected internal override async Task doValidateAsync(string txId, TransactionManager txManager)
+            protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
-                await validateAttributesAsync(this, request.Key, txId, txManager);
+                await ValidateAttributesAsync(this, request.Key, txId, txManager);
                 if (request.ReturnConsumedCapacity != null)
                 {
                     throw new InvalidRequestException("ReturnConsumedCapacity is not currently supported", txId, TableName, null, this);
@@ -237,19 +237,19 @@ internal DeleteItemRequest request;
                 }
                 if (request.Expected != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ConditionExpression != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeNames != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeValues != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
             }
         }
@@ -258,7 +258,7 @@ internal DeleteItemRequest request;
         public class PutItem : Request
         {
             [JsonIgnore]
-            internal Dictionary<string, AttributeValue> key = null;
+            internal Dictionary<string, AttributeValue> Key = null;
 
             internal PutItemRequest request;
 
@@ -291,22 +291,22 @@ internal DeleteItemRequest request;
                 }
             }
 
-            protected internal override async Task<Dictionary<string, AttributeValue>> getKeyAsync(TransactionManager txManager)
+            protected internal override async Task<Dictionary<string, AttributeValue>> GetKeyAsync(TransactionManager txManager)
             {
-                if (key == null)
+                if (Key == null)
                 {
-                    key = await getKeyFromItemAsync(TableName, request.Item, txManager);
+                    Key = await GetKeyFromItemAsync(TableName, request.Item, txManager);
                 }
-                return key;
+                return Key;
             }
 
-            protected internal override async Task doValidateAsync(string txId, TransactionManager txManager)
+            protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
                 if (request == null || request.Item == null)
                 {
                     throw new InvalidRequestException("PutItem must contain an Item", txId, TableName, null, this);
                 }
-                validateAttributesAsync(this, request.Item, txId, txManager);
+                ValidateAttributesAsync(this, request.Item, txId, txManager);
                 if (request.ReturnConsumedCapacity != null)
                 {
                     throw new InvalidRequestException("ReturnConsumedCapacity is not currently supported", txId, TableName, null, this);
@@ -317,19 +317,19 @@ internal DeleteItemRequest request;
                 }
                 if (request.Expected != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ConditionExpression != null)
                 {
-                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with conditions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeNames != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
                 if (request.ExpressionAttributeValues != null)
                 {
-                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await getKeyAsync(txManager), this);
+                    throw new InvalidRequestException("Requests with expressions are not currently supported", txId, TableName, await GetKeyAsync(txManager), this);
                 }
             }
         }
@@ -338,26 +338,26 @@ internal DeleteItemRequest request;
 		 * Validation helpers
 		 */
         
-        public virtual async Task validateAsync(string txId, TransactionManager txManager)
+        public virtual async Task ValidateAsync(string txId, TransactionManager txManager)
         {
             if (string.ReferenceEquals(TableName, null))
             {
                 throw new InvalidRequestException("TableName must not be null", txId, null, null, this);
             }
-            Dictionary<string, AttributeValue> key = await getKeyAsync(txManager);
+            Dictionary<string, AttributeValue> key = await GetKeyAsync(txManager);
             if (key == null || key.Count == 0)
             {
                 throw new InvalidRequestException("The request key cannot be empty", txId, TableName, key, this);
             }
 
-            validateReturnValues(ReturnValues, txId, this);
+            ValidateReturnValues(ReturnValues, txId, this);
 
-            await doValidateAsync(txId, txManager);
+            await DoValidateAsync(txId, txManager);
         }
 
-        private static void validateReturnValues(string returnValues, string txId, Request request)
+        private static void ValidateReturnValues(string returnValues, string txId, Request request)
         {
-            if (string.ReferenceEquals(returnValues, null) || VALID_RETURN_VALUES.Contains(returnValues))
+            if (string.ReferenceEquals(returnValues, null) || ValidReturnValues.Contains(returnValues))
             {
                 return;
             }
@@ -365,7 +365,7 @@ internal DeleteItemRequest request;
             throw new InvalidRequestException("Unsupported ReturnValues: " + returnValues, txId, request.TableName, null, request);
         }
 
-        private static async Task validateAttributesAsync<T>(Request request, Dictionary<string, T> attributes, string txId, TransactionManager txManager)
+        private static async Task ValidateAttributesAsync<T>(Request request, Dictionary<string, T> attributes, string txId, TransactionManager txManager)
         {
             //JAVA TO C# CONVERTER WARNING: Java wildcard generics have no direct equivalent in .NET:
             //ORIGINAL LINE: for(java.util.Map.Entry<String, ?> entry : attributes.entrySet())
@@ -373,12 +373,12 @@ internal DeleteItemRequest request;
             {
                 if (entry.Key.StartsWith("_Tx"))
                 {
-                    throw new InvalidRequestException("Request must not contain the reserved attribute " + entry.Key, txId, request.TableName, await request.getKeyAsync(txManager), request);
+                    throw new InvalidRequestException("Request must not contain the reserved attribute " + entry.Key, txId, request.TableName, await request.GetKeyAsync(txManager), request);
                 }
             }
         }
 
-        private static async Task validateAttributesAsync(Request request, List<string> attributes, string txId, TransactionManager txManager)
+        private static async Task ValidateAttributesAsync(Request request, List<string> attributes, string txId, TransactionManager txManager)
         {
             if (attributes == null)
             {
@@ -388,12 +388,12 @@ internal DeleteItemRequest request;
             {
                 if (attr.StartsWith("_Tx", StringComparison.Ordinal))
                 {
-                    throw new InvalidRequestException("Request must not contain the reserved attribute " + attr, txId, request.TableName, await request.getKeyAsync(txManager), request);
+                    throw new InvalidRequestException("Request must not contain the reserved attribute " + attr, txId, request.TableName, await request.GetKeyAsync(txManager), request);
                 }
             }
         }
 
-        protected internal static async Task<Dictionary<string, AttributeValue>> getKeyFromItemAsync(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
+        protected internal static async Task<Dictionary<string, AttributeValue>> GetKeyFromItemAsync(string tableName, Dictionary<string, AttributeValue> item, TransactionManager txManager)
         {
             if (item == null)
             {
@@ -417,9 +417,9 @@ internal DeleteItemRequest request;
         /// Returns a new copy of Map that can be used in a write on the item to ensure it does not exist </summary>
         /// <param name="txManager"> </param>
         /// <returns> a map for use in an expected clause to ensure the item does not exist </returns>
-        protected internal virtual async Task<Dictionary<string, ExpectedAttributeValue>> getExpectNotExistsAsync(TransactionManager txManager)
+        protected internal virtual async Task<Dictionary<string, ExpectedAttributeValue>> GetExpectNotExistsAsync(TransactionManager txManager)
         {
-            Dictionary<string, AttributeValue> key = await getKeyAsync(txManager);
+            Dictionary<string, AttributeValue> key = await GetKeyAsync(txManager);
             Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(key.Count);
             foreach (KeyValuePair<string, AttributeValue> entry in key.SetOfKeyValuePairs())
             {
@@ -432,9 +432,9 @@ internal DeleteItemRequest request;
         /// Returns a new copy of Map that can be used in a write on the item to ensure it exists </summary>
         /// <param name="txManager"> </param>
         /// <returns> a map for use in an expected clause to ensure the item exists </returns>
-        protected internal virtual async Task<Dictionary<string, ExpectedAttributeValue>> getExpectExists(TransactionManager txManager)
+        protected internal virtual async Task<Dictionary<string, ExpectedAttributeValue>> GetExpectExists(TransactionManager txManager)
         {
-            Dictionary<string, AttributeValue> key = await getKeyAsync(txManager);
+            Dictionary<string, AttributeValue> key = await GetKeyAsync(txManager);
             Dictionary<string, ExpectedAttributeValue> expected = new Dictionary<string, ExpectedAttributeValue>(key.Count);
             foreach (KeyValuePair<string, AttributeValue> entry in key.SetOfKeyValuePairs())
             {
@@ -466,13 +466,13 @@ internal DeleteItemRequest request;
             //MAPPER.registerModule(module);
         }
 
-        protected internal static MemoryStream serialize(string txId, object request)
+        protected internal static MemoryStream Serialize(string txId, object request)
         {
             byte[] requestBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
             return new MemoryStream(requestBytes);
         }
 
-        protected internal static Request deserialize(string txId, MemoryStream rawRequest)
+        protected internal static Request Deserialize(string txId, MemoryStream rawRequest)
         {
             byte[] requestBytes = rawRequest.ToArray();
             string json = Encoding.UTF8.GetString(requestBytes);

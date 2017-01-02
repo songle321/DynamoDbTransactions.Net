@@ -31,25 +31,25 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// from each request. Only supports the operations needed by DynamoDBMapper for
     /// loading, saving or deleting items.
     /// </summary>
-    public class TransactionDynamoDBFacade : IAmazonDynamoDB
+    public class TransactionDynamoDbFacade : IAmazonDynamoDB
     {
-        private readonly Transaction txn;
-        private readonly TransactionManager txManager;
+        private readonly Transaction _txn;
+        private readonly TransactionManager _txManager;
 
-        public TransactionDynamoDBFacade(Transaction txn, TransactionManager txManager)
+        public TransactionDynamoDbFacade(Transaction txn, TransactionManager txManager)
         {
-            this.txn = txn;
-            this.txManager = txManager;
+            this._txn = txn;
+            this._txManager = txManager;
         }
 
         public async Task<DeleteItemResponse> DeleteItemAsync(DeleteItemRequest request, CancellationToken cancellationToken)
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            await checkExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
+            await CheckExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
-            return await txn.deleteItemAsync(request);
+            return await _txn.DeleteItemAsync(request);
         }
 
         public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = new CancellationToken())
@@ -79,7 +79,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
         {
-            return await txn.getItemAsync(request);
+            return await _txn.GetItemAsync(request);
         }
 
         public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -111,11 +111,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public async Task<PutItemResponse> PutItemAsync(PutItemRequest request, CancellationToken cancellationToken)
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            checkExpectedValuesAsync(request.TableName, await Request.getKeyFromItemAsync(request.TableName, request.Item, txManager), expectedValues, cancellationToken);
+            CheckExpectedValuesAsync(request.TableName, await Request.GetKeyFromItemAsync(request.TableName, request.Item, _txManager), expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
-            return await txn.putItemAsync(request);
+            return await _txn.PutItemAsync(request);
         }
 
         public Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = new CancellationToken())
@@ -147,11 +147,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         public async Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest request, CancellationToken cancellationToken)
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            checkExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
+            CheckExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
-            return await txn.updateItemAsync(request);
+            return await _txn.UpdateItemAsync(request);
         }
 
         public Task<UpdateTableResponse> UpdateTableAsync(string tableName, ProvisionedThroughput provisionedThroughput,
@@ -165,7 +165,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             throw new NotImplementedException();
         }
 
-        private async Task checkExpectedValuesAsync(string tableName, Dictionary<string, AttributeValue> itemKey, Dictionary<string, ExpectedAttributeValue> expectedValues, CancellationToken cancellationToken)
+        private async Task CheckExpectedValuesAsync(string tableName, Dictionary<string, AttributeValue> itemKey, Dictionary<string, ExpectedAttributeValue> expectedValues, CancellationToken cancellationToken)
         {
             if (expectedValues != null && expectedValues.Count > 0)
             {
@@ -189,7 +189,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Dictionary<string, AttributeValue> item = result.Item;
                 try
                 {
-                    checkExpectedValuesAsync(expectedValues, item);
+                    CheckExpectedValuesAsync(expectedValues, item);
                 }
                 catch (ConditionalCheckFailedException e)
                 {
@@ -209,13 +209,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         ///            The actual values. </param>
         /// <exception cref="ConditionalCheckFailedException">
         ///             Thrown if the values do not match the expected values. </exception>
-        public static async Task checkExpectedValuesAsync(Dictionary<string, ExpectedAttributeValue> expectedValues, Dictionary<string, AttributeValue> item)
+        public static async Task CheckExpectedValuesAsync(Dictionary<string, ExpectedAttributeValue> expectedValues, Dictionary<string, AttributeValue> item)
         {
             foreach (KeyValuePair<string, ExpectedAttributeValue> entry in expectedValues.SetOfKeyValuePairs())
             {
                 // if the attribute is expected to exist (null for isExists means
                 // true)
-                if ((entry.Value.Exists == null || entry.Value.Exists == true) && (item == null || item[entry.Key] == null || !expectedValueMatches(entry.Value.Value, item[entry.Key])))
+                if ((entry.Value.Exists == null || entry.Value.Exists == true) && (item == null || item[entry.Key] == null || !ExpectedValueMatches(entry.Value.Value, item[entry.Key])))
                 // but the item doesn't
                 // or the attribute doesn't
                 // or it doesn't have the expected value
@@ -231,7 +231,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        private static bool expectedValueMatches(AttributeValue expected, AttributeValue actual)
+        private static bool ExpectedValueMatches(AttributeValue expected, AttributeValue actual)
         {
             if (expected.N != null)
             {

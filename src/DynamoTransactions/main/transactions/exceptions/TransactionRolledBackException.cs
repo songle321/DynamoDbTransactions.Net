@@ -19,7 +19,7 @@
 	/// </summary>
 	public class TransactionRolledBackException : TransactionCompletedException
 	{
-private const long serialVersionUID = 1628959201410733660L;
+private const long SerialVersionUid = 1628959201410733660L;
 
 		public TransactionRolledBackException(string txId, string message) : base(txId, message)
 		{

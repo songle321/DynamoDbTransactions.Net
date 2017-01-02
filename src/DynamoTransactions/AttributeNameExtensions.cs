@@ -8,14 +8,14 @@ namespace DynamoTransactions
 {
     public static class AttributeNameExtensions
     {
-        public static AttributeDefinition withAttributeName(this AttributeDefinition initial, string value) =>
+        public static AttributeDefinition WithAttributeName(this AttributeDefinition initial, string value) =>
             new AttributeDefinition
             {
                 AttributeName = value,
                 AttributeType = initial.AttributeType
             };
 
-        public static AttributeDefinition withAttributeType(this AttributeDefinition initial, string value) =>
+        public static AttributeDefinition WithAttributeType(this AttributeDefinition initial, string value) =>
             new AttributeDefinition
             {
                 AttributeName = initial.AttributeType,

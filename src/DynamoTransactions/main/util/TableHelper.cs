@@ -23,7 +23,7 @@ using Amazon.DynamoDBv2.Model;
  {
 	public class TableHelper
 	{
-private readonly AmazonDynamoDBClient client;
+private readonly AmazonDynamoDBClient _client;
 
 		public TableHelper(AmazonDynamoDBClient client)
 		{
@@ -31,12 +31,12 @@ private readonly AmazonDynamoDBClient client;
 			{
 				throw new System.ArgumentException("client must not be null");
 			}
-			this.client = client;
+			this._client = client;
 		}
 
-		public virtual async Task<string> verifyTableExistsAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
+		public virtual async Task<string> VerifyTableExistsAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes)
 		{
-			DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest(tableName));
+			DescribeTableResponse describe = await _client.DescribeTableAsync(new DescribeTableRequest(tableName));
 			if (!(new HashSet<AttributeDefinition>(definitions)).Equals(new HashSet<AttributeDefinition>(describe.Table.AttributeDefinitions)))
 			{
 				throw new ResourceInUseException("Table " + tableName + " had the wrong AttributesToGet." + " Expected: " + definitions + " " + " Was: " + describe.Table.AttributeDefinitions);
@@ -49,10 +49,10 @@ private readonly AmazonDynamoDBClient client;
 				throw new ResourceInUseException("Table " + tableName + " had the wrong KeySchema." + " Expected: " + keySchema + " " + " Was: " + describe.Table.KeySchema);
 			}
 
-			List<LocalSecondaryIndex> theirLSIs = null;
+			List<LocalSecondaryIndex> theirLsIs = null;
 			if (describe.Table.LocalSecondaryIndexes != null)
 			{
-				theirLSIs = new List<LocalSecondaryIndex>();
+				theirLsIs = new List<LocalSecondaryIndex>();
 				foreach (LocalSecondaryIndexDescription description in describe.Table.LocalSecondaryIndexes)
 				{
 					LocalSecondaryIndex lsi = new LocalSecondaryIndex
@@ -61,22 +61,22 @@ private readonly AmazonDynamoDBClient client;
                         KeySchema = description.KeySchema,
                         Projection = description.Projection
                     };
-					theirLSIs.Add(lsi);
+					theirLsIs.Add(lsi);
 				}
 			}
 
 			if (localIndexes != null)
 			{
-				if (!(new HashSet<LocalSecondaryIndex>(localIndexes)).Equals(new HashSet<LocalSecondaryIndex>(theirLSIs)))
+				if (!(new HashSet<LocalSecondaryIndex>(localIndexes)).Equals(new HashSet<LocalSecondaryIndex>(theirLsIs)))
 				{
-					throw new ResourceInUseException("Table " + tableName + " did not have the expected LocalSecondaryIndexes." + " Expected: " + localIndexes + " Was: " + theirLSIs);
+					throw new ResourceInUseException("Table " + tableName + " did not have the expected LocalSecondaryIndexes." + " Expected: " + localIndexes + " Was: " + theirLsIs);
 				}
 			}
 			else
 			{
-				if (theirLSIs != null)
+				if (theirLsIs != null)
 				{
-					throw new ResourceInUseException("Table " + tableName + " had local secondary indexes, but expected none." + " Indexes: " + theirLSIs);
+					throw new ResourceInUseException("Table " + tableName + " had local secondary indexes, but expected none." + " Indexes: " + theirLsIs);
 				}
 			}
 
@@ -95,7 +95,7 @@ private readonly AmazonDynamoDBClient client;
 		/// <exception cref="InterruptedException">  </exception>
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public void verifyOrCreateTableAsync(String tableName, java.util.List<com.amazonaws.services.dynamodbv2.model.AttributeDefinition> definitions, java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> keySchema, java.util.List<com.amazonaws.services.dynamodbv2.model.LocalSecondaryIndex> localIndexes, com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput provisionedThroughput, Nullable<long> waitTimeSeconds) throws InterruptedException
-		public virtual async Task verifyOrCreateTableAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
+		public virtual async Task VerifyOrCreateTableAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, ProvisionedThroughput provisionedThroughput, long? waitTimeSeconds)
 		{
 if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			{
@@ -105,11 +105,11 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			string status = null;
 			try
 			{
-				status = await verifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
+				status = await VerifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
 			}
 			catch (ResourceNotFoundException)
 			{
-				status = (await client.CreateTableAsync(new CreateTableRequest
+				status = (await _client.CreateTableAsync(new CreateTableRequest
 				{
 				    TableName = tableName,
                     AttributeDefinitions = definitions,
@@ -121,11 +121,11 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 
 			if (waitTimeSeconds != null && !TableStatus.ACTIVE.ToString().Equals(status))
 			{
-				await waitForTableActiveAsync(tableName, definitions, keySchema, localIndexes, waitTimeSeconds.Value);
+				await WaitForTableActiveAsync(tableName, definitions, keySchema, localIndexes, waitTimeSeconds.Value);
 			}
 		}
 
-		public virtual async Task waitForTableActiveAsync(string tableName, long waitTimeSeconds)
+		public virtual async Task WaitForTableActiveAsync(string tableName, long waitTimeSeconds)
 		{
 			if (waitTimeSeconds < 0)
 			{
@@ -136,7 +136,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			long elapsedMs = 0;
 			do
 			{
-				DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest
+				DescribeTableResponse describe = await _client.DescribeTableAsync(new DescribeTableRequest
 				{
 				    TableName = tableName
 				});
@@ -156,7 +156,7 @@ if (waitTimeSeconds != null && waitTimeSeconds < 0)
 			throw new ResourceInUseException("Table " + tableName + " did not become ACTIVE after " + waitTimeSeconds + " seconds.");
 		}
 
-		public virtual async Task waitForTableActiveAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
+		public virtual async Task WaitForTableActiveAsync(string tableName, List<AttributeDefinition> definitions, List<KeySchemaElement> keySchema, List<LocalSecondaryIndex> localIndexes, long waitTimeSeconds)
 		{
 if (waitTimeSeconds < 0)
 			{
@@ -167,7 +167,7 @@ if (waitTimeSeconds < 0)
 			long elapsedMs = 0;
 			do
 			{
-				string status = await verifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
+				string status = await VerifyTableExistsAsync(tableName, definitions, keySchema, localIndexes);
 				if (TableStatus.ACTIVE.ToString().Equals(status))
 				{
 					return;
@@ -185,7 +185,7 @@ if (waitTimeSeconds < 0)
 
 //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
 //ORIGINAL LINE: public void waitForTableDeletedAsync(String tableName, long waitTimeSeconds) throws InterruptedException
-		public virtual async Task waitForTableDeletedAsync(string tableName, long waitTimeSeconds)
+		public virtual async Task WaitForTableDeletedAsync(string tableName, long waitTimeSeconds)
 		{
 if (waitTimeSeconds < 0)
 			{
@@ -198,7 +198,7 @@ if (waitTimeSeconds < 0)
 			{
 				try
 				{
-					DescribeTableResponse describe = await client.DescribeTableAsync(new DescribeTableRequest
+					DescribeTableResponse describe = await _client.DescribeTableAsync(new DescribeTableRequest
 					{
 					    TableName = tableName
 					});

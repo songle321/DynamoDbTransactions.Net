@@ -32,7 +32,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue("Bar"))}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
             // no exception expected
         }
 
@@ -50,7 +50,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue("NotBar"))}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -69,7 +69,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             };
 
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
             // no exception expected
         }
 
@@ -88,7 +88,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {B = new MemoryStream(new byte[] {0, 127, 255})})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -106,7 +106,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
             // no exception expected
         }
 
@@ -125,7 +125,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
             // no exception expected
         }
 
@@ -144,7 +144,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "12"})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -162,7 +162,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -180,7 +180,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "!!.!!"})}
             };
 
-            TransactionDynamoDBFacade.checkExpectedValuesAsync(expected, item).Wait();
+            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
         }
 
     }

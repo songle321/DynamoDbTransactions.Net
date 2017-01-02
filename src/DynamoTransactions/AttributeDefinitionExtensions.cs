@@ -10,7 +10,7 @@ namespace DynamoTransactions
 {
     public static class AttributeDefinitionExtensions
     {
-        public static AttributeValue withN(this AttributeValue initial, string value) =>
+        public static AttributeValue WithN(this AttributeValue initial, string value) =>
             new AttributeValue
             {
                 N = value,
@@ -25,7 +25,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withB(this AttributeValue initial, MemoryStream value) =>
+        public static AttributeValue WithB(this AttributeValue initial, MemoryStream value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -40,7 +40,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withBS(this AttributeValue initial, List<MemoryStream> value) =>
+        public static AttributeValue WithBs(this AttributeValue initial, List<MemoryStream> value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -55,7 +55,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withL(this AttributeValue initial, List<AttributeValue> value) =>
+        public static AttributeValue WithL(this AttributeValue initial, List<AttributeValue> value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -70,7 +70,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withS(this AttributeValue initial, string value) =>
+        public static AttributeValue WithS(this AttributeValue initial, string value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -85,7 +85,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withBOOL(this AttributeValue initial, bool value) =>
+        public static AttributeValue WithBool(this AttributeValue initial, bool value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -100,7 +100,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withM(this AttributeValue initial, Dictionary<string, AttributeValue> value) =>
+        public static AttributeValue WithM(this AttributeValue initial, Dictionary<string, AttributeValue> value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -115,7 +115,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withNS(this AttributeValue initial, List<string> value) =>
+        public static AttributeValue WithNs(this AttributeValue initial, List<string> value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -130,7 +130,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withNULL(this AttributeValue initial, bool value) =>
+        public static AttributeValue WithNull(this AttributeValue initial, bool value) =>
             new AttributeValue
             {
                 N = initial.N,
@@ -145,7 +145,7 @@ namespace DynamoTransactions
                 SS = initial.SS
             };
 
-        public static AttributeValue withSS(this AttributeValue initial, List<string> value) =>
+        public static AttributeValue WithSs(this AttributeValue initial, List<string> value) =>
             new AttributeValue
             {
                 N = initial.N,

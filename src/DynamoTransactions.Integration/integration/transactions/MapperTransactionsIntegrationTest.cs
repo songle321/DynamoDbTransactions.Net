@@ -85,7 +85,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 get
                 {
-                    return Collections.singletonMap(ID_ATTRIBUTE, new AttributeValue
+                    return Collections.SingletonMap(IdAttribute, new AttributeValue
                     {
                         S = Id,
 
@@ -125,55 +125,55 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         }
 
-        private ExampleHashKeyItem hashItem0;
+        private ExampleHashKeyItem _hashItem0;
 
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Before public void setup()
-        public virtual void setup()
+        public virtual void Setup()
         {
-            Transaction t = manager.newTransaction();
-            hashItem0 = new ExampleHashKeyItem();
-            hashItem0.Id = Guid.NewGuid().ToString();
-            hashItem0.Something = "val";
-            hashItem0.SomeSet = new HashSet<string>(Arrays.asList("one", "two"));
-            t.saveAsync(hashItem0).Wait();
-            key0 = newKey(INTEG_HASH_TABLE_NAME);
-            item0 = new Dictionary<string, AttributeValue>(key0);
-            item0["s_someattr"] = new AttributeValue("val");
-            item0["ss_otherattr"] = new AttributeValue
+            Transaction t = Manager.NewTransaction();
+            _hashItem0 = new ExampleHashKeyItem();
+            _hashItem0.Id = Guid.NewGuid().ToString();
+            _hashItem0.Something = "val";
+            _hashItem0.SomeSet = new HashSet<string>(Arrays.AsList("one", "two"));
+            t.SaveAsync(_hashItem0).Wait();
+            Key0 = NewKey(IntegHashTableName);
+            Item0 = new Dictionary<string, AttributeValue>(Key0);
+            Item0["s_someattr"] = new AttributeValue("val");
+            Item0["ss_otherattr"] = new AttributeValue
             {
                 SS = { "one", "two" }
             };
-            Dictionary<string, AttributeValue> putResponse = t.putItemAsync(new PutItemRequest
+            Dictionary<string, AttributeValue> putResponse = t.PutItemAsync(new PutItemRequest
             {
-                TableName = INTEG_HASH_TABLE_NAME,
-                Item = item0,
+                TableName = IntegHashTableName,
+                Item = Item0,
                 ReturnValues = ReturnValue.ALL_OLD,
 
             }).Result.Attributes;
-            assertNull(putResponse);
-            t.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, item0, true);
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, true);
+            AssertNull(putResponse);
+            t.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, Key0, Item0, true);
+            AssertItemNotLocked(IntegHashTableName, _hashItem0.Key, _hashItem0.ExpectedValues, true);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @After public void teardown()
-        public virtual void teardown()
+        public virtual void Teardown()
         {
-            Transaction t = manager.newTransaction();
-            t.deleteItemAsync(new DeleteItemRequest
+            Transaction t = Manager.NewTransaction();
+            t.DeleteItemAsync(new DeleteItemRequest
             {
-                TableName = INTEG_HASH_TABLE_NAME,
-                Key = key0,
+                TableName = IntegHashTableName,
+                Key = Key0,
 
             }).Wait();
-            t.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, key0, false);
+            t.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, Key0, false);
         }
 
-        private ExampleHashKeyItem newItem()
+        private ExampleHashKeyItem NewItem()
         {
             ExampleHashKeyItem item1 = new ExampleHashKeyItem();
             item1.Id = Guid.NewGuid().ToString();
@@ -184,22 +184,22 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: public MapperTransactionsIntegrationTest() throws java.io.IOException
         public MapperTransactionsIntegrationTest() : base(new DynamoDBContextConfig
         {
-            TableNamePrefix = TABLE_NAME_PREFIX + "_"
+            TableNamePrefix = TableNamePrefix + "_"
         })
         {
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void phantomItemFromDelete()
-        public virtual void phantomItemFromDelete()
+        public virtual void PhantomItemFromDelete()
         {
-            ExampleHashKeyItem item1 = newItem();
-            Transaction transaction = manager.newTransaction();
-            transaction.deleteAsync(item1).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, transaction.Id, true, false);
-            transaction.rollbackAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
-            transaction.deleteAsync(long.MaxValue).Wait();
+            ExampleHashKeyItem item1 = NewItem();
+            Transaction transaction = Manager.NewTransaction();
+            transaction.DeleteAsync(item1).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, transaction.Id, true, false);
+            transaction.RollbackAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, item1.Key, false);
+            transaction.DeleteAsync(long.MaxValue).Wait();
         }
 
         /*
@@ -208,131 +208,131 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void lockItem()
-        public virtual void lockItem()
+        public virtual void LockItem()
         {
-            ExampleHashKeyItem item1 = newItem();
+            ExampleHashKeyItem item1 = NewItem();
 
-            Transaction t1 = manager.newTransaction();
-            Transaction t2 = manager.newTransaction();
+            Transaction t1 = Manager.NewTransaction();
+            Transaction t2 = Manager.NewTransaction();
 
-            ExampleHashKeyItem loadedItem = t1.loadAsync(item1).Result;
+            ExampleHashKeyItem loadedItem = t1.LoadAsync(item1).Result;
 
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false); // we're not applying locks
-            assertNull(loadedItem);
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, false); // we're not applying locks
+            AssertNull(loadedItem);
 
-            t2.deleteAsync(item1).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2.Id, true, false); // we're not applying deletes either
+            t2.DeleteAsync(item1).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t2.Id, true, false); // we're not applying deletes either
 
-            t2.commitAsync().Wait();
+            t2.CommitAsync().Wait();
 
             try
             {
-                t1.commitAsync().Wait();
-                fail();
+                t1.CommitAsync().Wait();
+                Fail();
             }
             catch (TransactionRolledBackException)
             {
             }
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, false);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void lock2Items()
-        public virtual void lock2Items()
+        public virtual void Lock2Items()
         {
-            ExampleHashKeyItem item1 = newItem();
-            ExampleHashKeyItem item2 = newItem();
+            ExampleHashKeyItem item1 = NewItem();
+            ExampleHashKeyItem item2 = NewItem();
 
-            Transaction t0 = manager.newTransaction();
+            Transaction t0 = Manager.NewTransaction();
             item1.Something = "val";
-            t0.saveAsync(item1);
+            t0.SaveAsync(item1);
 
-            t0.commitAsync().Wait();
+            t0.CommitAsync().Wait();
 
-            Transaction t1 = manager.newTransaction();
+            Transaction t1 = Manager.NewTransaction();
 
-            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
-            assertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
+            ExampleHashKeyItem loadedItem1 = t1.LoadAsync(item1).Result;
+            AssertItemLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, t1.Id, false, false);
+            AssertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
 
-            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item2).Result;
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, false, false);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item2.Key, t1.Id, true, false);
-            assertNull(loadedItem2);
+            ExampleHashKeyItem loadedItem2 = t1.LoadAsync(item2).Result;
+            AssertItemLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, t1.Id, false, false);
+            AssertItemLocked(IntegHashTableName, item2.Key, t1.Id, true, false);
+            AssertNull(loadedItem2);
 
-            t1.commitAsync().Wait();
-            t1.deleteAsync(long.MaxValue).Wait();
+            t1.CommitAsync().Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, false);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item2.Key, false);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void getItemWithDelete()
-        public virtual void getItemWithDelete()
+        public virtual void GetItemWithDelete()
         {
-            Transaction t1 = manager.newTransaction();
-            ExampleHashKeyItem loadedItem1 = t1.loadAsync(hashItem0).Result;
-            assertEquals(hashItem0.ExpectedValues, loadedItem1.ExpectedValues);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, loadedItem1.ExpectedValues, t1.Id, false, false);
+            Transaction t1 = Manager.NewTransaction();
+            ExampleHashKeyItem loadedItem1 = t1.LoadAsync(_hashItem0).Result;
+            AssertEquals(_hashItem0.ExpectedValues, loadedItem1.ExpectedValues);
+            AssertItemLocked(IntegHashTableName, _hashItem0.Key, loadedItem1.ExpectedValues, t1.Id, false, false);
 
-            t1.deleteAsync(hashItem0).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
+            t1.DeleteAsync(_hashItem0).Wait();
+            AssertItemLocked(IntegHashTableName, _hashItem0.Key, _hashItem0.ExpectedValues, t1.Id, false, false);
 
-            ExampleHashKeyItem loadedItem2 = t1.loadAsync(hashItem0).Result;
-            assertNull(loadedItem2);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, hashItem0.ExpectedValues, t1.Id, false, false);
+            ExampleHashKeyItem loadedItem2 = t1.LoadAsync(_hashItem0).Result;
+            AssertNull(loadedItem2);
+            AssertItemLocked(IntegHashTableName, _hashItem0.Key, _hashItem0.ExpectedValues, t1.Id, false, false);
 
-            t1.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, hashItem0.Key, false);
+            t1.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, _hashItem0.Key, false);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void getItemNotExists()
-        public virtual void getItemNotExists()
+        public virtual void GetItemNotExists()
         {
-            Transaction t1 = manager.newTransaction();
-            ExampleHashKeyItem item1 = newItem();
+            Transaction t1 = Manager.NewTransaction();
+            ExampleHashKeyItem item1 = NewItem();
 
-            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
-            assertNull(loadedItem1);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
+            ExampleHashKeyItem loadedItem1 = t1.LoadAsync(item1).Result;
+            AssertNull(loadedItem1);
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, false);
 
-            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1).Result;
-            assertNull(loadedItem2);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
+            ExampleHashKeyItem loadedItem2 = t1.LoadAsync(item1).Result;
+            AssertNull(loadedItem2);
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, false);
 
-            t1.commitAsync().Wait();
+            t1.CommitAsync().Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, false);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void getItemAfterPutItemInsert()
-        public virtual void getItemAfterPutItemInsert()
+        public virtual void GetItemAfterPutItemInsert()
         {
-            Transaction t1 = manager.newTransaction();
-            ExampleHashKeyItem item1 = newItem();
+            Transaction t1 = Manager.NewTransaction();
+            ExampleHashKeyItem item1 = NewItem();
             item1.Something = "wef";
 
-            ExampleHashKeyItem loadedItem1 = t1.loadAsync(item1).Result;
-            assertNull(loadedItem1);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, false);
+            ExampleHashKeyItem loadedItem1 = t1.LoadAsync(item1).Result;
+            AssertNull(loadedItem1);
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, false);
 
-            t1.saveAsync(item1);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
+            t1.SaveAsync(item1);
+            AssertItemLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem2 = t1.loadAsync(item1).Result;
-            assertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
+            ExampleHashKeyItem loadedItem2 = t1.LoadAsync(item1).Result;
+            AssertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
+            AssertItemLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
-            t1.commitAsync().Wait();
+            t1.CommitAsync().Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, true);
         }
 
         /*
@@ -341,23 +341,23 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void conflictingWrites()
-        public virtual void conflictingWrites()
+        public virtual void ConflictingWrites()
         {
-            ExampleHashKeyItem item1 = newItem();
-            Transaction t1 = manager.newTransaction();
-            Transaction t2 = manager.newTransaction();
-            Transaction t3 = manager.newTransaction();
+            ExampleHashKeyItem item1 = NewItem();
+            Transaction t1 = Manager.NewTransaction();
+            Transaction t2 = Manager.NewTransaction();
+            Transaction t3 = Manager.NewTransaction();
 
             // Finish t1
             ExampleHashKeyItem t1Item = new ExampleHashKeyItem();
             t1Item.Id = item1.Id;
             t1Item.Something = "t1";
 
-            t1.saveAsync(t1Item).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1Item.ExpectedValues, t1.Id, true, true);
+            t1.SaveAsync(t1Item).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t1Item.ExpectedValues, t1.Id, true, true);
 
-            t1.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1Item.ExpectedValues, true);
+            t1.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, item1.Key, t1Item.ExpectedValues, true);
 
             // Begin t2
             ExampleHashKeyItem t2Item = new ExampleHashKeyItem();
@@ -365,8 +365,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             t2Item.Something = "t2";
             t2Item.SomeSet = new HashSet<string> {"extra"};
 
-            t2.saveAsync(t2Item).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t2Item.ExpectedValues, t2.Id, false, true);
+            t2.SaveAsync(t2Item).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t2Item.ExpectedValues, t2.Id, false, true);
 
             // Begin and finish t3
             ExampleHashKeyItem t3Item = new ExampleHashKeyItem();
@@ -374,28 +374,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             t3Item.Something = "t3";
             t3Item.SomeSet = new HashSet<string> {"things"};
 
-            t3.saveAsync(t3Item).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, t3.Id, false, true);
+            t3.SaveAsync(t3Item).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t3Item.ExpectedValues, t3.Id, false, true);
 
-            t3.commitAsync().Wait();
+            t3.CommitAsync().Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, t3Item.ExpectedValues, true);
 
             // Ensure t2 rolled back
             try
             {
-                t2.commitAsync().Wait();
-                fail();
+                t2.CommitAsync().Wait();
+                Fail();
             }
             catch (TransactionRolledBackException)
             {
             }
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
-            t3.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
+            t3.DeleteAsync(long.MaxValue).Wait();
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, t3Item.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, t3Item.ExpectedValues, true);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -441,7 +441,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 get
                 {
-                    return Collections.singletonMap(ID_ATTRIBUTE, new AttributeValue
+                    return Collections.SingletonMap(IdAttribute, new AttributeValue
                     {
                         S = Id,
 
@@ -471,175 +471,175 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void createVersionedItemWhenItemAlreadyExists()
-        public virtual void createVersionedItemWhenItemAlreadyExists()
+        public virtual void CreateVersionedItemWhenItemAlreadyExists()
         {
-            ExampleVersionedHashKeyItem item1 = newVersionedItem();
+            ExampleVersionedHashKeyItem item1 = NewVersionedItem();
 
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1);
-            t1.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1);
+            t1.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, true);
 
             ExampleVersionedHashKeyItem item2 = new ExampleVersionedHashKeyItem();
             item2.Id = item1.Id;
-            Transaction t2 = manager.newTransaction();
+            Transaction t2 = Manager.NewTransaction();
             try
             {
-                t2.saveAsync(item2);
-                fail();
+                t2.SaveAsync(item2);
+                Fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t2.rollbackAsync().Wait();
+                t2.RollbackAsync().Wait();
             }
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, true);
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void createVersionedItemInConflictingTransactions()
-        public virtual void createVersionedItemInConflictingTransactions()
+        public virtual void CreateVersionedItemInConflictingTransactions()
         {
-            ExampleVersionedHashKeyItem item1 = newVersionedItem();
+            ExampleVersionedHashKeyItem item1 = NewVersionedItem();
 
             // establish the item with version 1
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1);
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, t1.Id, true, true);
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1);
+            AssertItemLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, t1.Id, true, true);
 
             // while the item is being created in the first transaction, create it in another transaction
             ExampleVersionedHashKeyItem item2 = new ExampleVersionedHashKeyItem();
             item2.Id = item1.Id;
-            Transaction t2 = manager.newTransaction();
-            t2.saveAsync(item2);
-            t2.commitAsync().Wait();
+            Transaction t2 = Manager.NewTransaction();
+            t2.SaveAsync(item2);
+            t2.CommitAsync().Wait();
 
             // try to commit the original transaction
             try
             {
-                t1.commitAsync().Wait();
-                fail();
+                t1.CommitAsync().Wait();
+                Fail();
             }
             catch (TransactionRolledBackException)
             {
             }
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, item1.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item1.Key, item1.ExpectedValues, true);
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteVersionedItemWithOutOfDateVersion()
-        public virtual void deleteVersionedItemWithOutOfDateVersion()
+        public virtual void DeleteVersionedItemWithOutOfDateVersion()
         {
-            ExampleVersionedHashKeyItem item1 = newVersionedItem();
+            ExampleVersionedHashKeyItem item1 = NewVersionedItem();
 
             // establish the item with version 1
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1);
-            t1.commitAsync().Wait();
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1);
+            t1.CommitAsync().Wait();
 
             // update the item to version 2
-            Transaction t2 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1).Result;
-            t2.saveAsync(item2).Wait();
-            t2.commitAsync().Wait();
+            Transaction t2 = Manager.NewTransaction();
+            ExampleVersionedHashKeyItem item2 = t2.LoadAsync(item1).Result;
+            t2.SaveAsync(item2).Wait();
+            t2.CommitAsync().Wait();
 
             // try to delete with an outdated view of the item
-            Transaction t3 = manager.newTransaction();
+            Transaction t3 = Manager.NewTransaction();
             try
             {
-                t3.deleteAsync(item1).Wait();
-                fail();
+                t3.DeleteAsync(item1).Wait();
+                Fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t3.rollbackAsync().Wait();
+                t3.RollbackAsync().Wait();
             }
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item2.Key, item2.ExpectedValues, true);
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
-            t3.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
+            t3.DeleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void reusingMapperInstanceWithOutOfDateVersionThrowsOnSave()
-        public virtual void reusingMapperInstanceWithOutOfDateVersionThrowsOnSave()
+        public virtual void ReusingMapperInstanceWithOutOfDateVersionThrowsOnSave()
         {
-            ExampleVersionedHashKeyItem item1 = newVersionedItem();
+            ExampleVersionedHashKeyItem item1 = NewVersionedItem();
 
             // establish the item with version 1
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1).Wait();
-            t1.commitAsync().Wait();
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1).Wait();
+            t1.CommitAsync().Wait();
 
             // update the item to version 2 and saveAsync
-            Transaction t2 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t2.loadAsync(item1).Result;
-            t2.saveAsync(item2).Wait();
-            t2.commitAsync().Wait();
+            Transaction t2 = Manager.NewTransaction();
+            ExampleVersionedHashKeyItem item2 = t2.LoadAsync(item1).Result;
+            t2.SaveAsync(item2).Wait();
+            t2.CommitAsync().Wait();
 
-            Transaction t3 = manager.newTransaction();
-            t3.loadAsync(item1).Wait();
+            Transaction t3 = Manager.NewTransaction();
+            t3.LoadAsync(item1).Wait();
             try
             {
-                t3.saveAsync(item1).Wait();
-                fail();
+                t3.SaveAsync(item1).Wait();
+                Fail();
             }
             catch (ConditionalCheckFailedException)
             {
-                t3.rollbackAsync().Wait();
+                t3.RollbackAsync().Wait();
             }
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item2.Key, item2.ExpectedValues, true);
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
-            t3.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
+            t3.DeleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteVersionedItemInConflictingTransaction()
-        public virtual void deleteVersionedItemInConflictingTransaction()
+        public virtual void DeleteVersionedItemInConflictingTransaction()
         {
-            ExampleVersionedHashKeyItem item1 = newVersionedItem();
+            ExampleVersionedHashKeyItem item1 = NewVersionedItem();
 
             // establish the item with version 1
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1).Wait();
-            t1.commitAsync().Wait();
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1).Wait();
+            t1.CommitAsync().Wait();
 
             // start to delete the item
-            Transaction t2 = manager.newTransaction();
-            t2.deleteAsync(item1).Wait();
+            Transaction t2 = Manager.NewTransaction();
+            t2.DeleteAsync(item1).Wait();
 
             // update the item to version 2
-            Transaction t3 = manager.newTransaction();
-            ExampleVersionedHashKeyItem item2 = t3.loadAsync(item1).Result;
-            t3.saveAsync(item2).Wait();
-            t3.commitAsync().Wait();
+            Transaction t3 = Manager.NewTransaction();
+            ExampleVersionedHashKeyItem item2 = t3.LoadAsync(item1).Result;
+            t3.SaveAsync(item2).Wait();
+            t3.CommitAsync().Wait();
 
             // try to commit the delete
             try
             {
-                t2.commitAsync().Wait();
-                fail();
+                t2.CommitAsync().Wait();
+                Fail();
             }
             catch (TransactionRolledBackException)
             {
             }
 
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item2.Key, item2.ExpectedValues, true);
+            AssertItemNotLocked(IntegHashTableName, item2.Key, item2.ExpectedValues, true);
 
-            t1.deleteAsync(long.MaxValue).Wait();
-            t2.deleteAsync(long.MaxValue).Wait();
-            t3.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
+            t2.DeleteAsync(long.MaxValue).Wait();
+            t3.DeleteAsync(long.MaxValue).Wait();
         }
 
-        private ExampleVersionedHashKeyItem newVersionedItem()
+        private ExampleVersionedHashKeyItem NewVersionedItem()
         {
             ExampleVersionedHashKeyItem item1 = new ExampleVersionedHashKeyItem();
             item1.Id = Guid.NewGuid().ToString();
@@ -648,50 +648,50 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void readCommitted()
-        public virtual void readCommitted()
+        public virtual void ReadCommitted()
         {
-            ExampleHashKeyItem item1 = newItem();
+            ExampleHashKeyItem item1 = NewItem();
             item1.Something = "example";
 
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, true);
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem1 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
-            assertNull(loadedItem1);
+            ExampleHashKeyItem loadedItem1 = Manager.LoadAsync(item1, Transaction.IsolationLevel.Committed).Result;
+            AssertNull(loadedItem1);
 
-            t1.commitAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, true);
+            t1.CommitAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, item1.Key, true);
 
-            ExampleHashKeyItem loadedItem2 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
-            assertNotNull(loadedItem2);
-            assertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
+            ExampleHashKeyItem loadedItem2 = Manager.LoadAsync(item1, Transaction.IsolationLevel.Committed).Result;
+            AssertNotNull(loadedItem2);
+            AssertEquals(item1.ExpectedValues, loadedItem2.ExpectedValues);
 
-            t1.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void readUncommitted()
-        public virtual void readUncommitted()
+        public virtual void ReadUncommitted()
         {
-            ExampleHashKeyItem item1 = newItem();
+            ExampleHashKeyItem item1 = NewItem();
             item1.Something = "example";
 
-            Transaction t1 = manager.newTransaction();
-            t1.saveAsync(item1).Wait();
-            assertItemLocked(INTEG_HASH_TABLE_NAME, item1.Key, t1.Id, true, true);
+            Transaction t1 = Manager.NewTransaction();
+            t1.SaveAsync(item1).Wait();
+            AssertItemLocked(IntegHashTableName, item1.Key, t1.Id, true, true);
 
-            ExampleHashKeyItem loadedItem1 = manager.loadAsync(item1, Transaction.IsolationLevel.UNCOMMITTED).Result;
-            assertNotNull(loadedItem1);
-            assertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
+            ExampleHashKeyItem loadedItem1 = Manager.LoadAsync(item1, Transaction.IsolationLevel.Uncommitted).Result;
+            AssertNotNull(loadedItem1);
+            AssertEquals(item1.ExpectedValues, loadedItem1.ExpectedValues);
 
-            t1.rollbackAsync().Wait();
-            assertItemNotLocked(INTEG_HASH_TABLE_NAME, item1.Key, false);
+            t1.RollbackAsync().Wait();
+            AssertItemNotLocked(IntegHashTableName, item1.Key, false);
 
-            ExampleHashKeyItem loadedItem2 = manager.loadAsync(item1, Transaction.IsolationLevel.COMMITTED).Result;
-            assertNull(loadedItem2);
+            ExampleHashKeyItem loadedItem2 = Manager.LoadAsync(item1, Transaction.IsolationLevel.Committed).Result;
+            AssertNull(loadedItem2);
 
-            t1.deleteAsync(long.MaxValue).Wait();
+            t1.DeleteAsync(long.MaxValue).Wait();
         }
     }
 }

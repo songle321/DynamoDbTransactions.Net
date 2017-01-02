@@ -19,7 +19,7 @@
 	/// </summary>
 	public class UnknownCompletedTransactionException : TransactionCompletedException
 	{
-private const long serialVersionUID = 612575052603020091L;
+private const long SerialVersionUid = 612575052603020091L;
 
 		public UnknownCompletedTransactionException(string txId, string message) : base(txId, message)
 		{

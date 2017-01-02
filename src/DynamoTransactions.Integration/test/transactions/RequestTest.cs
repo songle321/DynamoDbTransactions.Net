@@ -29,43 +29,43 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 {
     public class RequestTest
     {
-        private const string TABLE_NAME = "Dummy";
-        private const string HASH_ATTR_NAME = "Foo";
-        private static readonly List<KeySchemaElement> HASH_SCHEMA = Arrays.asList(new KeySchemaElement
+        private const string TableName = "Dummy";
+        private const string HashAttrName = "Foo";
+        private static readonly List<KeySchemaElement> HashSchema = Arrays.AsList(new KeySchemaElement
         {
-            AttributeName = HASH_ATTR_NAME,
+            AttributeName = HashAttrName,
             KeyType = KeyType.HASH
         });
 
-        internal static readonly Dictionary<string, AttributeValue> JSON_M_ATTR_VAL = new Dictionary<string, AttributeValue>();
-        private static readonly Dictionary<string, ExpectedAttributeValue> NONNULL_EXPECTED_ATTR_VALUES = new Dictionary<string, ExpectedAttributeValue>();
-        private static readonly Dictionary<string, string> NONNULL_EXP_ATTR_NAMES = new Dictionary<string, string>();
-        private static readonly Dictionary<string, AttributeValue> NONNULL_EXP_ATTR_VALUES = new Dictionary<string, AttributeValue>();
-        private static readonly Dictionary<string, AttributeValue> BASIC_ITEM = new Dictionary<string, AttributeValue>();
+        internal static readonly Dictionary<string, AttributeValue> JsonMAttrVal = new Dictionary<string, AttributeValue>();
+        private static readonly Dictionary<string, ExpectedAttributeValue> NonnullExpectedAttrValues = new Dictionary<string, ExpectedAttributeValue>();
+        private static readonly Dictionary<string, string> NonnullExpAttrNames = new Dictionary<string, string>();
+        private static readonly Dictionary<string, AttributeValue> NonnullExpAttrValues = new Dictionary<string, AttributeValue>();
+        private static readonly Dictionary<string, AttributeValue> BasicItem = new Dictionary<string, AttributeValue>();
 
         static RequestTest()
         {
-            JSON_M_ATTR_VAL["attr_s"] = new AttributeValue
+            JsonMAttrVal["attr_s"] = new AttributeValue
             {
                 S = "s"
             };
-            JSON_M_ATTR_VAL["attr_n"] = new AttributeValue
+            JsonMAttrVal["attr_n"] = new AttributeValue
             {
                 N = "1"
             };
-            JSON_M_ATTR_VAL["attr_b"] = new AttributeValue
+            JsonMAttrVal["attr_b"] = new AttributeValue
             {
                 B = new MemoryStream(Encoding.ASCII.GetBytes("asdf"))
             };
-            JSON_M_ATTR_VAL["attr_ss"] = new AttributeValue
+            JsonMAttrVal["attr_ss"] = new AttributeValue
             {
                 SS = { "a", "b" }
             };
-            JSON_M_ATTR_VAL["attr_ns"] = new AttributeValue
+            JsonMAttrVal["attr_ns"] = new AttributeValue
             {
                 NS = { "1", "2" }
             };
-            JSON_M_ATTR_VAL["attr_bs"] = new AttributeValue
+            JsonMAttrVal["attr_bs"] = new AttributeValue
             {
                 BS =
                 {
@@ -73,11 +73,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     new MemoryStream(Encoding.ASCII.GetBytes("ghjk"))
                 }
             };
-            JSON_M_ATTR_VAL["attr_bool"] = new AttributeValue
+            JsonMAttrVal["attr_bool"] = new AttributeValue
             {
                 BOOL = true
             };
-            JSON_M_ATTR_VAL["attr_l"] = new AttributeValue
+            JsonMAttrVal["attr_l"] = new AttributeValue
             {
                 L =
                 {
@@ -103,49 +103,49 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     }
                 }
             };
-            JSON_M_ATTR_VAL["attr_null"] = new AttributeValue
+            JsonMAttrVal["attr_null"] = new AttributeValue
             {
                 NULL = true
             };
 
-            BASIC_ITEM[HASH_ATTR_NAME] = new AttributeValue("a");
+            BasicItem[HashAttrName] = new AttributeValue("a");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validPut()
         [Fact]
-        public virtual void validPut()
+        public virtual void ValidPut()
         {
             Request.PutItem r = new Request.PutItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             r.Request = new PutItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Item = item
             };
-            r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putNullTableName()
         [Fact]
-        public virtual void putNullTableName()
+        public virtual void PutNullTableName()
         {
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
 
-            invalidRequestTest(new PutItemRequest { Item = item }, "TableName must not be null");
+            InvalidRequestTest(new PutItemRequest { Item = item }, "TableName must not be null");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putNullItem()
         [Fact]
-        public virtual void putNullItem()
+        public virtual void PutNullItem()
         {
-            invalidRequestTest(new PutItemRequest
+            InvalidRequestTest(new PutItemRequest
             {
-                TableName = TABLE_NAME
+                TableName = TableName
             },
             "PutItem must contain an Item");
         }
@@ -153,14 +153,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putMissingKey()
         [Fact]
-        public virtual void putMissingKey()
+        public virtual void PutMissingKey()
         {
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
             item["other-attr"] = new AttributeValue("a");
 
-            invalidRequestTest(new PutItemRequest
+            InvalidRequestTest(new PutItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Item = item
             },
             "PutItem request must contain the key attribute");
@@ -169,21 +169,21 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpected()
         [Fact]
-        public virtual void putExpected()
+        public virtual void PutExpected()
         {
             var request = new PutItemRequest
             {
                 TableName = BasicPutRequest.TableName,
                 Item = BasicPutRequest.Item,
-                Expected = NONNULL_EXPECTED_ATTR_VALUES
+                Expected = NonnullExpectedAttrValues
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putConditionExpression()
         [Fact]
-        public virtual void putConditionExpression()
+        public virtual void PutConditionExpression()
         {
             var request = new PutItemRequest
             {
@@ -191,55 +191,55 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Item = BasicPutRequest.Item,
                 ConditionExpression = "attribute_not_exists (some_field)"
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpressionAttributeNames()
         [Fact]
-        public virtual void putExpressionAttributeNames()
+        public virtual void PutExpressionAttributeNames()
         {
             var request = new PutItemRequest
             {
                 TableName = BasicPutRequest.TableName,
                 Item = BasicPutRequest.Item,
-                ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES
+                ExpressionAttributeNames = NonnullExpAttrNames
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpressionAttributeValues()
         [Fact]
-        public virtual void putExpressionAttributeValues()
+        public virtual void PutExpressionAttributeValues()
         {
             var request = new PutItemRequest
             {
                 TableName = BasicPutRequest.TableName,
                 Item = BasicPutRequest.Item,
-                ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES
+                ExpressionAttributeValues = NonnullExpAttrValues
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpected()
         [Fact]
-        public virtual void updateExpected()
+        public virtual void UpdateExpected()
         {
             var request = new PutItemRequest
             {
                 TableName = BasicPutRequest.TableName,
                 Item = BasicPutRequest.Item,
-                Expected = NONNULL_EXPECTED_ATTR_VALUES
+                Expected = NonnullExpectedAttrValues
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateConditionExpression()
         [Fact]
-        public virtual void updateConditionExpression()
+        public virtual void UpdateConditionExpression()
         {
             var request = new PutItemRequest
             {
@@ -247,13 +247,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Item = BasicPutRequest.Item,
                 ConditionExpression = "attribute_not_exists(some_field)"
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateUpdateExpression()
         [Fact]
-        public virtual void updateUpdateExpression()
+        public virtual void UpdateUpdateExpression()
         {
             var request = new UpdateItemRequest
             {
@@ -261,55 +261,55 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = BasicUpdateRequest.TableName,
                 UpdateExpression = "REMOVE some_field"
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpressionAttributeNames()
         [Fact]
-        public virtual void updateExpressionAttributeNames()
+        public virtual void UpdateExpressionAttributeNames()
         {
             var request = new UpdateItemRequest
             {
                 Key = BasicUpdateRequest.Key,
                 TableName = BasicUpdateRequest.TableName,
-                ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES
+                ExpressionAttributeNames = NonnullExpAttrNames
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpressionAttributeValues()
         [Fact]
-        public virtual void updateExpressionAttributeValues()
+        public virtual void UpdateExpressionAttributeValues()
         {
             var request = new UpdateItemRequest
             {
                 Key = BasicUpdateRequest.Key,
                 TableName = BasicUpdateRequest.TableName,
-                ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES
+                ExpressionAttributeValues = NonnullExpAttrValues
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpected()
         [Fact]
-        public virtual void deleteExpected()
+        public virtual void DeleteExpected()
         {
             var request = new UpdateItemRequest
             {
                 Key = BasicUpdateRequest.Key,
                 TableName = BasicUpdateRequest.TableName,
-                Expected = NONNULL_EXPECTED_ATTR_VALUES
+                Expected = NonnullExpectedAttrValues
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteConditionExpression()
         [Fact]
-        public virtual void deleteConditionExpression()
+        public virtual void DeleteConditionExpression()
         {
             var request = new DeleteItemRequest
             {
@@ -317,113 +317,113 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = BasicDeleteRequest.TableName,
                 ConditionExpression = "attribute_not_exists (some_field)"
             };
-            invalidRequestTest(request, "Requests with conditions");
+            InvalidRequestTest(request, "Requests with conditions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpressionAttributeNames()
         [Fact]
-        public virtual void deleteExpressionAttributeNames()
+        public virtual void DeleteExpressionAttributeNames()
         {
             var request = new DeleteItemRequest
             {
                 Key = BasicDeleteRequest.Key,
                 TableName = BasicDeleteRequest.TableName,
-                ExpressionAttributeNames = NONNULL_EXP_ATTR_NAMES
+                ExpressionAttributeNames = NonnullExpAttrNames
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpressionAttributeValues()
         [Fact]
-        public virtual void deleteExpressionAttributeValues()
+        public virtual void DeleteExpressionAttributeValues()
         {
             var request = new DeleteItemRequest
             {
                 Key = BasicDeleteRequest.Key,
                 TableName = BasicDeleteRequest.TableName,
-                ExpressionAttributeValues = NONNULL_EXP_ATTR_VALUES
+                ExpressionAttributeValues = NonnullExpAttrValues
             };
-            invalidRequestTest(request, "Requests with expressions");
+            InvalidRequestTest(request, "Requests with expressions");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validUpdate()
         [Fact]
-        public virtual void validUpdate()
+        public virtual void ValidUpdate()
         {
             Request.UpdateItem r = new Request.UpdateItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             r.Request = new UpdateItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = item
             };
-            r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validDelete()
         [Fact]
-        public virtual void validDelete()
+        public virtual void ValidDelete()
         {
             Request.DeleteItem r = new Request.DeleteItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             r.Request = new DeleteItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = item
             };
-            r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validLock()
         [Fact]
-        public virtual void validLock()
+        public virtual void ValidLock()
         {
             Request.GetItem r = new Request.GetItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             r.Request = new GetItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = item
             };
-            r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema));
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripGetString()
         [Fact]
-        public virtual void roundTripGetString()
+        public virtual void RoundTripGetString()
         {
             Request.GetItem r1 = new Request.GetItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             r1.Request = new GetItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = item
             };
-            byte[] r1Bytes = Request.serialize("123", r1).ToArray();
-            Request r2 = Request.deserialize("123", new MemoryStream(r1Bytes));
-            byte[] r2Bytes = Request.serialize("123", r2).ToArray();
+            byte[] r1Bytes = Request.Serialize("123", r1).ToArray();
+            Request r2 = Request.Deserialize("123", new MemoryStream(r1Bytes));
+            byte[] r2Bytes = Request.Serialize("123", r2).ToArray();
 
-            assertArrayEquals(r1Bytes, r2Bytes);
+            AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripPutAll()
         [Fact]
-        public virtual void roundTripPutAll()
+        public virtual void RoundTripPutAll()
         {
             Request.PutItem r1 = new Request.PutItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             item["attr_ss"] = new AttributeValue
             {
                 SS = { "a", "b" }
@@ -449,27 +449,27 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             };
             r1.Request = new PutItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Item = item,
                 ReturnValues = "ALL_OLD"
             };
-            byte[] r1Bytes = Request.serialize("123", r1).ToArray();
-            Request r2 = Request.deserialize("123", new MemoryStream(r1Bytes));
+            byte[] r1Bytes = Request.Serialize("123", r1).ToArray();
+            Request r2 = Request.Deserialize("123", new MemoryStream(r1Bytes));
 
-            assertEquals(r1.Request, ((Request.PutItem)r2).Request);
-            byte[] r2Bytes = Request.serialize("123", r2).ToArray();
+            AssertEquals(r1.Request, ((Request.PutItem)r2).Request);
+            byte[] r2Bytes = Request.Serialize("123", r2).ToArray();
 
-            assertArrayEquals(r1Bytes, r2Bytes);
+            AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripUpdateAll()
         [Fact]
-        public virtual void roundTripUpdateAll()
+        public virtual void RoundTripUpdateAll()
         {
             Request.UpdateItem r1 = new Request.UpdateItem();
             Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
-            key[HASH_ATTR_NAME] = new AttributeValue("a");
+            key[HashAttrName] = new AttributeValue("a");
 
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
             updates["attr_ss"] = new AttributeValueUpdate
@@ -517,52 +517,52 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             };
             r1.Request = new UpdateItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = key,
                 AttributeUpdates = updates
             };
-            byte[] r1Bytes = Request.serialize("123", r1).ToArray();
-            Request r2 = Request.deserialize("123", new MemoryStream(r1Bytes));
-            byte[] r2Bytes = Request.serialize("123", r2).ToArray();
+            byte[] r1Bytes = Request.Serialize("123", r1).ToArray();
+            Request r2 = Request.Deserialize("123", new MemoryStream(r1Bytes));
+            byte[] r2Bytes = Request.Serialize("123", r2).ToArray();
 
-            assertArrayEquals(r1Bytes, r2Bytes);
+            AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripPutAllJSON()
         [Fact]
-        public virtual void roundTripPutAllJSON()
+        public virtual void RoundTripPutAllJson()
         {
             Request.PutItem r1 = new Request.PutItem();
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
-            item[HASH_ATTR_NAME] = new AttributeValue("a");
+            item[HashAttrName] = new AttributeValue("a");
             item["json_attr"] = new AttributeValue
             {
-                M = JSON_M_ATTR_VAL
+                M = JsonMAttrVal
             };
             r1.Request = new PutItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Item = item,
                 ReturnValues = "ALL_OLD"
             };
-            byte[] r1Bytes = Request.serialize("123", r1).ToArray();
-            Request r2 = Request.deserialize("123", new MemoryStream(r1Bytes));
+            byte[] r1Bytes = Request.Serialize("123", r1).ToArray();
+            Request r2 = Request.Deserialize("123", new MemoryStream(r1Bytes));
 
-            assertEquals(r1.Request, ((Request.PutItem)r2).Request);
-            byte[] r2Bytes = Request.serialize("123", r2).ToArray();
+            AssertEquals(r1.Request, ((Request.PutItem)r2).Request);
+            byte[] r2Bytes = Request.Serialize("123", r2).ToArray();
 
-            assertArrayEquals(r1Bytes, r2Bytes);
+            AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripUpdateAllJSON()
         [Fact]
-        public virtual void roundTripUpdateAllJSON()
+        public virtual void RoundTripUpdateAllJson()
         {
             Request.UpdateItem r1 = new Request.UpdateItem();
             Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
-            key[HASH_ATTR_NAME] = new AttributeValue("a");
+            key[HashAttrName] = new AttributeValue("a");
 
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
             updates["attr_m"] = new AttributeValueUpdate
@@ -570,20 +570,20 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Action = "PUT",
                 Value = new AttributeValue
                 {
-                    M = JSON_M_ATTR_VAL,
+                    M = JsonMAttrVal,
                 }
             };
             r1.Request = new UpdateItemRequest
             {
-                TableName = TABLE_NAME,
+                TableName = TableName,
                 Key = key,
                 AttributeUpdates = updates
             };
-            byte[] r1Bytes = Request.serialize("123", r1).ToArray();
-            Request r2 = Request.deserialize("123", new MemoryStream(r1Bytes));
-            byte[] r2Bytes = Request.serialize("123", r2).ToArray();
+            byte[] r1Bytes = Request.Serialize("123", r1).ToArray();
+            Request r2 = Request.Deserialize("123", new MemoryStream(r1Bytes));
+            byte[] r2Bytes = Request.Serialize("123", r2).ToArray();
 
-            assertArrayEquals(r1Bytes, r2Bytes);
+            AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
         private PutItemRequest BasicPutRequest
@@ -592,8 +592,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 return new PutItemRequest
                 {
-                    Item = BASIC_ITEM,
-                    TableName = TABLE_NAME
+                    Item = BasicItem,
+                    TableName = TableName
                 };
             }
         }
@@ -604,8 +604,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 return new UpdateItemRequest
                 {
-                    Key = BASIC_ITEM,
-                    TableName = TABLE_NAME
+                    Key = BasicItem,
+                    TableName = TableName
                 };
             }
         }
@@ -616,63 +616,63 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 return new DeleteItemRequest
                 {
-                    Key = BASIC_ITEM,
-                    TableName = TABLE_NAME
+                    Key = BasicItem,
+                    TableName = TableName
                 };
             }
         }
 
-        private void invalidRequestTest(PutItemRequest request, string expectedExceptionMessage)
+        private void InvalidRequestTest(PutItemRequest request, string expectedExceptionMessage)
         {
             Request.PutItem r = new Request.PutItem();
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
-                fail();
+                r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
+                Fail();
             }
             catch (InvalidRequestException e)
             {
-                assertTrue(e.Message.Contains(expectedExceptionMessage));
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
         }
 
-        private void invalidRequestTest(UpdateItemRequest request, string expectedExceptionMessage)
+        private void InvalidRequestTest(UpdateItemRequest request, string expectedExceptionMessage)
         {
             Request.UpdateItem r = new Request.UpdateItem();
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
-                fail();
+                r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
+                Fail();
             }
             catch (InvalidRequestException e)
             {
-                assertTrue(e.Message.Contains(expectedExceptionMessage));
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
         }
 
-        private void invalidRequestTest(DeleteItemRequest request, string expectedExceptionMessage)
+        private void InvalidRequestTest(DeleteItemRequest request, string expectedExceptionMessage)
         {
             Request.DeleteItem r = new Request.DeleteItem();
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
-                fail();
+                r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
+                Fail();
             }
             catch (InvalidRequestException e)
             {
-                assertTrue(e.Message.Contains(expectedExceptionMessage));
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
         }
 
         protected internal class MockTransactionManager : TransactionManager
         {
-            private readonly RequestTest outerInstance;
+            private readonly RequestTest _outerInstance;
 
 
-            internal readonly List<KeySchemaElement> keySchema;
+            internal readonly List<KeySchemaElement> KeySchema;
 
             public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema) 
                 : base(new AmazonDynamoDBClient(new AmazonDynamoDBConfig
@@ -680,15 +680,15 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 ServiceURL = "http://localhost:8000/"
             }), "Dummy", "DummyOther")
             {
-                this.outerInstance = outerInstance;
-                this.keySchema = keySchema;
+                this._outerInstance = outerInstance;
+                this.KeySchema = keySchema;
             }
 
             //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available inG .NET:
             //ORIGINAL LINE: @Override protected java.util.List<com.amazonaws.services.dynamodbv2.model.KeySchemaElement> GetTableSchemaAsync(String tableName) throws com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
             protected internal override Task<List<KeySchemaElement>> GetTableSchemaAsync(string tableName, CancellationToken cancellationToken)
             {
-                return Task.FromResult(keySchema);
+                return Task.FromResult(KeySchema);
             }
         }
     }

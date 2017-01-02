@@ -38,22 +38,22 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
     public class TransactionExamples
     {
 
-        protected internal const string TX_TABLE_NAME = "Transactions";
-        protected internal const string TX_IMAGES_TABLE_NAME = "TransactionImages";
-        protected internal const string EXAMPLE_TABLE_NAME = "TransactionExamples";
-        protected internal const string EXAMPLE_TABLE_HASH_KEY = "ItemId";
-        protected internal const string DYNAMODB_ENDPOINT = "http://dynamodb.us-west-2.amazonaws.com";
+        protected internal const string TxTableName = "Transactions";
+        protected internal const string TxImagesTableName = "TransactionImages";
+        protected internal const string ExampleTableName = "TransactionExamples";
+        protected internal const string ExampleTableHashKey = "ItemId";
+        protected internal const string DynamodbEndpoint = "http://dynamodb.us-west-2.amazonaws.com";
 
-        protected internal readonly AmazonDynamoDBClient dynamodb;
-        protected internal readonly TransactionManager txManager;
+        protected internal readonly AmazonDynamoDBClient Dynamodb;
+        protected internal readonly TransactionManager TxManager;
 
         public static void Main(string[] args)
         {
-            print("Running DynamoDB transaction examples");
+            Print("Running DynamoDB transaction examples");
             try
             {
-                (new TransactionExamples()).run();
-                print("Exiting normally");
+                (new TransactionExamples()).Run();
+                Print("Exiting normally");
             }
             catch (Exception t)
             {
@@ -80,247 +80,247 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 credentials = new StoredProfileAWSCredentials();
             }
 
-            dynamodb = new AmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig
+            Dynamodb = new AmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig
             {
-                ServiceURL = DYNAMODB_ENDPOINT
+                ServiceURL = DynamodbEndpoint
             });
-            txManager = new TransactionManager(dynamodb, TX_TABLE_NAME, TX_IMAGES_TABLE_NAME);
+            TxManager = new TransactionManager(Dynamodb, TxTableName, TxImagesTableName);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public void run() throws Exception
-        public virtual void run()
+        public virtual void Run()
         {
-            setup();
-            twoItemTransaction();
-            conflictingTransactions();
-            errorHandling();
-            badRequest();
-            readThenWrite();
-            conditionallyCreateOrUpdateWithMapper();
-            reading();
-            readCommittedWithMapper();
-            sweepForStuckAndOldTransactions();
+            Setup();
+            TwoItemTransaction();
+            ConflictingTransactions();
+            ErrorHandling();
+            BadRequest();
+            ReadThenWrite();
+            ConditionallyCreateOrUpdateWithMapper();
+            Reading();
+            ReadCommittedWithMapper();
+            SweepForStuckAndOldTransactions();
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public void setup() throws Exception
-        public virtual void setup()
+        public virtual void Setup()
         {
-            print("\n*** setup() ***\n");
-            TableHelper tableHelper = new TableHelper(dynamodb);
+            Print("\n*** setup() ***\n");
+            TableHelper tableHelper = new TableHelper(Dynamodb);
 
             // 1. Verify that the transaction table exists, or create it if it doesn't exist
-            print("Verifying or creating table " + TX_TABLE_NAME);
-            TransactionManager.verifyOrCreateTransactionTableAsync(dynamodb, TX_TABLE_NAME, 1, 1, null).Wait();
+            Print("Verifying or creating table " + TxTableName);
+            TransactionManager.VerifyOrCreateTransactionTableAsync(Dynamodb, TxTableName, 1, 1, null).Wait();
 
             // 2. Verify that the transaction item images table exists, or create it otherwise
-            print("Verifying or creating table " + TX_IMAGES_TABLE_NAME);
-            TransactionManager.verifyOrCreateTransactionImagesTableAsync(dynamodb, TX_IMAGES_TABLE_NAME, 1, 1, null).Wait();
+            Print("Verifying or creating table " + TxImagesTableName);
+            TransactionManager.VerifyOrCreateTransactionImagesTableAsync(Dynamodb, TxImagesTableName, 1, 1, null).Wait();
 
             // 3. Create a table to do transactions on
-            print("Verifying or creating table " + EXAMPLE_TABLE_NAME);
-            List<AttributeDefinition> attributeDefinitions = Arrays.asList((new AttributeDefinition()).withAttributeName(EXAMPLE_TABLE_HASH_KEY).withAttributeType(ScalarAttributeType.S));
-            List<KeySchemaElement> keySchema = Arrays.asList((new KeySchemaElement()).withAttributeName(EXAMPLE_TABLE_HASH_KEY).withKeyType(KeyType.HASH));
+            Print("Verifying or creating table " + ExampleTableName);
+            List<AttributeDefinition> attributeDefinitions = Arrays.AsList((new AttributeDefinition()).WithAttributeName(ExampleTableHashKey).WithAttributeType(ScalarAttributeType.S));
+            List<KeySchemaElement> keySchema = Arrays.AsList((new KeySchemaElement()).WithAttributeName(ExampleTableHashKey).WithKeyType(KeyType.HASH));
             ProvisionedThroughput provisionedThroughput = (new ProvisionedThroughput
             {
                 ReadCapacityUnits = 1L,
                 WriteCapacityUnits = 1L
             });
 
-            tableHelper.verifyOrCreateTableAsync(EXAMPLE_TABLE_NAME, attributeDefinitions, keySchema, null, provisionedThroughput, null).Wait();
+            tableHelper.VerifyOrCreateTableAsync(ExampleTableName, attributeDefinitions, keySchema, null, provisionedThroughput, null).Wait();
 
             // 4. Wait for tables to be created
-            print("Waiting for table to become ACTIVE: " + EXAMPLE_TABLE_NAME);
-            tableHelper.waitForTableActiveAsync(EXAMPLE_TABLE_NAME, 5 * 60L).Wait();
-            print("Waiting for table to become ACTIVE: " + TX_TABLE_NAME);
-            tableHelper.waitForTableActiveAsync(TX_TABLE_NAME, 5 * 60L).Wait();
-            print("Waiting for table to become ACTIVE: " + TX_IMAGES_TABLE_NAME);
-            tableHelper.waitForTableActiveAsync(TX_IMAGES_TABLE_NAME, 5 * 60L).Wait();
+            Print("Waiting for table to become ACTIVE: " + ExampleTableName);
+            tableHelper.WaitForTableActiveAsync(ExampleTableName, 5 * 60L).Wait();
+            Print("Waiting for table to become ACTIVE: " + TxTableName);
+            tableHelper.WaitForTableActiveAsync(TxTableName, 5 * 60L).Wait();
+            Print("Waiting for table to become ACTIVE: " + TxImagesTableName);
+            tableHelper.WaitForTableActiveAsync(TxImagesTableName, 5 * 60L).Wait();
         }
 
         /// <summary>
         /// This example writes two items.
         /// </summary>
-        public virtual void twoItemTransaction()
+        public virtual void TwoItemTransaction()
         {
-            print("\n*** twoItemTransaction() ***\n");
+            Print("\n*** twoItemTransaction() ***\n");
 
             // Create a new transaction from the transaction manager
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
             // Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
             Dictionary<string, AttributeValue> item1 = new Dictionary<string, AttributeValue>();
-            item1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
-            print("Put item: " + item1);
-            t1.putItemAsync(new PutItemRequest
+            item1[ExampleTableHashKey] = new AttributeValue("Item1");
+            Print("Put item: " + item1);
+            t1.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item1
             }).Wait();
-            print("At this point Item1 is in the table, but is not yet committed");
+            Print("At this point Item1 is in the table, but is not yet committed");
 
             // Add second PutItem request for a different item to the transaction object
             Dictionary<string, AttributeValue> item2 = new Dictionary<string, AttributeValue>();
-            item2[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item2");
-            print("Put item: " + item2);
-            t1.putItemAsync(new PutItemRequest
+            item2[ExampleTableHashKey] = new AttributeValue("Item2");
+            Print("Put item: " + item2);
+            t1.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item2
             }).Wait();
-            print("At this point Item2 is in the table, but is not yet committed");
+            Print("At this point Item2 is in the table, but is not yet committed");
 
             // Commit the transaction.  
-            t1.commitAsync().Wait();
-            print("Committed transaction.  Item1 and Item2 are now both committed.");
+            t1.CommitAsync().Wait();
+            Print("Committed transaction.  Item1 and Item2 are now both committed.");
 
-            t1.deleteAsync().Wait();
-            print("Deleted the transaction item.");
+            t1.DeleteAsync().Wait();
+            Print("Deleted the transaction item.");
         }
 
         /// <summary>
         /// This example demonstrates two transactions attempting to write to the same item.  
         /// Only one transaction will go through.
         /// </summary>
-        public virtual void conflictingTransactions()
+        public virtual void ConflictingTransactions()
         {
-            print("\n*** conflictingTransactions() ***\n");
+            Print("\n*** conflictingTransactions() ***\n");
             // Start transaction t1
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
             // Construct a primary key of an item that will overlap between two transactions.
             Dictionary<string, AttributeValue> item1Key = new Dictionary<string, AttributeValue>();
-            item1Key[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("conflictingTransactions_Item1");
+            item1Key[ExampleTableHashKey] = new AttributeValue("conflictingTransactions_Item1");
 
             // Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
             // This will eventually get rolled back when t2 tries to work on the same item
             Dictionary<string, AttributeValue> item1T1 = new Dictionary<string, AttributeValue>(item1Key);
             item1T1["WhichTransaction?"] = new AttributeValue("t1");
-            print("T1 - Put item: " + item1T1);
-            t1.putItemAsync(new PutItemRequest
+            Print("T1 - Put item: " + item1T1);
+            t1.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item1T1
             }).Wait();
-            print("T1 - At this point Item1 is in the table, but is not yet committed");
+            Print("T1 - At this point Item1 is in the table, but is not yet committed");
 
             Dictionary<string, AttributeValue> item2T1 = new Dictionary<string, AttributeValue>();
-            item2T1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("conflictingTransactions_Item2");
-            print("T1 - Put a second, non-overlapping item: " + item2T1);
-            t1.putItemAsync(new PutItemRequest
+            item2T1[ExampleTableHashKey] = new AttributeValue("conflictingTransactions_Item2");
+            Print("T1 - Put a second, non-overlapping item: " + item2T1);
+            t1.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item2T1
             }).Wait();
-            print("T1 - At this point Item2 is also in the table, but is not yet committed");
+            Print("T1 - At this point Item2 is also in the table, but is not yet committed");
 
             // Start a new transaction t2
-            Transaction t2 = txManager.newTransaction();
+            Transaction t2 = TxManager.NewTransaction();
 
             Dictionary<string, AttributeValue> item1T2 = new Dictionary<string, AttributeValue>(item1Key);
             item1T1["WhichTransaction?"] = new AttributeValue("t2 - I win!");
-            print("T2 - Put item: " + item1T2);
-            t2.putItemAsync(new PutItemRequest
+            Print("T2 - Put item: " + item1T2);
+            t2.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item1T2
             }).Wait();
-            print("T2 - At this point Item1 from t2 is in the table, but is not yet committed. t1 was rolled back.");
+            Print("T2 - At this point Item1 from t2 is in the table, but is not yet committed. t1 was rolled back.");
 
             // To prove that t1 will have been rolled back by this point, attempt to commitAsync it.
             try
             {
-                print("Attempting to commitAsync t1 (this will fail)");
-                t1.commitAsync().Wait();
+                Print("Attempting to commitAsync t1 (this will fail)");
+                t1.CommitAsync().Wait();
                 throw new Exception("T1 should have been rolled back. This is a bug.");
             }
             catch (TransactionRolledBackException)
             {
-                print("Transaction t1 was rolled back, as expected");
-                t1.deleteAsync().Wait(); // Delete it, no longer needed
+                Print("Transaction t1 was rolled back, as expected");
+                t1.DeleteAsync().Wait(); // Delete it, no longer needed
             }
 
             // Now put a second item as a part of t2
             Dictionary<string, AttributeValue> item3T2 = new Dictionary<string, AttributeValue>();
-            item3T2[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("conflictingTransactions_Item3");
-            print("T2 - Put item: " + item3T2);
-            t2.putItemAsync(new PutItemRequest
+            item3T2[ExampleTableHashKey] = new AttributeValue("conflictingTransactions_Item3");
+            Print("T2 - Put item: " + item3T2);
+            t2.PutItemAsync(new PutItemRequest
             {
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 Item = item3T2
             }).Wait();
-            print("T2 - At this point Item3 is in the table, but is not yet committed");
+            Print("T2 - At this point Item3 is in the table, but is not yet committed");
 
-            print("Committing and deleting t2");
-            t2.commitAsync().Wait();
+            Print("Committing and deleting t2");
+            t2.CommitAsync().Wait();
 
-            t2.deleteAsync().Wait();
+            t2.DeleteAsync().Wait();
 
             // Now to verify, get the items Item1, Item2, and Item3.
             // More on read operations later. 
-            GetItemResponse result = txManager.GetItemAsync(
+            GetItemResponse result = TxManager.GetItemAsync(
                 new GetItemRequest
                 {
-                    TableName = EXAMPLE_TABLE_NAME,
+                    TableName = ExampleTableName,
                     Key = item1Key
                 },
-                Transaction.IsolationLevel.UNCOMMITTED,
+                Transaction.IsolationLevel.Uncommitted,
                 CancellationToken.None)
                 .Result;
 
-            print("Notice that t2's write to Item1 won: " + result.Item);
+            Print("Notice that t2's write to Item1 won: " + result.Item);
 
-            result = txManager.GetItemAsync(
+            result = TxManager.GetItemAsync(
                 new GetItemRequest
                 {
-                    TableName = EXAMPLE_TABLE_NAME,
+                    TableName = ExampleTableName,
                     Key = item3T2
                 },
-                Transaction.IsolationLevel.UNCOMMITTED,
+                Transaction.IsolationLevel.Uncommitted,
                 CancellationToken.None)
                 .Result;
-            print("Notice that t2's write to Item3 also went through: " + result.Item);
+            Print("Notice that t2's write to Item3 also went through: " + result.Item);
 
-            result = txManager.GetItemAsync(
+            result = TxManager.GetItemAsync(
                 new GetItemRequest
                 {
-                    TableName = EXAMPLE_TABLE_NAME,
+                    TableName = ExampleTableName,
                     Key = item2T1
                 },
-                Transaction.IsolationLevel.UNCOMMITTED,
+                Transaction.IsolationLevel.Uncommitted,
                 CancellationToken.None)
                 .Result;
-            print("However, t1's write to Item2 did not go through (since Item2 is null): " + result.Item);
+            Print("However, t1's write to Item2 did not go through (since Item2 is null): " + result.Item);
         }
 
         /// <summary>
         /// This example shows the kinds of exceptions that you might need to handle
         /// </summary>
-        public virtual void errorHandling()
+        public virtual void ErrorHandling()
         {
-            print("\n*** errorHandling() ***\n");
+            Print("\n*** errorHandling() ***\n");
 
             // Create a new transaction from the transaction manager
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
             bool success = false;
             try
             {
                 // Add a new PutItem request to the transaction object (instead of on the AmazonDynamoDBClient client)
                 Dictionary<string, AttributeValue> item1 = new Dictionary<string, AttributeValue>();
-                item1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
-                print("Put item: " + item1);
-                t1.putItemAsync(new PutItemRequest
+                item1[ExampleTableHashKey] = new AttributeValue("Item1");
+                Print("Put item: " + item1);
+                t1.PutItemAsync(new PutItemRequest
                 {
-                    TableName = EXAMPLE_TABLE_NAME,
+                    TableName = ExampleTableName,
                     Item = item1
                 }).Wait();
 
                 // Commit the transaction.  
-                t1.commitAsync().Wait();
+                t1.CommitAsync().Wait();
                 success = true;
-                print("Committed transaction.  We aren't actually expecting failures in this example.");
+                Print("Committed transaction.  We aren't actually expecting failures in this example.");
             }
             catch (TransactionRolledBackException e)
             {
@@ -364,7 +364,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                     // If you forget to roll back, no problem - another transaction will come along and roll yours back eventually.
                     try
                     {
-                        t1.rollbackAsync().Wait();
+                        t1.RollbackAsync().Wait();
                     }
                     catch (TransactionException)
                     {
@@ -373,7 +373,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
 
                 try
                 {
-                    t1.deleteAsync().Wait();
+                    t1.DeleteAsync().Wait();
                 }
                 catch (TransactionException)
                 {
@@ -386,19 +386,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
         /// </summary>
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
         //ORIGINAL LINE: public void badRequest() throws RuntimeException
-        public virtual void badRequest()
+        public virtual void BadRequest()
         {
-            print("\n*** badRequest() ***\n");
+            Print("\n*** badRequest() ***\n");
 
             // Create a "success" flag and set it to false.  We'll roll back the transaction in a finally {} if this wasn't set to true by then.
             bool success = false;
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
             try
             {
                 // Construct a request that we know DynamoDB will reject.
                 Dictionary<string, AttributeValue> key = new Dictionary<string, AttributeValue>();
-                key[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
+                key[ExampleTableHashKey] = new AttributeValue("Item1");
 
                 // You cannot "add" a String type attribute.  This request will be rejected by DynamoDB.
                 Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
@@ -409,35 +409,35 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 };
 
                 // The transaction library will make the request here, so we actually see
-                print("Making invalid request");
-                t1.updateItemAsync(new UpdateItemRequest
+                Print("Making invalid request");
+                t1.UpdateItemAsync(new UpdateItemRequest
                 {
-                    TableName = EXAMPLE_TABLE_NAME,
+                    TableName = ExampleTableName,
                     Key = key,
                     AttributeUpdates = updates
                 }).Wait();
 
-                t1.commitAsync().Wait();
+                t1.CommitAsync().Wait();
                 success = true;
                 throw new Exception("This should NOT have happened (actually should have failed before commitAsync)");
             }
             catch (AmazonServiceException e)
             {
-                print("Caught a ValidationException. This is what we expected. The transaction will be rolled back: " + e.Message);
+                Print("Caught a ValidationException. This is what we expected. The transaction will be rolled back: " + e.Message);
                 // in a real application, you'll probably want to throw an exception to your caller 
             }
             finally
             {
                 if (!success)
                 {
-                    print("The transaction didn't work, as expected.  Rolling back.");
+                    Print("The transaction didn't work, as expected.  Rolling back.");
                     // It can be a good idea to use a "success" flag in this way, to ensure that you roll back if you get any exceptions 
                     // from the transaction library, or from DynamoDB, or any from the DynamoDB client library.  These 3 exception base classes are:
                     // TransactionException, AmazonServiceException, or AmazonClientExeption.
                     // If you forget to roll back, no problem - another transaction will come along and roll yours back eventually.
                     try
                     {
-                        t1.rollbackAsync().Wait();
+                        t1.RollbackAsync().Wait();
                     }
                     catch (TransactionException)
                     {
@@ -446,7 +446,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
 
                 try
                 {
-                    t1.deleteAsync().Wait();
+                    t1.DeleteAsync().Wait();
                 }
                 catch (TransactionException)
                 {
@@ -457,28 +457,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
         /// <summary>
         /// This example shows that reads can be performed in a transaction, and read locks can be upgraded to write locks. 
         /// </summary>
-        public virtual void readThenWrite()
+        public virtual void ReadThenWrite()
         {
-            print("\n*** readThenWrite() ***\n");
+            Print("\n*** readThenWrite() ***\n");
 
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
             // Perform a GetItem request on the transaction
-            print("Reading Item1");
+            Print("Reading Item1");
             Dictionary<string, AttributeValue> key1 = new Dictionary<string, AttributeValue>();
-            key1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
+            key1[ExampleTableHashKey] = new AttributeValue("Item1");
 
-            Dictionary<string, AttributeValue> item1 = t1.getItemAsync(
+            Dictionary<string, AttributeValue> item1 = t1.GetItemAsync(
                 new GetItemRequest
                 {
                     Key = key1,
-                    TableName = EXAMPLE_TABLE_NAME
+                    TableName = ExampleTableName
                 }).Result.Item;
-            print("Item1: " + item1);
+            Print("Item1: " + item1);
 
             // Now callAsync UpdateItem to add a new attribute.
             // Notice that the library supports ReturnValues in writes
-            print("Updating Item1");
+            Print("Updating Item1");
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
             updates["Color"] = new AttributeValueUpdate
             {
@@ -486,19 +486,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 Value = new AttributeValue("Green")
             };
 
-            item1 = t1.updateItemAsync(new UpdateItemRequest
+            item1 = t1.UpdateItemAsync(new UpdateItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 AttributeUpdates = updates,
                 ReturnValues = ReturnValue.ALL_NEW
             }).Result.Attributes;
 
-            print("Item1 is now: " + item1);
+            Print("Item1 is now: " + item1);
 
-            t1.commitAsync().Wait();
+            t1.CommitAsync().Wait();
 
-            t1.deleteAsync().Wait();
+            t1.DeleteAsync().Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -558,75 +558,75 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
         /// <summary>
         /// This example shows how to conditionally create or update an item in a transaction.
         /// </summary>
-        public virtual void conditionallyCreateOrUpdateWithMapper()
+        public virtual void ConditionallyCreateOrUpdateWithMapper()
         {
-            print("\n*** conditionallyCreateOrUpdateWithMapper() ***\n");
+            Print("\n*** conditionallyCreateOrUpdateWithMapper() ***\n");
 
-            Transaction t1 = txManager.newTransaction();
+            Transaction t1 = TxManager.NewTransaction();
 
-            print("Reading Item1");
+            Print("Reading Item1");
             ExampleItem keyItem = new ExampleItem();
             keyItem.ItemId = "Item1";
 
             // Performs a GetItem request on the transaction
-            ExampleItem item = t1.loadAsync(keyItem).Result;
+            ExampleItem item = t1.LoadAsync(keyItem).Result;
             if (item != null)
             {
-                print("Item1: " + item.Value);
-                print("Item1 version: " + item.Version);
+                Print("Item1: " + item.Value);
+                Print("Item1 version: " + item.Version);
 
-                print("Updating Item1");
+                Print("Updating Item1");
                 item.Value = "Magenta";
 
                 // Performs an UpdateItem request after verifying the version is unchanged as of this transaction
-                t1.saveAsync(item);
-                print("Item1 is now: " + item.Value);
-                print("Item1 version is now: " + item.Version);
+                t1.SaveAsync(item);
+                Print("Item1 is now: " + item.Value);
+                Print("Item1 version is now: " + item.Version);
             }
             else
             {
-                print("Creating Item1");
+                Print("Creating Item1");
                 item = new ExampleItem();
                 item.ItemId = keyItem.ItemId;
                 item.Value = "Violet";
 
                 // Performs a CreateItem request after verifying the version attribute is not set as of this transaction
-                t1.saveAsync(item);
+                t1.SaveAsync(item);
 
-                print("Item1 is now: " + item.Value);
-                print("Item1 version is now: " + item.Version);
+                Print("Item1 is now: " + item.Value);
+                Print("Item1 version is now: " + item.Version);
             }
 
-            t1.commitAsync();
-            t1.deleteAsync();
+            t1.CommitAsync();
+            t1.DeleteAsync();
         }
 
         /// <summary>
         /// Demonstrates the 3 levels of supported read isolation: Uncommitted, Committed, Locked
         /// </summary>
-        public virtual void reading()
+        public virtual void Reading()
         {
-            print("\n*** reading() ***\n");
+            Print("\n*** reading() ***\n");
 
             // First, create a new transaction and update Item1, but don't commitAsync yet.
-            print("Starting a transaction to modify Item1");
-            Transaction t1 = txManager.newTransaction();
+            Print("Starting a transaction to modify Item1");
+            Transaction t1 = TxManager.NewTransaction();
 
             Dictionary<string, AttributeValue> key1 = new Dictionary<string, AttributeValue>();
-            key1[EXAMPLE_TABLE_HASH_KEY] = new AttributeValue("Item1");
+            key1[ExampleTableHashKey] = new AttributeValue("Item1");
 
             // Show the current value before any changes
-            print("Getting the current value of Item1 within the transaction.  This is the strongest form of read isolation.");
-            print("  However, you can't trust the value you get back until your transaction commits!");
-            Dictionary<string, AttributeValue> item1 = t1.getItemAsync(new GetItemRequest
+            Print("Getting the current value of Item1 within the transaction.  This is the strongest form of read isolation.");
+            Print("  However, you can't trust the value you get back until your transaction commits!");
+            Dictionary<string, AttributeValue> item1 = t1.GetItemAsync(new GetItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME
+                TableName = ExampleTableName
             }).Result.Item;
-            print("Before any changes, Item1 is: " + item1);
+            Print("Before any changes, Item1 is: " + item1);
 
             // Show the current value before any changes
-            print("Changing the Color of Item1, but not committing yet");
+            Print("Changing the Color of Item1, but not committing yet");
             Dictionary<string, AttributeValueUpdate> updates = new Dictionary<string, AttributeValueUpdate>();
             updates["Color"] = new AttributeValueUpdate
             {
@@ -634,46 +634,46 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 Value = new AttributeValue("Purple")
             };
 
-            item1 = t1.updateItemAsync(new UpdateItemRequest
+            item1 = t1.UpdateItemAsync(new UpdateItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 AttributeUpdates = updates,
                 ReturnValues = ReturnValue.ALL_NEW
             }).Result.Attributes;
-            print("Item1 is not yet committed, but if committed, will be: " + item1);
+            Print("Item1 is not yet committed, but if committed, will be: " + item1);
 
             // Perform an Uncommitted read
-            print("The weakest (but cheapest) form of read is Uncommitted, where you can get back changes that aren't yet committed");
-            print("  And might be rolled back!");
-            item1 = txManager.GetItemAsync(new GetItemRequest() // Uncommitted reads happen on the transaction manager, not on a transaction.
+            Print("The weakest (but cheapest) form of read is Uncommitted, where you can get back changes that aren't yet committed");
+            Print("  And might be rolled back!");
+            item1 = TxManager.GetItemAsync(new GetItemRequest() // Uncommitted reads happen on the transaction manager, not on a transaction.
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME,
-            }, Transaction.IsolationLevel.UNCOMMITTED, CancellationToken.None).Result.Item; // Note the isloationLevel
-            print("The read, which could return changes that will be rolled back, returned: " + item1);
+                TableName = ExampleTableName,
+            }, Transaction.IsolationLevel.Uncommitted, CancellationToken.None).Result.Item; // Note the isloationLevel
+            Print("The read, which could return changes that will be rolled back, returned: " + item1);
 
             // Perform a Committed read
-            print("A strong read is Committed.  This means that you are guaranteed to read only committed changes,");
-            print("  but not necessarily the *latest* committed change!");
-            item1 = txManager.GetItemAsync(new GetItemRequest // Uncommitted reads happen on the transaction manager, not on a transaction.
+            Print("A strong read is Committed.  This means that you are guaranteed to read only committed changes,");
+            Print("  but not necessarily the *latest* committed change!");
+            item1 = TxManager.GetItemAsync(new GetItemRequest // Uncommitted reads happen on the transaction manager, not on a transaction.
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME
-            }, Transaction.IsolationLevel.COMMITTED, CancellationToken.None).Result.Item; // Note the isloationLevel
-            print("The read, which should return the same value of the original read, returned: " + item1);
+                TableName = ExampleTableName
+            }, Transaction.IsolationLevel.Committed, CancellationToken.None).Result.Item; // Note the isloationLevel
+            Print("The read, which should return the same value of the original read, returned: " + item1);
 
             // Now start a new transaction and do a read, write, and read in it
-            Transaction t2 = txManager.newTransaction();
+            Transaction t2 = TxManager.NewTransaction();
 
-            print("Getting Item1, but this time under a new transaction t2");
-            item1 = t2.getItemAsync(new GetItemRequest
+            Print("Getting Item1, but this time under a new transaction t2");
+            item1 = t2.GetItemAsync(new GetItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME
+                TableName = ExampleTableName
             }).Result.Item;
-            print("Before any changes, in t2, Item1 is: " + item1);
-            print(" This just rolled back transaction t1! Notice that this is the same value as *before* t1!");
+            Print("Before any changes, in t2, Item1 is: " + item1);
+            Print(" This just rolled back transaction t1! Notice that this is the same value as *before* t1!");
 
             updates = new Dictionary<string, AttributeValueUpdate>();
             updates["Color"] = new AttributeValueUpdate
@@ -682,65 +682,65 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 Value = new AttributeValue("Magenta")
             };
 
-            print("Updating item1 again, but now under t2");
-            item1 = t2.updateItemAsync(new UpdateItemRequest
+            Print("Updating item1 again, but now under t2");
+            item1 = t2.UpdateItemAsync(new UpdateItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME,
+                TableName = ExampleTableName,
                 AttributeUpdates = updates,
                 ReturnValues = ReturnValue.ALL_NEW
             }).Result.Attributes;
-            print("Item1 is not yet committed, but if committed, will now be: " + item1);
+            Print("Item1 is not yet committed, but if committed, will now be: " + item1);
 
-            print("Getting Item1, again, under lock in t2.  Notice that the transaction library makes your write during this transaction visible to future reads.");
-            item1 = t2.getItemAsync(new GetItemRequest
+            Print("Getting Item1, again, under lock in t2.  Notice that the transaction library makes your write during this transaction visible to future reads.");
+            item1 = t2.GetItemAsync(new GetItemRequest
             {
                 Key = key1,
-                TableName = EXAMPLE_TABLE_NAME
+                TableName = ExampleTableName
             }).Result.Item;
-            print("Under transaction t2, Item1 is going to be: " + item1);
+            Print("Under transaction t2, Item1 is going to be: " + item1);
 
-            print("Committing t2");
-            t2.commitAsync().Wait();
+            Print("Committing t2");
+            t2.CommitAsync().Wait();
 
             try
             {
-                print("Committing t1 (this will fail because it was rolled back)");
-                t1.commitAsync().Wait();
+                Print("Committing t1 (this will fail because it was rolled back)");
+                t1.CommitAsync().Wait();
                 throw new Exception("Should have been rolled back");
             }
             catch (TransactionRolledBackException)
             {
-                print("t1 was rolled back as expected.  I hope you didn't act on the GetItem you did under the lock in t1!");
+                Print("t1 was rolled back as expected.  I hope you didn't act on the GetItem you did under the lock in t1!");
             }
         }
 
         /// <summary>
         /// Demonstrates reading with COMMITTED isolation level using the mapper.
         /// </summary>
-        public virtual void readCommittedWithMapper()
+        public virtual void ReadCommittedWithMapper()
         {
-            print("\n*** readCommittedWithMapper() ***\n");
+            Print("\n*** readCommittedWithMapper() ***\n");
 
-            print("Reading Item1 with IsolationLevel.COMMITTED");
+            Print("Reading Item1 with IsolationLevel.COMMITTED");
             ExampleItem keyItem = new ExampleItem();
             keyItem.ItemId = "Item1";
-            ExampleItem item = txManager.loadAsync(keyItem, Transaction.IsolationLevel.COMMITTED).Result;
+            ExampleItem item = TxManager.LoadAsync(keyItem, Transaction.IsolationLevel.Committed).Result;
 
-            print("Committed value of Item1: " + item.Value);
+            Print("Committed value of Item1: " + item.Value);
         }
 
-        public virtual void sweepForStuckAndOldTransactions()
+        public virtual void SweepForStuckAndOldTransactions()
         {
-            print("\n*** sweepForStuckAndOldTransactions() ***\n");
+            Print("\n*** sweepForStuckAndOldTransactions() ***\n");
 
             // The scan should be done in a loop to follow the LastEvaluatedKey, and done with following the best practices for scanning a table.
             // This includes sleeping between pages, using Limit to limit the throughput of each operation to avoid hotspots,
             // and using parallel scan.
-            print("Scanning one full page of the transactions table");
-            ScanResponse result = dynamodb.ScanAsync(new ScanRequest
+            Print("Scanning one full page of the transactions table");
+            ScanResponse result = Dynamodb.ScanAsync(new ScanRequest
                 {
-                    TableName = TX_TABLE_NAME
+                    TableName = TxTableName
                 }).Result;
 
             // Pick some duration where transactions should be rolled back if they were sitting there PENDING.
@@ -751,26 +751,26 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
             long deleteAfterDurationMillis = 1;
             foreach (Dictionary<string, AttributeValue> txItem in result.Items)
             {
-                print("Sweeping transaction " + txItem);
+                Print("Sweeping transaction " + txItem);
                 try
                 {
-                    if (TransactionManager.isTransactionItem(txItem))
+                    if (TransactionManager.IsTransactionItem(txItem))
                     {
-                        Transaction t = txManager.resumeTransaction(txItem);
-                        t.sweepAsync(rollbackAfterDurationMills, deleteAfterDurationMillis).Wait();
-                        print("  - Swept transaction (but it might have been skipped)");
+                        Transaction t = TxManager.ResumeTransaction(txItem);
+                        t.SweepAsync(rollbackAfterDurationMills, deleteAfterDurationMillis).Wait();
+                        Print("  - Swept transaction (but it might have been skipped)");
                     }
                 }
                 catch (TransactionException e)
                 {
                     // Log and report an error "unsticking" this transaction, but keep going.
-                    print("  - Error sweeping transaction " + txItem + " " + e);
+                    Print("  - Error sweeping transaction " + txItem + " " + e);
                 }
             }
 
         }
 
-        private static void print(string line)
+        private static void Print(string line)
         {
             Console.WriteLine(line.ToString());
         }

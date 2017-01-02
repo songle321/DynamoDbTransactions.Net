@@ -24,7 +24,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     /// of the item that can be read at the implemented isolaction
     /// level.
     /// </summary>
-    public interface ReadIsolationHandler
+    public interface IReadIsolationHandler
     {
         /// <summary>
         /// Returns a version of the item can be read at the isolation level implemented by

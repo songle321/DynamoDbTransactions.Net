@@ -7,7 +7,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
     {
         private static ILoggerFactory Factory { get; } = new LoggerFactory();
 
-        public static Log getLog(Type type)
+        public static Log GetLog(Type type)
         {
             return new Log(LogFactory.Factory.CreateLogger(type));
         }

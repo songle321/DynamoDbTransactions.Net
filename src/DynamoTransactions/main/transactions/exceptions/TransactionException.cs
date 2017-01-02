@@ -18,30 +18,30 @@
  {
 public class TransactionException : Exception
 	{
-private const long serialVersionUID = -3886636775903901771L;
+private const long SerialVersionUid = -3886636775903901771L;
 
-		private readonly string txId;
+		private readonly string _txId;
 
 		public TransactionException(string txId, string message) : base(txId + " - " + message)
 		{
-			this.txId = txId;
+			this._txId = txId;
 		}
 
 		public TransactionException(string txId, string message, Exception t) : base(txId + " - " + message, t)
 		{
-			this.txId = txId;
+			this._txId = txId;
 		}
 
 		public TransactionException(string txId, Exception t) : base(txId + " - " + ((t != null) ? t.Message : ""), t)
 		{
-			this.txId = txId;
+			this._txId = txId;
 		}
 
 		public virtual string TxId
 		{
 			get
 			{
-				return txId;
+				return _txId;
 			}
 		}
 	}
