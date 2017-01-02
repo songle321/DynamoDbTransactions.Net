@@ -63,5 +63,10 @@ namespace DynamoTransactions.Integration
         {
             throw new AssertionFailedException(message);
         }
+
+        public static void assertArrayEquals<T>(T value1, T value2)
+        {
+            value1.ShouldBeEquivalentTo(value2);
+        }
     }
 }
