@@ -1719,7 +1719,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly Transaction _outerInstance;
 
-            private T _item;
+            private readonly T _item;
 
             public CallableAnonymousInnerClass(Transaction outerInstance, T item)
             {
@@ -1751,7 +1751,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly Transaction _outerInstance;
 
-            private T _item;
+            private readonly T _item;
 
             public CallableAnonymousInnerClass2(Transaction outerInstance, T item)
             {
@@ -1779,7 +1779,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly Transaction _outerInstance;
 
-            private T _item;
+            private readonly T _item;
 
             public CallableAnonymousInnerClass3(Transaction outerInstance, T item)
             {

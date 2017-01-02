@@ -2137,7 +2137,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest _outerInstance;
 
-            private SemaphoreSlim _barrier;
+            private readonly SemaphoreSlim _barrier;
 
             public TransactionAnonymousInnerClass9(TransactionsIntegrationTest outerInstance, string toString, TransactionManager manager, SemaphoreSlim barrier) : base(toString, manager, true)
             {
@@ -2241,7 +2241,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest _outerInstance;
 
-            private SemaphoreSlim _barrier;
+            private readonly SemaphoreSlim _barrier;
 
             public TransactionAnonymousInnerClass10(TransactionsIntegrationTest outerInstance, string toString, TransactionManager manager, SemaphoreSlim barrier) : base(toString, manager, true)
             {
@@ -2346,7 +2346,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest _outerInstance;
 
-            private SemaphoreSlim _barrier;
+            private readonly SemaphoreSlim _barrier;
 
             public TransactionAnonymousInnerClass11(TransactionsIntegrationTest outerInstance, string toString, TransactionManager manager, SemaphoreSlim barrier) : base(toString, manager, true)
             {
@@ -2486,7 +2486,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest _outerInstance;
 
-            private AtomicBoolean _shouldThrowAfterApply;
+            private readonly AtomicBoolean _shouldThrowAfterApply;
 
             public TransactionAnonymousInnerClass12(TransactionsIntegrationTest outerInstance, string toString, TransactionManager manager, AtomicBoolean shouldThrowAfterApply) : base(toString, manager, true)
             {
@@ -2509,8 +2509,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         {
             private readonly TransactionsIntegrationTest _outerInstance;
 
-            private SemaphoreSlim _waitAfterResumeTransaction;
-            private SemaphoreSlim _resumedTransaction;
+            private readonly SemaphoreSlim _waitAfterResumeTransaction;
+            private readonly SemaphoreSlim _resumedTransaction;
 
             public TransactionManagerAnonymousInnerClass(TransactionsIntegrationTest outerInstance, AmazonDynamoDBClient dynamodb, string integLockTableName, string integImagesTableName, SemaphoreSlim waitAfterResumeTransaction, SemaphoreSlim resumedTransaction) : base(dynamodb, integLockTableName, integImagesTableName)
             {
