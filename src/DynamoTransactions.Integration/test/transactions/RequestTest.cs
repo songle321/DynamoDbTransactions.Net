@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -635,6 +636,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
+            catch (AggregateException e) when (e.InnerException is InvalidRequestException)
+            {
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
+            }
         }
 
         private void InvalidRequestTest(UpdateItemRequest request, string expectedExceptionMessage)
@@ -650,6 +655,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
+            catch (AggregateException e) when (e.InnerException is InvalidRequestException)
+            {
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
+            }
         }
 
         private void InvalidRequestTest(DeleteItemRequest request, string expectedExceptionMessage)
@@ -662,6 +671,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Fail();
             }
             catch (InvalidRequestException e)
+            {
+                AssertTrue(e.Message.Contains(expectedExceptionMessage));
+            }
+            catch (AggregateException e) when (e.InnerException is InvalidRequestException) 
             {
                 AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
