@@ -377,7 +377,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = TableName,
                 Key = item
             };
-            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema));
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -393,7 +393,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = TableName,
                 Key = item
             };
-            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema));
+            r.ValidateAsync("1", new MockTransactionManager(this, HashSchema)).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:

@@ -260,13 +260,13 @@ AttributeName = Transaction.AttributeName.ImageId.ToString(),
         /// <param name="tableName"> </param>
         /// <param name="item"> </param>
         /// <param name="txId"> </param>
-        public virtual void BreakLock(string tableName, Dictionary<string, AttributeValue> item, string txId)
+        public virtual async Task BreakLockAsync(string tableName, Dictionary<string, AttributeValue> item, string txId)
         {
             if (Log.WarnEnabled)
             {
                 Log.Warn("Breaking a lock on table " + tableName + " for transaction " + txId + " for item " + item + ".  This will leave the item in an unknown state");
             }
-            Transaction.UnlockItemUnsafeAsync(this, tableName, item, txId);
+            await Transaction.UnlockItemUnsafeAsync(this, tableName, item, txId);
         }
 
         //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:

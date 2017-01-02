@@ -42,7 +42,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             this._txManager = txManager;
         }
 
-        public async Task<DeleteItemResponse> DeleteItemAsync(DeleteItemRequest request, CancellationToken cancellationToken)
+        public async Task<DeleteItemResponse> DeleteItemAsync(DeleteItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
             await CheckExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
@@ -52,102 +52,102 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             return await _txn.DeleteItemAsync(request);
         }
 
-        public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = new CancellationToken())
+        public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<DescribeLimitsResponse> DescribeLimitsAsync(DescribeLimitsRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<DescribeLimitsResponse> DescribeLimitsAsync(DescribeLimitsRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<DescribeTableResponse> DescribeTableAsync(string tableName, CancellationToken cancellationToken = new CancellationToken())
+        public Task<DescribeTableResponse> DescribeTableAsync(string tableName, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<DescribeTableResponse> DescribeTableAsync(DescribeTableRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<DescribeTableResponse> DescribeTableAsync(DescribeTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await _txn.GetItemAsync(request);
         }
 
-        public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = new CancellationToken())
+        public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
         public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, int limit,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ListTablesResponse> ListTablesAsync(int limit, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ListTablesResponse> ListTablesAsync(int limit, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ListTablesResponse> ListTablesAsync(ListTablesRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ListTablesResponse> ListTablesAsync(ListTablesRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public async Task<PutItemResponse> PutItemAsync(PutItemRequest request, CancellationToken cancellationToken)
+        public async Task<PutItemResponse> PutItemAsync(PutItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            CheckExpectedValuesAsync(request.TableName, await Request.GetKeyFromItemAsync(request.TableName, request.Item, _txManager), expectedValues, cancellationToken);
+            await CheckExpectedValuesAsync(request.TableName, await Request.GetKeyFromItemAsync(request.TableName, request.Item, _txManager), expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
             return await _txn.PutItemAsync(request);
         }
 
-        public Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ScanResponse> ScanAsync(string tableName, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ScanResponse> ScanAsync(string tableName, Dictionary<string, Condition> scanFilter, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
         public Task<ScanResponse> ScanAsync(string tableName, List<string> attributesToGet, Dictionary<string, Condition> scanFilter,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<ScanResponse> ScanAsync(ScanRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest request, CancellationToken cancellationToken)
+        public async Task<UpdateItemResponse> UpdateItemAsync(UpdateItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             Dictionary<string, ExpectedAttributeValue> expectedValues = request.Expected;
-            CheckExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
+            await CheckExpectedValuesAsync(request.TableName, request.Key, expectedValues, cancellationToken);
 
             // conditional checks are handled by the above callAsync
             request.Expected = null;
@@ -155,17 +155,17 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         }
 
         public Task<UpdateTableResponse> UpdateTableAsync(string tableName, ProvisionedThroughput provisionedThroughput,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<UpdateTableResponse> UpdateTableAsync(UpdateTableRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<UpdateTableResponse> UpdateTableAsync(UpdateTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        private async Task CheckExpectedValuesAsync(string tableName, Dictionary<string, AttributeValue> itemKey, Dictionary<string, ExpectedAttributeValue> expectedValues, CancellationToken cancellationToken)
+        private async Task CheckExpectedValuesAsync(string tableName, Dictionary<string, AttributeValue> itemKey, Dictionary<string, ExpectedAttributeValue> expectedValues, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (expectedValues != null && expectedValues.Count > 0)
             {
@@ -189,7 +189,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 Dictionary<string, AttributeValue> item = result.Item;
                 try
                 {
-                    CheckExpectedValuesAsync(expectedValues, item);
+                    await CheckExpectedValuesAsync(expectedValues, item);
                 }
                 catch (ConditionalCheckFailedException e)
                 {
@@ -247,7 +247,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }
         }
 
-        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await GetItemAsync(new GetItemRequest
             {
@@ -256,7 +256,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, bool consistentRead, CancellationToken cancellationToken)
+        public async Task<GetItemResponse> GetItemAsync(string tableName, Dictionary<string, AttributeValue> key, bool consistentRead, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await GetItemAsync(new GetItemRequest
             {
@@ -267,43 +267,43 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         }
 
         public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = new CancellationToken())
+        public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<BatchWriteItemResponse> BatchWriteItemAsync(Dictionary<string, List<WriteRequest>> requestItems, CancellationToken cancellationToken = new CancellationToken())
+        public Task<BatchWriteItemResponse> BatchWriteItemAsync(Dictionary<string, List<WriteRequest>> requestItems, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<BatchWriteItemResponse> BatchWriteItemAsync(BatchWriteItemRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<BatchWriteItemResponse> BatchWriteItemAsync(BatchWriteItemRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
         public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions,
-            ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = new CancellationToken())
+            ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = new CancellationToken())
+        public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public async Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken)
+        public async Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await DeleteItemAsync(new DeleteItemRequest
             {
@@ -312,7 +312,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, ReturnValue returnValues, CancellationToken cancellationToken)
+        public async Task<DeleteItemResponse> DeleteItemAsync(string tableName, Dictionary<string, AttributeValue> key, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await DeleteItemAsync(new DeleteItemRequest
             {
@@ -322,7 +322,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken)
+        public async Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await PutItemAsync(new PutItemRequest
             {
@@ -331,7 +331,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, ReturnValue returnValues, CancellationToken cancellationToken)
+        public async Task<PutItemResponse> PutItemAsync(string tableName, Dictionary<string, AttributeValue> item, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await PutItemAsync(new PutItemRequest
             {
@@ -341,7 +341,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, CancellationToken cancellationToken)
+        public async Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await UpdateItemAsync(new UpdateItemRequest
             {
@@ -351,7 +351,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             }, cancellationToken);
         }
 
-        public async Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, ReturnValue returnValues, CancellationToken cancellationToken)
+        public async Task<UpdateItemResponse> UpdateItemAsync(string tableName, Dictionary<string, AttributeValue> key, Dictionary<string, AttributeValueUpdate> attributeUpdates, ReturnValue returnValues, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await UpdateItemAsync(new UpdateItemRequest
             {

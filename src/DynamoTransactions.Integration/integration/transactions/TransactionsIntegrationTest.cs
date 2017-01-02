@@ -634,7 +634,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = IntegHashTableName,
                 Item = item1,
 
-            });
+            }).Wait();
 
             AssertItemLocked(IntegHashTableName, key1, item1, t1.Id, true, true);
 
@@ -1298,7 +1298,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     Key = key,
                     AttributeUpdates = updates,
 
-                });
+                }).Wait();
                 Fail();
             }
             catch (AmazonServiceException e)
@@ -1971,7 +1971,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = IntegHashTableName,
                 Key = key2,
 
-            });
+            }).Wait();
 
             AssertItemLocked(IntegHashTableName, key1, item1, t1.Id, true, true);
             AssertOldItemImage(t1.Id, IntegHashTableName, key1, key1, false);
@@ -2127,7 +2127,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = IntegHashTableName,
                 Item = item1A,
 
-            });
+            }).Wait();
             AssertItemLocked(IntegHashTableName, key1, item1A, t3.Id, true, true);
             t3.CommitAsync().Wait();
             AssertItemNotLocked(IntegHashTableName, key1, item1A, true);
@@ -2231,7 +2231,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TableName = IntegHashTableName,
                 Item = item1A,
 
-            });
+            }).Wait();
             AssertItemLocked(IntegHashTableName, key1, item1A, t3.Id, true, true);
             t3.CommitAsync().Wait();
             AssertItemNotLocked(IntegHashTableName, key1, item1A, true);
@@ -2830,7 +2830,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     TableName = IntegHashTableName,
                     Item = item,
 
-                });
+                }).Wait();
                 Fail();
             }
             catch (InvalidRequestException e)

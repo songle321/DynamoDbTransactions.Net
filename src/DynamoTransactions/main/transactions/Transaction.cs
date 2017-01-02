@@ -450,7 +450,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 				 */
 
                 // basic validation
-                clientRequest.ValidateAsync(_txId, _txManager);
+                await clientRequest.ValidateAsync(_txId, _txManager);
 
                 // Don't mutate the caller's request.
                 Request requestCopy = Request.Deserialize(_txId, Request.Serialize(_txId, clientRequest));
@@ -472,7 +472,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                         try
                         {
                             conflictingTransaction = new Transaction(e.LockOwnerTxId, _txManager, false);
-                            conflictingTransaction.RollbackAsync();
+                            await conflictingTransaction.RollbackAsync();
                         }
                         catch (TransactionNotFoundException)
                         {
@@ -567,7 +567,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     if (TransactionItem.State.RolledBack.Equals(_txItem.GetState()))
                     {
-                        DoRollbackAsync();
+                        await DoRollbackAsync();
                         throw new TransactionRolledBackException(_txId, "Transaction was rolled back");
                     }
 
@@ -580,11 +580,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
                     int version = _txItem.Version;
 
-                    VerifyLocksAsync();
+                    await VerifyLocksAsync();
 
                     try
                     {
-                        _txItem.FinishAsync(TransactionItem.State.Committed, version);
+                        await _txItem.FinishAsync(TransactionItem.State.Committed, version);
                     }
                     catch (ConditionalCheckFailedException)
                     {
@@ -622,7 +622,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 bool alreadyRereadTxItem = false;
                 try
                 {
-                    _txItem.FinishAsync(TransactionItem.State.RolledBack, _txItem.Version);
+                    await _txItem.FinishAsync(TransactionItem.State.RolledBack, _txItem.Version);
                     state = TransactionItem.State.RolledBack;
                 }
                 catch (ConditionalCheckFailedException)
@@ -654,7 +654,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {
                     if (!_txItem.Completed)
                     {
-                        DoRollbackAsync();
+                        await DoRollbackAsync();
                     }
                     return;
                 }
@@ -734,7 +734,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// 
         /// This is to be used post-commitAsync only.
         /// </summary>
-        /// <param name="cancellationToken"></param>
         protected internal virtual async Task DoCommitAsync()
         {
             // Defensively re-check the state to ensure it is COMMITTED
@@ -767,7 +766,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         /// 
         /// To be used once the transaction has committed only. </summary>
         /// <param name="request"> </param>
-        /// <param name="cancellationToken"></param>
         protected internal virtual async Task UnlockItemAfterCommitAsync(Request request)
         {
             try
@@ -819,7 +817,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 }
                 else if (request is Request.GetItem)
                 {
-                    ReleaseReadLockAsync(request.TableName, await request.GetKeyAsync(_txManager));
+                    await ReleaseReadLockAsync(request.TableName, await request.GetKeyAsync(_txManager));
                 }
                 else
                 {
@@ -894,7 +892,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             // 1. Read locks don't have a saved item image, so just unlock them and return
             if (isGet.HasValue && isGet.Value)
             {
-                ReleaseReadLockAsync(tableName, key);
+                await ReleaseReadLockAsync(tableName, key);
                 return;
             }
 
@@ -984,7 +982,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 TxAssert(!item.ContainsKey(AttributeName.Applied.ToString()), _txId, "Applied change to item but didn't saveAsync a backup", "table", tableName, "key", key, "item" + item);
 
                 //   b) Otherwise release the lock (okay to delete if transient to re-use logic)
-                ReleaseReadLockAsync(tableName, key);
+                await ReleaseReadLockAsync(tableName, key);
             }
         }
 
@@ -1151,7 +1149,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                     await VerifyLocksAsync();
                     try
                     {
-                        _txItem.AddRequestAsync(callerRequest);
+                        await _txItem.AddRequestAsync(callerRequest);
                         success = true;
                         break;
                     }
@@ -1203,10 +1201,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 _txItem = new TransactionItem(_txId, _txManager, false);
             }
-            catch (TransactionNotFoundException e)
+            catch (TransactionNotFoundException)
             {
                 await ReleaseReadLockAsync(callerRequest.TableName, await callerRequest.GetKeyAsync(_txManager));
-                throw e;
+                throw;
             }
             switch (_txItem.GetState())
             {

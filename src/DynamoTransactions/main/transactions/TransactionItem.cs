@@ -56,24 +56,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-		/*
+        /*
 		 * Constructors and initializers
 		 */
 
-		/// <summary>
-		/// Inserts or retrieves a transaction record. 
-		/// </summary>
-		/// <param name="txId"> the id of the transaction to insert or retrieve </param>
-		/// <param name="txManager"> </param>
-		/// <param name="insert"> whether to insert the transaction (it's a new transaction) or to loadAsync an existing one </param>
-		/// <exception cref="TransactionNotFoundException"> If it is being retrieved and it is not found </exception>
-		public TransactionItem(string txId, TransactionManager txManager, bool insert) : this(txId, txManager, insert, null)
-		{
-		}
-
-		public TransactionItem(Dictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
-		{
+        /// <summary>
+        /// Inserts or retrieves a transaction record. 
+        /// </summary>
+        /// <param name="txId"> the id of the transaction to insert or retrieve </param>
+        /// <param name="txManager"> </param>
+        /// <param name="insert"> whether to insert the transaction (it's a new transaction) or to loadAsync an existing one </param>
+        /// <exception cref="TransactionNotFoundException"> If it is being retrieved and it is not found </exception>
+        public TransactionItem(string txId, TransactionManager txManager, bool insert) : this(txId, txManager, insert, null)
+        {
         }
+
+        public TransactionItem(Dictionary<string, AttributeValue> txItem, TransactionManager txManager) : this(null, txManager, false, txItem)
+        {
+        }
+
+        //
+        // This constructor does too much work! Fix by moving into factory method (part done) TODO
+        //
 
         /// <summary>
         /// Either inserts a new transaction, reads it from the database, or initializes from a previously read transaction item.
@@ -143,7 +147,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             _version = int.Parse(txVersionVal.N);
 
             // Build the requests structure
-            LoadRequests();
+            LoadRequestsAsync().Wait();
         }
 
 
@@ -227,7 +231,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             transactionItem._version = int.Parse(txVersionVal.N);
 
             // Build the requests structure
-            transactionItem.LoadRequests();
+            await transactionItem.LoadRequestsAsync();
             return transactionItem;
         }
 
@@ -414,7 +418,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		        // 1. Ensure the request is unique (modifies the internal data structure if it is unique)
 		        //    However, do not not short circuit.  If we're doing a read in a resumed transaction, it's important to ensure we're returning
 		        //    any writes that happened before. 
-		        AddRequestToMapAsync(callerRequest);
+		        await AddRequestToMapAsync(callerRequest);
 
 		        callerRequest.Rid = _version;
 
@@ -473,14 +477,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		        {
 		            if ("ValidationException".Equals(e.ErrorCode))
 		            {
-		                RemoveRequestFromMapAsync(callerRequest);
+		                await RemoveRequestFromMapAsync(callerRequest);
 		                throw new InvalidRequestException(
 		                    "The amount of data in the transaction cannot exceed the DynamoDB item size limit", TxId,
 		                    callerRequest.TableName, await callerRequest.GetKeyAsync(_txManager), callerRequest);
 		            }
 		            else
 		            {
-		                throw e;
+		                throw;
 		            }
 		        }
 		        return true;
@@ -494,7 +498,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 		/// <summary>
 		/// Reads the requests in the loaded txItem and adds them to the map of table -> key.
 		/// </summary>
-		private void LoadRequests()
+		private async Task LoadRequestsAsync()
 		{
 			AttributeValue requestsVal = _txItem[Transaction.AttributeName.Requests.ToString()];
 			List<MemoryStream> rawRequests = (requestsVal != null && requestsVal.BS != null) ? requestsVal.BS : new List<MemoryStream>(0);
@@ -503,7 +507,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 			{
 				Request request = Request.Deserialize(TxId, rawRequest);
 				// TODO don't make strings out of the PK all the time, also dangerous if behavior of toString changes!
-				AddRequestToMapAsync(request);
+				await AddRequestToMapAsync(request);
 			}
 		}
 

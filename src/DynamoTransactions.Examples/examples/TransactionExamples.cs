@@ -322,37 +322,37 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 success = true;
                 Print("Committed transaction.  We aren't actually expecting failures in this example.");
             }
-            catch (TransactionRolledBackException e)
+            catch (TransactionRolledBackException)
             {
                 // This gets thrown if the transaction was rolled back by another transaction
-                throw e;
+                throw;
             }
-            catch (ItemNotLockedException e)
+            catch (ItemNotLockedException)
             {
                 // This gets thrown if there is too much contention with other transactions for the item you're trying to lock
-                throw e;
+                throw;
             }
-            catch (DuplicateRequestException e)
+            catch (DuplicateRequestException)
             {
                 // This happens if you try to do two write operations on the same item in the same transaction
-                throw e;
+                throw;
             }
-            catch (InvalidRequestException e)
+            catch (InvalidRequestException)
             {
                 // This happens if you do something like forget the TableName or key attributes in the request
-                throw e;
+                throw;
             }
-            catch (TransactionException e)
+            catch (TransactionException)
             {
                 // All exceptions thrown directly by this library derive from this.  It is a catch-all
-                throw e;
+                throw;
             }
-            catch (AmazonServiceException e)
+            catch (AmazonServiceException)
             {
                 // However, your own requests can still fail if they're invalid.  For example, you can get a 
                 // ValidationException if you try to add a "number" to a "string" in UpdateItem.  So you have to handle
                 // errors from DynamoDB in the same way you did before.  Except now you should roll back the transaction if it fails.
-                throw e;
+                throw;
             }
             finally
             {
@@ -579,7 +579,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 item.Value = "Magenta";
 
                 // Performs an UpdateItem request after verifying the version is unchanged as of this transaction
-                t1.SaveAsync(item);
+                t1.SaveAsync(item).Wait();
                 Print("Item1 is now: " + item.Value);
                 Print("Item1 version is now: " + item.Version);
             }
@@ -591,14 +591,14 @@ namespace com.amazonaws.services.dynamodbv2.transactions.examples
                 item.Value = "Violet";
 
                 // Performs a CreateItem request after verifying the version attribute is not set as of this transaction
-                t1.SaveAsync(item);
+                t1.SaveAsync(item).Wait();
 
                 Print("Item1 is now: " + item.Value);
                 Print("Item1 version is now: " + item.Version);
             }
 
-            t1.CommitAsync();
-            t1.DeleteAsync();
+            t1.CommitAsync().Wait();
+            t1.DeleteAsync().Wait();
         }
 
         /// <summary>

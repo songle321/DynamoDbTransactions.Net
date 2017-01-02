@@ -238,7 +238,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             try
             {
-                TransactionManager.VerifyOrCreateTransactionTableAsync(Dynamodb, IntegLockTableName, 10L, 10L, 5L * 60);
+                TransactionManager.VerifyOrCreateTransactionTableAsync(Dynamodb, IntegLockTableName, 10L, 10L, 5L * 60).Wait();
                 TransactionManager.VerifyOrCreateTransactionImagesTableAsync(Dynamodb, IntegImagesTableName, 10L, 10L, 5L * 60).Wait();
             }
             catch (ResourceInUseException)

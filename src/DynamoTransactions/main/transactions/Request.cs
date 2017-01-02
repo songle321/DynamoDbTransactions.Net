@@ -149,10 +149,10 @@ internal UpdateItemRequest request;
 
             protected internal override async Task DoValidateAsync(string txId, TransactionManager txManager)
             {
-                ValidateAttributesAsync(this, request.Key, txId, txManager);
+                await ValidateAttributesAsync(this, request.Key, txId, txManager);
                 if (request.AttributeUpdates != null)
                 {
-                    ValidateAttributesAsync(this, request.AttributeUpdates, txId, txManager);
+                    await ValidateAttributesAsync(this, request.AttributeUpdates, txId, txManager);
                 }
                 if (request.ReturnConsumedCapacity != null)
                 {
@@ -306,7 +306,7 @@ internal DeleteItemRequest request;
                 {
                     throw new InvalidRequestException("PutItem must contain an Item", txId, TableName, null, this);
                 }
-                ValidateAttributesAsync(this, request.Item, txId, txManager);
+                await ValidateAttributesAsync(this, request.Item, txId, txManager);
                 if (request.ReturnConsumedCapacity != null)
                 {
                     throw new InvalidRequestException("ReturnConsumedCapacity is not currently supported", txId, TableName, null, this);

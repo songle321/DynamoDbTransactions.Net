@@ -111,6 +111,8 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             _mockClient = new Mock<AmazonDynamoDBClient>();
 
+            _mockTxManager = new Mock<TransactionManager>();
+
             _mockTx = new Mock<Transaction>();
             _mockTx.SetupGet(x => x.TxItem).Returns(_mockTxItem.Object);
             _mockTx.SetupGet(x => x.Id).Returns(TxId);
@@ -235,7 +237,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             _mockTxItem.Setup(x => x.LoadItemImageAsync(Rid)).Returns(Task.FromResult((Dictionary<string, AttributeValue>)  null));
             //when(mockTxItem.loadItemImageAsync(RID)).thenReturn(null);
 
-            _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key);
+            _isolationHandler.GetOldCommittedItemAsync(_mockTx.Object, TableName, Key).Wait();
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
