@@ -159,6 +159,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             this._txKey = txKey;
         }
 
+	    public TransactionItem() // for tests
+	    {
+	        
+	    }
+
         /// <summary>
         /// Either inserts a new transaction, reads it from the database, or initializes from a previously read transaction item.
         /// </summary>

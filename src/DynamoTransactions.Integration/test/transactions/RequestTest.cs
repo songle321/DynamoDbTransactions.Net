@@ -39,9 +39,12 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         });
 
         internal static readonly Dictionary<string, AttributeValue> JsonMAttrVal = new Dictionary<string, AttributeValue>();
-        private static readonly Dictionary<string, ExpectedAttributeValue> NonnullExpectedAttrValues = new Dictionary<string, ExpectedAttributeValue>();
-        private static readonly Dictionary<string, string> NonnullExpAttrNames = new Dictionary<string, string>();
-        private static readonly Dictionary<string, AttributeValue> NonnullExpAttrValues = new Dictionary<string, AttributeValue>();
+        private static readonly Dictionary<string, ExpectedAttributeValue> NonnullExpectedAttrValues 
+            = new Dictionary<string, ExpectedAttributeValue> { { "name", new ExpectedAttributeValue(new AttributeValue("value"))} };
+        private static readonly Dictionary<string, string> NonnullExpAttrNames 
+            = new Dictionary<string, string> { {"name","name"}};
+        private static readonly Dictionary<string, AttributeValue> NonnullExpAttrValues 
+            = new Dictionary<string, AttributeValue> { { "value", new AttributeValue("value") } };
         private static readonly Dictionary<string, AttributeValue> BasicItem = new Dictionary<string, AttributeValue>();
 
         static RequestTest()

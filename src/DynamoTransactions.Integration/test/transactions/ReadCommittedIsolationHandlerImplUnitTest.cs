@@ -101,7 +101,13 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         //ORIGINAL LINE: @Before public void setup()
         public virtual void Setup()
         {
-            _mockIsolationHandler = new Mock<ReadCommittedIsolationHandlerImpl>();
+            _mockTxManager = new Mock<TransactionManager>(new AmazonDynamoDBClient(new AmazonDynamoDBConfig
+            {
+                ServiceURL = "http://localhost:8000/"
+            }), "Dummy", "DummyOther");
+            _mockTxManager.CallBase = false;
+
+            _mockIsolationHandler = new Mock<ReadCommittedIsolationHandlerImpl>(_mockTxManager.Object);
             _mockIsolationHandler.CallBase = true;
             _isolationHandler = _mockIsolationHandler.Object;
 
@@ -110,8 +116,6 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             _mockRequest = new Mock<Request>();
 
             _mockClient = new Mock<AmazonDynamoDBClient>();
-
-            _mockTxManager = new Mock<TransactionManager>();
 
             _mockTx = new Mock<Transaction>();
             _mockTx.SetupGet(x => x.TxItem).Returns(_mockTxItem.Object);
