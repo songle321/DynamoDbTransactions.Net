@@ -5,9 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
 using com.amazonaws.services.dynamodbv2.transactions;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
-
+using Xunit;
 using static DynamoTransactions.Integration.AssertStatic;
 
 // <summary>
@@ -112,6 +113,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validPut()
+        [Fact]
         public virtual void validPut()
         {
             Request.PutItem r = new Request.PutItem();
@@ -127,6 +129,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putNullTableName()
+        [Fact]
         public virtual void putNullTableName()
         {
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
@@ -137,6 +140,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putNullItem()
+        [Fact]
         public virtual void putNullItem()
         {
             invalidRequestTest(new PutItemRequest
@@ -148,6 +152,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putMissingKey()
+        [Fact]
         public virtual void putMissingKey()
         {
             Dictionary<string, AttributeValue> item = new Dictionary<string, AttributeValue>();
@@ -163,6 +168,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpected()
+        [Fact]
         public virtual void putExpected()
         {
             var request = new PutItemRequest
@@ -176,6 +182,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putConditionExpression()
+        [Fact]
         public virtual void putConditionExpression()
         {
             var request = new PutItemRequest
@@ -189,6 +196,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpressionAttributeNames()
+        [Fact]
         public virtual void putExpressionAttributeNames()
         {
             var request = new PutItemRequest
@@ -202,6 +210,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void putExpressionAttributeValues()
+        [Fact]
         public virtual void putExpressionAttributeValues()
         {
             var request = new PutItemRequest
@@ -215,6 +224,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpected()
+        [Fact]
         public virtual void updateExpected()
         {
             var request = new PutItemRequest
@@ -228,6 +238,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateConditionExpression()
+        [Fact]
         public virtual void updateConditionExpression()
         {
             var request = new PutItemRequest
@@ -241,6 +252,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateUpdateExpression()
+        [Fact]
         public virtual void updateUpdateExpression()
         {
             var request = new UpdateItemRequest
@@ -254,6 +266,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpressionAttributeNames()
+        [Fact]
         public virtual void updateExpressionAttributeNames()
         {
             var request = new UpdateItemRequest
@@ -267,6 +280,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void updateExpressionAttributeValues()
+        [Fact]
         public virtual void updateExpressionAttributeValues()
         {
             var request = new UpdateItemRequest
@@ -280,6 +294,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpected()
+        [Fact]
         public virtual void deleteExpected()
         {
             var request = new UpdateItemRequest
@@ -293,6 +308,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteConditionExpression()
+        [Fact]
         public virtual void deleteConditionExpression()
         {
             var request = new DeleteItemRequest
@@ -306,6 +322,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpressionAttributeNames()
+        [Fact]
         public virtual void deleteExpressionAttributeNames()
         {
             var request = new DeleteItemRequest
@@ -319,6 +336,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void deleteExpressionAttributeValues()
+        [Fact]
         public virtual void deleteExpressionAttributeValues()
         {
             var request = new DeleteItemRequest
@@ -332,6 +350,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validUpdate()
+        [Fact]
         public virtual void validUpdate()
         {
             Request.UpdateItem r = new Request.UpdateItem();
@@ -347,6 +366,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validDelete()
+        [Fact]
         public virtual void validDelete()
         {
             Request.DeleteItem r = new Request.DeleteItem();
@@ -362,6 +382,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void validLock()
+        [Fact]
         public virtual void validLock()
         {
             Request.GetItem r = new Request.GetItem();
@@ -377,6 +398,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripGetString()
+        [Fact]
         public virtual void roundTripGetString()
         {
             Request.GetItem r1 = new Request.GetItem();
@@ -396,6 +418,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripPutAll()
+        [Fact]
         public virtual void roundTripPutAll()
         {
             Request.PutItem r1 = new Request.PutItem();
@@ -441,6 +464,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripUpdateAll()
+        [Fact]
         public virtual void roundTripUpdateAll()
         {
             Request.UpdateItem r1 = new Request.UpdateItem();
@@ -506,6 +530,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripPutAllJSON()
+        [Fact]
         public virtual void roundTripPutAllJSON()
         {
             Request.PutItem r1 = new Request.PutItem();
@@ -532,6 +557,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void roundTripUpdateAllJSON()
+        [Fact]
         public virtual void roundTripUpdateAllJSON()
         {
             Request.UpdateItem r1 = new Request.UpdateItem();
@@ -602,7 +628,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
+                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
                 fail();
             }
             catch (InvalidRequestException e)
@@ -617,7 +643,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
+                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
                 fail();
             }
             catch (InvalidRequestException e)
@@ -632,7 +658,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             r.Request = request;
             try
             {
-                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA));
+                r.validateAsync("1", new MockTransactionManager(this, HASH_SCHEMA)).Wait();
                 fail();
             }
             catch (InvalidRequestException e)
@@ -648,7 +674,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             internal readonly List<KeySchemaElement> keySchema;
 
-            public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema) : base(new AmazonDynamoDBClient(), "Dummy", "DummyOther")
+            public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema) 
+                : base(new AmazonDynamoDBClient(new AmazonDynamoDBConfig
+            {
+                ServiceURL = "http://localhost:8000/"
+            }), "Dummy", "DummyOther")
             {
                 this.outerInstance = outerInstance;
                 this.keySchema = keySchema;

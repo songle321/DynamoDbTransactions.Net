@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Amazon.DynamoDBv2.Model;
 using FluentAssertions;
+using Xunit;
 
 // <summary>
 // Copyright 2013-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -83,8 +84,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForNullItem()
+        [Fact]
         public virtual void handleItemReturnsNullForNullItem()
         {
+            setup();
             assertNull(isolationHandler.HandleItemAsync(null, null, TABLE_NAME, CancellationToken.None).Result);
         }
 
@@ -95,8 +98,10 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForUnlockedItem()
+        [Fact]
         public virtual void handleItemReturnsItemForUnlockedItem()
         {
+            setup();
             assertEquals(UNLOCKED_ITEM, isolationHandler.HandleItemAsync(UNLOCKED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
         }
 
@@ -107,22 +112,28 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientUnappliedItem()
+        [Fact]
         public virtual void handleItemReturnsNullForTransientUnappliedItem()
         {
+            setup();
             assertNull(isolationHandler.HandleItemAsync(TRANSIENT_UNAPPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsNullForTransientAppliedItem()
+        [Fact]
         public virtual void handleItemReturnsNullForTransientAppliedItem()
         {
+            setup();
             assertEquals(TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @Test public void handleItemReturnsItemForNonTransientAppliedItem()
+        [Fact]
         public virtual void handleItemReturnsItemForNonTransientAppliedItem()
         {
+            setup();
             assertEquals(NON_TRANSIENT_APPLIED_ITEM, isolationHandler.HandleItemAsync(NON_TRANSIENT_APPLIED_ITEM, null, TABLE_NAME, CancellationToken.None).Result);
         }
 

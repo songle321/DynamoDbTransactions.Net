@@ -226,7 +226,7 @@ internal DeleteItemRequest request;
 
             protected internal override async Task doValidateAsync(string txId, TransactionManager txManager)
             {
-                validateAttributesAsync(this, request.Key, txId, txManager);
+                await validateAttributesAsync(this, request.Key, txId, txManager);
                 if (request.ReturnConsumedCapacity != null)
                 {
                     throw new InvalidRequestException("ReturnConsumedCapacity is not currently supported", txId, TableName, null, this);
@@ -352,7 +352,7 @@ internal DeleteItemRequest request;
 
             validateReturnValues(ReturnValues, txId, this);
 
-            doValidateAsync(txId, txManager);
+            await doValidateAsync(txId, txManager);
         }
 
         private static void validateReturnValues(string returnValues, string txId, Request request)
