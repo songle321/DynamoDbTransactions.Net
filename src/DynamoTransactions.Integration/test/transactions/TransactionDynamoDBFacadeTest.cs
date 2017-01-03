@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Amazon.DynamoDBv2.Model;
+using FluentAssertions.Execution;
 using Xunit;
 
 // <summary>
@@ -17,6 +19,7 @@ using Xunit;
 // or implied. See the License for the specific language governing permissions 
 // and limitations under the License. 
 // </summary>
+
 namespace com.amazonaws.services.dynamodbv2.transactions
 {
     public class TransactionDynamoDbFacadeTest
@@ -26,7 +29,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         [Fact]
         public virtual void TestCheckExpectedStringValueWithMatchingItem()
         {
-            var item = new Dictionary<string, AttributeValue> { { "Foo", new AttributeValue("Bar") } };
+            var item = new Dictionary<string, AttributeValue> {{"Foo", new AttributeValue("Bar")}};
             var expected = new Dictionary<string, ExpectedAttributeValue>
             {
                 {"Foo", new ExpectedAttributeValue(new AttributeValue("Bar"))}
@@ -50,7 +53,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue("NotBar"))}
             };
 
-            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            try
+            {
+                TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            }
+            catch (AggregateException e) when (e.InnerException is ConditionalCheckFailedException)
+            {
+                return;
+            }
+            catch (ConditionalCheckFailedException)
+            {
+                return;
+            }
+            throw new AssertionFailedException("Expected ConditionalCheckFailedException");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -88,7 +103,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {B = new MemoryStream(new byte[] {0, 127, 255})})}
             };
 
-            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            try
+            {
+                TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            }
+            catch (AggregateException e) when (e.InnerException is ConditionalCheckFailedException)
+            {
+                return;
+            }
+            catch (ConditionalCheckFailedException)
+            {
+                return;
+            }
+            throw new AssertionFailedException("Expected ConditionalCheckFailedException");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -144,7 +171,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "12"})}
             };
 
-            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            try
+            {
+                TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            }
+            catch (AggregateException e) when (e.InnerException is ConditionalCheckFailedException)
+            {
+                return;
+            }
+            catch (ConditionalCheckFailedException)
+            {
+                return;
+            }
+            throw new AssertionFailedException("Expected ConditionalCheckFailedException");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
@@ -162,7 +201,19 @@ namespace com.amazonaws.services.dynamodbv2.transactions
                 {"Foo", new ExpectedAttributeValue(new AttributeValue {N = "3.14"})}
             };
 
-            TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            try
+            {
+                TransactionDynamoDbFacade.CheckExpectedValuesAsync(expected, item).Wait();
+            }
+            catch (AggregateException e) when (e.InnerException is ConditionalCheckFailedException)
+            {
+                return;
+            }
+            catch (ConditionalCheckFailedException)
+            {
+                return;
+            }
+            throw new AssertionFailedException("Expected ConditionalCheckFailedException");
         }
 
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
