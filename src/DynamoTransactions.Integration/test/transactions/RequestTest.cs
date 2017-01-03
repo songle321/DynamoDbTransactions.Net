@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,8 +11,18 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using com.amazonaws.services.dynamodbv2.transactions;
 using com.amazonaws.services.dynamodbv2.transactions.exceptions;
+using DynamoTransactions;
+using DynamoTransactions.Integration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using ThirdParty.Json.LitJson;
 using Xunit;
 using static DynamoTransactions.Integration.AssertStatic;
+using JsonReader = Newtonsoft.Json.JsonReader;
+using JsonToken = Newtonsoft.Json.JsonToken;
+using JsonWriter = Newtonsoft.Json.JsonWriter;
 
 // <summary>
 // Copyright 2013-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -39,11 +51,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
         });
 
         internal static readonly Dictionary<string, AttributeValue> JsonMAttrVal = new Dictionary<string, AttributeValue>();
-        private static readonly Dictionary<string, ExpectedAttributeValue> NonnullExpectedAttrValues 
-            = new Dictionary<string, ExpectedAttributeValue> { { "name", new ExpectedAttributeValue(new AttributeValue("value"))} };
-        private static readonly Dictionary<string, string> NonnullExpAttrNames 
-            = new Dictionary<string, string> { {"name","name"}};
-        private static readonly Dictionary<string, AttributeValue> NonnullExpAttrValues 
+        private static readonly Dictionary<string, ExpectedAttributeValue> NonnullExpectedAttrValues
+            = new Dictionary<string, ExpectedAttributeValue> { { "name", new ExpectedAttributeValue(new AttributeValue("value")) } };
+        private static readonly Dictionary<string, string> NonnullExpAttrNames
+            = new Dictionary<string, string> { { "name", "name" } };
+        private static readonly Dictionary<string, AttributeValue> NonnullExpAttrValues
             = new Dictionary<string, AttributeValue> { { "value", new AttributeValue("value") } };
         private static readonly Dictionary<string, AttributeValue> BasicItem = new Dictionary<string, AttributeValue>();
 
@@ -590,6 +602,57 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             AssertArrayEquals(r1Bytes, r2Bytes);
         }
 
+        [Fact]
+        public virtual void RoundTripAttributeValueBoolJson()
+        {
+            var attributeValue = new AttributeValue
+            {
+                BOOL = true,
+                S = "string"
+            };
+
+            var jsonSerializerSettings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                Converters = {new AttributeValueJsonConverter()}
+            };
+            string json = JsonConvert.SerializeObject(attributeValue, jsonSerializerSettings);
+
+            var deserializedAttributeValue = JsonConvert.DeserializeObject<AttributeValue>(json, jsonSerializerSettings);
+
+            AssertStatic.AssertEquals(attributeValue, deserializedAttributeValue);
+        }
+
+
+        public class AdjustedOrderContractResolver : DefaultContractResolver
+        {
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            {
+                var properties = base.CreateProperties(type, memberSerialization);
+                var orderedProperties = properties
+                    .OrderBy(x => x.DeclaringType == typeof(AttributeValue)
+                                  && x.PropertyName.StartsWith("Is")
+                                  && x.PropertyName.EndsWith("Set")
+                        ? 0
+                        : 1)
+                    .ToList();
+                return orderedProperties;
+            }
+        }
+
+        //public class AttributeValueJsonConverter : CustomCreationConverter<AttributeValue>
+        //{
+        //    public override AttributeValue Create(Type objectType)
+        //    {
+        //        return
+        //    }
+
+        //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        //    {
+        //        return base.ReadJson(reader, objectType, existingValue, serializer);
+        //    }
+        //}
+
         private PutItemRequest BasicPutRequest
         {
             get
@@ -677,7 +740,7 @@ namespace com.amazonaws.services.dynamodbv2.transactions
             {
                 AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
-            catch (AggregateException e) when (e.InnerException is InvalidRequestException) 
+            catch (AggregateException e) when (e.InnerException is InvalidRequestException)
             {
                 AssertTrue(e.Message.Contains(expectedExceptionMessage));
             }
@@ -690,11 +753,11 @@ namespace com.amazonaws.services.dynamodbv2.transactions
 
             internal readonly List<KeySchemaElement> KeySchema;
 
-            public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema) 
+            public MockTransactionManager(RequestTest outerInstance, List<KeySchemaElement> keySchema)
                 : base(new AmazonDynamoDBClient(new AmazonDynamoDBConfig
-            {
-                ServiceURL = "http://localhost:8000/"
-            }), "Dummy", "DummyOther")
+                {
+                    ServiceURL = "http://localhost:8000/"
+                }), "Dummy", "DummyOther")
             {
                 this._outerInstance = outerInstance;
                 this.KeySchema = keySchema;
