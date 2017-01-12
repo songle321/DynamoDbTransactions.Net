@@ -3,7 +3,7 @@ Port of https://github.com/awslabs/dynamodb-transactions/ to the .NET Core frame
 
 # WARNING
 This code is untested, many of the unit tests have yet to be fixed and the integration tests have never been run.
-This was ported during several overnight sessions with a tired and weary mind. This is my first attempt at porting
+This was ported during several overnight sessions with a tired and weary mind. It's also my first attempt at porting
 anything significant from Java to C#. 
 
 # Current State
